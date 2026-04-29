@@ -49,7 +49,7 @@
       <h1>BHSD nnU-Net Project</h1>
       <p>
         This project contains baseline nnU-Net v2 pipelines for BHSD CT hemorrhage segmentation,
-        including 2D, 3D, and a minimal 2.5D extension based on stacked adjacent slices.
+        including 2D, 3D, and custom 2.5D extensions for both legacy 3-slide and newer CSAM-style models.
       </p>
     </header>
 
@@ -57,9 +57,8 @@
       <h2>Overview</h2>
       <p>
         The dataset is BHSD CT data with anisotropic spacing and relatively large z-spacing.
-        Standard nnU-Net v2 2D and 3D pipelines are supported, and a custom 2.5D trainer has
-        been added to extend the 2D pipeline without changing the original loss, optimizer, or
-        architecture depth.
+        Standard nnU-Net v2 2D and 3D pipelines are supported, along with custom 2.5D trainers
+        that extend the 2D pipeline without changing the original loss or optimization setup.
       </p>
     </section>
 
@@ -68,21 +67,8 @@
       <ul>
         <li><strong>2D baseline:</strong> standard single-slice nnU-Net v2 training.</li>
         <li><strong>3D baseline:</strong> standard full-resolution 3D nnU-Net v2 training.</li>
-        <li><strong>2.5D baseline:</strong> stacked adjacent slices used as multi-channel 2D input.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>2.5D Extension</h2>
-      <p>
-        The 2.5D extension reuses the standard 2D preprocessing pipeline and changes only the
-        slice loading behavior inside the dataloader.
-      </p>
-      <ul>
-        <li>3-slice version: <code>[z-1, z, z+1]</code></li>
-        <li>5-slice version: <code>[z-2, z-1, z, z+1, z+2]</code></li>
-        <li>Target label: center slice only</li>
-        <li>Boundary handling duplicates edge slices when needed</li>
+        <li><strong>3-slide baseline:</strong> stacked adjacent slices used as multi-channel 2D input.</li>
+        <li><strong>CSAM:</strong> center-guided slice-attention models with bottleneck or multi-scale fusion.</li>
       </ul>
     </section>
 
@@ -94,28 +80,19 @@
       <h3>3D</h3>
       <pre><code>powershell -ExecutionPolicy Bypass -File .\scripts\nnunet_3d_baseline.ps1</code></pre>
 
-      <h3>2.5D</h3>
+      <h3>3-slide</h3>
       <pre><code>powershell -ExecutionPolicy Bypass -File .\scripts\nnunet_25d_baseline.ps1</code></pre>
-    </section>
-
-    <section>
-      <h2>Trainer Commands</h2>
-      <h3>3-slice 2.5D trainer</h3>
-      <pre><code>nnUNetv2_train Dataset001_BHSD 2d 0 -tr nnUNetTrainer_25D</code></pre>
-
-      <h3>5-slice 2.5D trainer</h3>
-      <pre><code>nnUNetv2_train Dataset001_BHSD 2d 0 -tr nnUNetTrainer_25D_5Slice</code></pre>
     </section>
 
     <section>
       <h2>Project Files</h2>
       <ul>
-        <li><code>scripts/</code>: baseline PowerShell launch scripts</li>
-        <li><code>nnunet25d/</code>: custom 2.5D dataloader, trainers, and install script</li>
+        <li><code>scripts/</code>: baseline PowerShell launch scripts and Linux/AWS pipeline entrypoints</li>
+        <li><code>nnunet25d/</code>: custom 2.5D dataloaders, trainers, CSAM modules, and install script</li>
+        <li><code>configs/</code>: YAML experiment definitions for baseline, legacy 3-slide, and CSAM runs</li>
         <li><code>nnUNet_data/</code>: local dataset, preprocessing outputs, and results</li>
       </ul>
     </section>
-    <main>
   </main>
 </body>
 </html>

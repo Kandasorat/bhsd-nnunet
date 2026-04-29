@@ -21,7 +21,7 @@ Write-Host "nnUNet_n_proc_DA=$env:nnUNet_n_proc_DA"
 Write-Host "DatasetName=$DatasetName"
 Write-Host "DatasetId=$DatasetId"
 Write-Host "Fold=$Fold"
-Write-Host "Note: 2.5D here uses the custom nnUNetTrainer_25D on top of the existing 2D pipeline."
+Write-Host "Note: this is the legacy 2.5D 3-slide baseline using nnUNetTrainer_25D on top of the existing 2D pipeline."
 
 nnUNetv2_plan_and_preprocess -d $DatasetId --verify_dataset_integrity
 python (Join-Path $projectRoot "scripts\install_extension.py")

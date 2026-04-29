@@ -1,22 +1,16 @@
-﻿# Data and training artifacts
 nnUNet_data/
-results/
+results/*
+!results/README.md
 aws_upload_bundle/
 repo/
-
-# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# OS/editor noise
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-
-# Logs and local scratch
 *.log
 *.tmp
 *.bak

@@ -1,6 +1,6 @@
-﻿# Script Entry Points
+# Script Entry Points
 
-This directory contains the production entry points for Linux and AWS execution.
+This directory contains the production entry points for Linux and AWS execution, plus a few legacy Windows launchers.
 
 ## Bash scripts
 
@@ -20,20 +20,14 @@ This directory contains the production entry points for Linux and AWS execution.
 - `install_extension.py`: install custom 2.5D trainers into the active nnU-Net environment
 - `prepare_inference_data.py`: stage fold-specific validation inputs and labels for inference/evaluation
 
-## 2.5D note
+## 2.5D naming
 
-The custom 2.5D configurations currently support `train` only.
-Use:
-
-```bash
-python scripts/run_experiment.py train --config naive_25d_3slice
-```
-
-Do not run the custom 2.5D configs through `run_experiment.sh` or `run_all.sh`.
+- legacy custom 2.5D baseline: `baseline_25d_3slide`
+- new attention-based models: `csam_bottleneck_3slide`, `csam_3slide`, `csam_5slide`
 
 ## Windows helper scripts
 
 - `package_aws_bundle.ps1`: build a local AWS upload bundle; default is code-only, add `-IncludeData` only when needed
 - `nnunet_2d_baseline.ps1`: legacy local 2D baseline launcher
 - `nnunet_3d_baseline.ps1`: legacy local 3D baseline launcher
-- `nnunet_25d_baseline.ps1`: legacy local 2.5D baseline launcher
+- `nnunet_25d_baseline.ps1`: legacy local 3-slide baseline launcher
