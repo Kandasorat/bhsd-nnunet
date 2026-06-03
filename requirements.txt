@@ -1,0 +1,12 @@
+nnunetv2
+numpy
+scipy
+pandas
+scikit-image
+scikit-learn
+matplotlib
+seaborn
+pyyaml
+nibabel
+simpleitk
+tqdm

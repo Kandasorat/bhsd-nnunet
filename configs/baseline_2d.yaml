@@ -1,0 +1,15 @@
+experiment_name: baseline_2d
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer
+folds: [0]
+device: cuda
+save_npz: true
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+plans: nnUNetPlans
+ground_truth_dir: null
+inference_input: null

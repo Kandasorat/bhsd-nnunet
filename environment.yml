@@ -1,0 +1,26 @@
+name: bhsd-nnunet
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=11.8
+  - numpy
+  - scipy
+  - pandas
+  - scikit-image
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - pyyaml
+  - nibabel
+  - simpleitk
+  - tqdm
+  - jupyter
+  - pip:
+      - nnunetv2

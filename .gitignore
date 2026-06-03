@@ -1,0 +1,21 @@
+﻿# Data and training artifacts
+nnUNet_data/
+results/
+aws_upload_bundle/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and local scratch
+*.log
+*.tmp
+*.bak
