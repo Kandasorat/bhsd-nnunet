@@ -8,6 +8,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from nnunetv2.training.dataloading.nnunet_dataset import infer_dataset_class
 from nnunetv2.training.nnUNetTrainer.nnUNetTrainer import nnUNetTrainer
 from nnunetv2.utilities.default_n_proc_DA import get_allowed_n_proc_DA
+from nnunetv2.utilities.get_network_from_plans import get_network_from_plans
 from nnunetv2.utilities.label_handling.label_handling import determine_num_input_channels
 
 from nnunet25d.dataloader_25d import nnUNetDataLoader25D
@@ -18,6 +19,34 @@ class _nnUNetTrainer25DBase(nnUNetTrainer):
     num_input_slices = 3
     dataloader_class = nnUNetDataLoader25D
     dataloader_kwargs = {}
+
+    def _resolve_architecture_definition(self):
+        if all(
+            hasattr(self.configuration_manager, attr)
+            for attr in (
+                "network_arch_class_name",
+                "network_arch_init_kwargs",
+                "network_arch_init_kwargs_req_import",
+            )
+        ):
+            return (
+                self.configuration_manager.network_arch_class_name,
+                self.configuration_manager.network_arch_init_kwargs,
+                self.configuration_manager.network_arch_init_kwargs_req_import,
+            )
+
+        plans_dict = getattr(self.plans_manager, "plans", None)
+        config_name = getattr(self, "configuration_name", None)
+        if not isinstance(plans_dict, dict) or config_name is None:
+            raise AttributeError("Could not resolve architecture definition for the current nnU-Net version")
+
+        config_dict = plans_dict["configurations"][config_name]
+        architecture = config_dict["architecture"]
+        return (
+            architecture["network_class_name"],
+            architecture["arch_kwargs"],
+            architecture.get("_kw_requires_import", []),
+        )
 
     def initialize(self):
         if self.was_initialized:
@@ -34,24 +63,16 @@ class _nnUNetTrainer25DBase(nnUNetTrainer):
         )
         self.num_input_channels = base_num_input_channels * self.num_input_slices
 
-        # Be compatible with both the older and newer nnU-Net trainer APIs.
-        try:
-            self.network = nnUNetTrainer.build_network_architecture(
-                self.configuration_manager.network_arch_class_name,
-                self.configuration_manager.network_arch_init_kwargs,
-                self.configuration_manager.network_arch_init_kwargs_req_import,
-                self.num_input_channels,
-                self.label_manager.num_segmentation_heads,
-                self.enable_deep_supervision,
-            ).to(self.device)
-        except TypeError:
-            self.network = nnUNetTrainer.build_network_architecture(
-                self.configuration_manager.network_arch_class_name,
-                self.configuration_manager.network_arch_init_kwargs,
-                self.configuration_manager.network_arch_init_kwargs_req_import,
-                self.num_input_channels,
-                self.label_manager.num_segmentation_heads,
-            ).to(self.device)
+        arch_class_name, arch_init_kwargs, arch_init_kwargs_req_import = self._resolve_architecture_definition()
+        self.network = get_network_from_plans(
+            arch_class_name,
+            arch_init_kwargs,
+            arch_init_kwargs_req_import,
+            self.num_input_channels,
+            self.label_manager.num_segmentation_heads,
+            allow_init=True,
+            deep_supervision=self.enable_deep_supervision,
+        ).to(self.device)
 
         if self._do_i_compile():
             self.print_to_log_file("Using torch.compile...")
