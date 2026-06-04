@@ -47,6 +47,8 @@ class nnUNetDataLoader25D(nnUNetDataLoader):
 
     def generate_train_batch(self):
         selected_keys = self.get_indices()
+        if not hasattr(self, "data_shape") or not hasattr(self, "seg_shape"):
+            self.data_shape, self.seg_shape = self.determine_shapes()
         data_all = np.zeros(self.data_shape, dtype=np.float32)
         seg_all = np.zeros(self.seg_shape, dtype=np.int16)
 
