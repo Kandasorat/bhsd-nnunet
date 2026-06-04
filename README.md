@@ -88,7 +88,7 @@ python scripts/install_extension.py
 ```bash
 bash scripts/run_experiment.sh baseline_2d
 bash scripts/run_experiment.sh baseline_3d
-bash scripts/run_experiment.sh naive_25d_3slice
+python scripts/run_experiment.py train --config naive_25d_3slice
 ```
 
 ## Notes

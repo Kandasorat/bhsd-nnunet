@@ -292,6 +292,11 @@ def maybe_install_25d(config: Dict[str, Any]) -> None:
         subprocess.run([sys.executable, str(PROJECT_ROOT / "nnunet25d" / "install_extension.py")], check=True)
 
 
+def is_custom_25d_config(config: Dict[str, Any]) -> bool:
+    trainer = str(config.get("trainer", ""))
+    return "25D" in trainer or "SpacingAware25D" in trainer
+
+
 def preprocess(config: Dict[str, Any]) -> None:
     command = [
         "nnUNetv2_plan_and_preprocess",
@@ -361,6 +366,16 @@ def _infer_command(config: Dict[str, Any], fold: int) -> List[str]:
 def infer(config: Dict[str, Any]) -> None:
     from scripts.prepare_inference_data import prepare_fold_validation_data
 
+    if is_custom_25d_config(config):
+        raise NotImplementedError(
+            "The custom 2.5D trainers currently support training only. "
+            "Their training-time dataloader stacks neighbouring slices into "
+            "multi-channel inputs, but this repository does not yet provide a "
+            "matching nnUNetPredictor/nnUNetv2_predict inference path. "
+            "Use the saved checkpoints for training comparisons, or implement "
+            "a dedicated 2.5D predictor before running infer/evaluate."
+        )
+
     maybe_install_25d(config)
     for fold in config.get("folds", [0]):
         if not config.get("inference_input"):
@@ -379,6 +394,13 @@ def infer(config: Dict[str, Any]) -> None:
 def evaluate(config: Dict[str, Any]) -> None:
     from evaluation.aggregate_results import aggregate_case_metrics
     from evaluation.run_evaluation import evaluate_folder
+
+    if is_custom_25d_config(config):
+        raise NotImplementedError(
+            "The custom 2.5D pipeline currently has no dedicated inference "
+            "implementation, so standalone evaluate is also unsupported. "
+            "Training metrics and checkpoints are still produced correctly."
+        )
 
     model_name = config["experiment_name"]
     all_case_csvs = []

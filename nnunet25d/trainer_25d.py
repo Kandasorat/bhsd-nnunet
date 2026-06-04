@@ -48,6 +48,33 @@ class _nnUNetTrainer25DBase(nnUNetTrainer):
             architecture.get("_kw_requires_import", []),
         )
 
+    def _do_i_compile(self):
+        # torch.compile is stable for the stock trainers we use, but it has
+        # repeatedly produced opaque runtime errors for the custom 2.5D
+        # trainers on this project. Keep 2.5D on eager mode for reliability.
+        return False
+
+    def perform_actual_validation(self, save_probabilities: bool = False):
+        """
+        The stock nnU-Net validation path builds a standard nnUNetPredictor and
+        forwards raw 2D slices through it. That predictor assumes the original
+        single-slice channel layout, but our 2.5D trainers expand each sample to
+        3/5 stacked slices and therefore require 3/5 input channels. The result
+        is a channel-mismatch crash after training is already complete.
+
+        Until we implement a dedicated 2.5D predictor/export path, skip the
+        stock post-training validation/export stage here. The epoch-wise
+        validation metrics from the training dataloader are still computed and
+        logged normally during training, and checkpoints are still written.
+        """
+        self.print_to_log_file(
+            "Skipping stock perform_actual_validation for custom 2.5D trainer "
+            "because nnUNetPredictor expects single-slice inputs. "
+            f"Requested save_probabilities={save_probabilities}.",
+            also_print_to_console=True,
+        )
+        self.set_deep_supervision_enabled(True)
+
     def initialize(self):
         if self.was_initialized:
             raise RuntimeError(
