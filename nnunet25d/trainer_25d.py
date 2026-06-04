@@ -34,7 +34,9 @@ class _nnUNetTrainer25DBase(nnUNetTrainer):
         )
         self.num_input_channels = base_num_input_channels * self.num_input_slices
 
-        self.network = self.build_network_architecture(
+        # Call the current nnU-Net base implementation explicitly so the
+        # custom 2.5D trainers stay compatible across nnU-Net API changes.
+        self.network = nnUNetTrainer.build_network_architecture(
             self.configuration_manager.network_arch_class_name,
             self.configuration_manager.network_arch_init_kwargs,
             self.configuration_manager.network_arch_init_kwargs_req_import,
