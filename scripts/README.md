@@ -9,8 +9,8 @@ This directory contains the production entry points for Linux and AWS execution.
 - `train.sh`: run model training from a config
 - `infer.sh`: run inference from a config
 - `evaluate.sh`: aggregate metrics from a config
-- `run_experiment.sh`: execute preprocess, train, infer, and evaluate in sequence
-- `run_all.sh`: run all predefined experiments
+- `run_experiment.sh`: execute preprocess, train, infer, and evaluate in sequence for supported configs
+- `run_all.sh`: run the predefined end-to-end baseline experiments
 - `collect_results.sh`: merge per-experiment case metrics into one CSV
 - `analyze.sh`: generate summary tables, plots, and pairwise statistical tests
 
@@ -19,6 +19,17 @@ This directory contains the production entry points for Linux and AWS execution.
 - `run_experiment.py`: central config-driven Python CLI
 - `install_extension.py`: install custom 2.5D trainers into the active nnU-Net environment
 - `prepare_inference_data.py`: stage fold-specific validation inputs and labels for inference/evaluation
+
+## 2.5D note
+
+The custom 2.5D configurations currently support `train` only.
+Use:
+
+```bash
+python scripts/run_experiment.py train --config naive_25d_3slice
+```
+
+Do not run the custom 2.5D configs through `run_experiment.sh` or `run_all.sh`.
 
 ## Windows helper scripts
 

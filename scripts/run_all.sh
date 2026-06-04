@@ -6,8 +6,6 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
 CONFIGS=(
   baseline_2d
   baseline_3d
-  naive_25d_3slice
-  naive_25d_5slice
 )
 
 for config_name in "${CONFIGS[@]}"; do

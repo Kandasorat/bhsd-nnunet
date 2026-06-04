@@ -198,13 +198,13 @@ Main CLI entrypoints for running the reproducible pipeline.
   Builds fold-specific validation inference directories from `imagesTr/labelsTr` using `splits_final.json`.
 
 - `scripts/run_all.sh`
-  Runs all predefined experiment configs in sequence.
+  Runs the predefined end-to-end baseline experiment configs in sequence. Custom 2.5D configs are intentionally excluded because they currently support training only.
 
 - `scripts/run_experiment.py`
   Central Python experiment runner. Handles preprocess, train, infer, evaluate, and run-all stages from a YAML config.
 
 - `scripts/run_experiment.sh`
-  Linux bash entrypoint that calls `run_experiment.py run_all`.
+  Linux bash entrypoint that calls `run_experiment.py run_all` for supported configs. Custom 2.5D configs must use `python scripts/run_experiment.py train --config ...` instead.
 
 - `scripts/setup_env.sh`
   Creates or updates the conda environment from `environment.yml`.
@@ -257,6 +257,7 @@ Records the previously completed local smoke tests for:
 ### What is still a work in progress
 
 - Full end-to-end server validation for all experiment variants
+- Dedicated post-training inference/evaluation support for the custom 2.5D trainers
 - Final spacing-aware 2.5D research logic
 - Future transformer/anisotropic extensions
 - Possible cleanup or rewrite of `.github/copilot-instructions.md`
