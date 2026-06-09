@@ -1,0 +1,17 @@
+experiment_name: csam_3slide
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer25DCSAM
+folds: [0]
+device: cuda
+save_npz: false
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+plans: nnUNetPlans
+slice_mode: csam
+num_input_slices: 3
+ground_truth_dir: null
+inference_input: null

@@ -47,7 +47,7 @@ Examples:
 ```bash
 bash scripts/preprocess.sh baseline_2d
 bash scripts/train.sh baseline_2d
-bash scripts/train.sh naive_25d_3slice
+bash scripts/train.sh baseline_25d_3slide
 bash scripts/infer.sh baseline_3d
 bash scripts/evaluate.sh baseline_3d
 ```

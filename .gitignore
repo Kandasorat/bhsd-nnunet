@@ -9,8 +9,15 @@ __pycache__/
 *.pyd
 .DS_Store
 Thumbs.db
+<<<<<<< HEAD
 .vscode/
 .idea/
 *.log
 *.tmp
 *.bak
+=======
+results/*
+!results/README.md
+aws_upload_bundle/
+repo/
+>>>>>>> 15202b5 (Add BHSD experiment pipeline and CSAM 2.5D trainers)

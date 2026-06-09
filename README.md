@@ -1,4 +1,4 @@
-﻿# BHSD nnU-Net Reproducible Research Pipeline
+# BHSD nnU-Net Reproducible Research Pipeline
 
 This repository contains a reproducible MSc dissertation pipeline for intracranial hemorrhage segmentation on the BHSD dataset using nnU-Net v2.
 
@@ -6,7 +6,8 @@ The codebase is organized to support:
 
 - data preparation
 - baseline 2D and 3D training
-- 2.5D custom trainer experiments
+- legacy 2.5D 3-slide custom trainer experiments
+- CSAM-based 2.5D feature-fusion experiments
 - inference
 - quantitative evaluation
 - statistical comparison
@@ -19,7 +20,7 @@ The codebase is organized to support:
 ```text
 configs/        experiment configurations
 scripts/        bash and python entrypoints
-nnunet25d/      custom 2.5D extensions for nnU-Net v2
+nnunet25d/      custom 2.5D and CSAM nnU-Net v2 extensions
 evaluation/     metrics, aggregation, statistical tests
 analysis/       table and figure orchestration
 figures/        plotting scripts
@@ -83,12 +84,13 @@ export nnUNet_results=/path/to/nnUNet_data/nnUNet_results
 python scripts/install_extension.py
 ```
 
-4. Run an experiment:
+4. Run experiments:
 
 ```bash
 bash scripts/run_experiment.sh baseline_2d
 bash scripts/run_experiment.sh baseline_3d
-python scripts/run_experiment.py train --config naive_25d_3slice
+python scripts/run_experiment.py train --config baseline_25d_3slide
+python scripts/run_experiment.py train --config csam_3slide
 ```
 
 ## Notes

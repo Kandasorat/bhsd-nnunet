@@ -1,4 +1,4 @@
-﻿# AWS Upload and First-Run Guide
+# AWS Upload and First-Run Guide
 
 This guide is for preparing the local project on Windows and then uploading it to a Linux GPU server.
 
@@ -78,7 +78,7 @@ Run in this order:
 bash scripts/preprocess.sh baseline_2d
 bash scripts/train.sh baseline_2d
 bash scripts/train.sh baseline_3d
-bash scripts/train.sh naive_25d_3slice
+bash scripts/train.sh baseline_25d_3slide
 ```
 
 After training, continue with:
