@@ -25,6 +25,17 @@ This directory contains the production entry points for Linux and AWS execution,
 - legacy custom 2.5D baseline: `baseline_25d_3slide`
 - new attention-based models: `csam_bottleneck_3slide`, `csam_3slide`, `csam_5slide`
 
+## Server reminder
+
+After any change under `nnunet25d/`, refresh the server side with:
+
+```bash
+git pull origin main
+python scripts/install_extension.py
+```
+
+For Linux / Google Cloud VM training examples and `tmux` usage, see `docs/run_25d_feature_fusion_server.md`.
+
 ## Windows helper scripts
 
 - `package_aws_bundle.ps1`: build a local AWS upload bundle; default is code-only, add `-IncludeData` only when needed

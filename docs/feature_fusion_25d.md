@@ -75,7 +75,7 @@ python scripts/run_experiment.py train --config csam_3slide
 python scripts/run_experiment.py train --config csam_5slide
 ```
 
-Direct nnU-Net server commands are documented in [run_25d_feature_fusion_server.md](/C:/Users/92127/OneDrive%20-%20UNSW/project_linpeng/code/docs/run_25d_feature_fusion_server.md).
+Direct Linux server and `tmux` commands are documented in [run_25d_feature_fusion_server.md](/C:/Users/92127/OneDrive%20-%20UNSW/project_linpeng/code/docs/run_25d_feature_fusion_server.md).
 
 ## Output Folders
 
