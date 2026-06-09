@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pydoc import locate
+
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -34,7 +36,11 @@ class _nnUNetTrainer25DFeatureFusionBase(_nnUNetTrainer25DBase):
         self.num_input_channels = base_num_input_channels * self.num_input_slices
         self.num_input_channels_per_slice = base_num_input_channels
 
-        _, arch_init_kwargs, _ = self._resolve_architecture_definition()
+        _, arch_init_kwargs, arch_init_kwargs_req_import = self._resolve_architecture_definition()
+        arch_init_kwargs = dict(arch_init_kwargs)
+        for key in arch_init_kwargs_req_import:
+            if arch_init_kwargs.get(key) is not None:
+                arch_init_kwargs[key] = locate(arch_init_kwargs[key])
         if len(self.configuration_manager.patch_size) != 2:
             raise RuntimeError(f"{self.__class__.__name__} only supports 2D configurations")
 
