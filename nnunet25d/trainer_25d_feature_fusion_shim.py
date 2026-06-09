@@ -1,4 +1,4 @@
-from nnunet25d.trainer_25d_feature_fusion import (
+from nnunet25d.csam.trainer_25d_feature_fusion_shim import (
     nnUNetTrainer25DCSAM,
     nnUNetTrainer25DCSAMBottleneck,
     nnUNetTrainer25DCSAM_5Slide,

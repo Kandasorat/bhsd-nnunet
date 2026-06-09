@@ -18,8 +18,10 @@ def main() -> None:
 
     package_dst = site_packages_root / "nnunet25d"
     package_dst.mkdir(parents=True, exist_ok=True)
-    for src in package_root.glob("*.py"):
-        copy_file(src, package_dst / src.name)
+    for src in package_root.rglob("*.py"):
+        if "__pycache__" in src.parts:
+            continue
+        copy_file(src, package_dst / src.relative_to(package_root))
 
     copy_file(package_root / "dataloader_25d.py", nnunet_root / "training" / "dataloading" / "dataloader_25d.py")
     copy_file(package_root / "trainer_25d.py", nnunet_root / "training" / "nnUNetTrainer" / "trainer_25d.py")

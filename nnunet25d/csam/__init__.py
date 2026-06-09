@@ -1,10 +1,5 @@
-"""Custom 2.5D nnU-Net extensions for BHSD research experiments."""
+"""Center-guided slice attention models for BHSD 2.5D nnU-Net experiments."""
 
-from nnunet25d.baseline.trainer_25d import (
-    nnUNetTrainer_25D,
-    nnUNetTrainer_25D_5Slice,
-    nnUNetTrainer_SpacingAware25D,
-)
 from nnunet25d.csam.feature_fusion_25d import (
     BottleneckFeatureFusion25DUNet,
     CenterGuidedSliceFusion,
@@ -25,9 +20,7 @@ __all__ = [
     "BottleneckFeatureFusion25DUNet",
     "CenterGuidedSliceFusion",
     "FeatureFusion25DUNet",
-    "nnUNetTrainer_25D",
-    "nnUNetTrainer_25D_5Slice",
-    "nnUNetTrainer_SpacingAware25D",
+    "MultiScaleFeatureFusion25DUNet",
     "nnUNetTrainer25DCSAM",
     "nnUNetTrainer25DCSAMBottleneck",
     "nnUNetTrainer25DCSAM_5Slide",
@@ -35,5 +28,4 @@ __all__ = [
     "nnUNetTrainer25DFeatureFusionBottleneck",
     "nnUNetTrainer25DFeatureFusionMultiScale",
     "nnUNetTrainer25DFeatureFusionMultiScale_5Slice",
-    "MultiScaleFeatureFusion25DUNet",
 ]

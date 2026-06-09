@@ -1,3 +1,5 @@
+"""Baseline 2.5D BHSD nnU-Net trainers."""
+
 from nnunet25d.baseline.trainer_25d import (
     _nnUNetTrainer25DBase,
     nnUNetTrainer_25D,
