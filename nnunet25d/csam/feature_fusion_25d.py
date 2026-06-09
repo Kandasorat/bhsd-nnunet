@@ -138,7 +138,7 @@ class FeatureFusion25DUNet(nn.Module):
                 raise ValueError(
                     f"Expected {self.num_input_slices * self.input_channels_per_slice} channels, got {num_channels}"
                 )
-            x = x.view(batch_size, self.num_input_slices, self.input_channels_per_slice, *x.shape[-2:])
+            x = x.reshape(batch_size, self.num_input_slices, self.input_channels_per_slice, *x.shape[-2:])
             return x, batch_size
 
         if x.ndim == 5:
@@ -163,7 +163,7 @@ class FeatureFusion25DUNet(nn.Module):
         fused_skips: List[torch.Tensor] = []
         attention_weights: Dict[int, torch.Tensor] = {}
         for stage_idx, stage_feature in enumerate(slice_skips):
-            reshaped = stage_feature.view(
+            reshaped = stage_feature.reshape(
                 batch_size,
                 self.num_input_slices,
                 stage_feature.shape[1],
@@ -172,7 +172,7 @@ class FeatureFusion25DUNet(nn.Module):
             )
             if stage_idx in self.fusion_stage_indices:
                 fused_feature, scale_attention = self.fusion_modules[str(stage_idx)](reshaped, return_attention=True)
-                attention_weights[stage_idx] = scale_attention
+                attention_weights[stage_idx] = scale_attention.detach()
             else:
                 fused_feature = reshaped[:, self.num_input_slices // 2]
             fused_skips.append(fused_feature)
@@ -180,7 +180,9 @@ class FeatureFusion25DUNet(nn.Module):
         if self.fusion_mode == "bottleneck":
             self._last_attention_weights = attention_weights[self.fusion_stage_indices[0]]
         else:
-            self._last_attention_weights = attention_weights
+            self._last_attention_weights = {
+                stage_idx: stage_attention.detach() for stage_idx, stage_attention in attention_weights.items()
+            }
         return self.decoder(fused_skips)
 
     def compute_conv_feature_map_size(self, input_size: Sequence[int]):
@@ -192,7 +194,7 @@ class FeatureFusion25DUNet(nn.Module):
 
     @staticmethod
     def initialize(module):
-        InitWeights_He(1e-2)(module)
+        module.apply(InitWeights_He(1e-2))
 
 
 class BottleneckFeatureFusion25DUNet(FeatureFusion25DUNet):

@@ -40,7 +40,12 @@ class _nnUNetTrainer25DFeatureFusionBase(_nnUNetTrainer25DBase):
         arch_init_kwargs = dict(arch_init_kwargs)
         for key in arch_init_kwargs_req_import:
             if arch_init_kwargs.get(key) is not None:
-                arch_init_kwargs[key] = locate(arch_init_kwargs[key])
+                resolved = locate(arch_init_kwargs[key])
+                if resolved is None:
+                    raise ImportError(
+                        f"Could not resolve architecture argument {key}: {arch_init_kwargs[key]}"
+                    )
+                arch_init_kwargs[key] = resolved
         if len(self.configuration_manager.patch_size) != 2:
             raise RuntimeError(f"{self.__class__.__name__} only supports 2D configurations")
 
