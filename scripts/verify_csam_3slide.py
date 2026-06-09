@@ -12,9 +12,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 NNUNET_DATA_ROOT = PROJECT_ROOT / "nnUNet_data"
-os.environ["nnUNet_raw"] = str(NNUNET_DATA_ROOT / "nnUNet_raw")
-os.environ["nnUNet_preprocessed"] = str(NNUNET_DATA_ROOT / "nnUNet_preprocessed")
-os.environ["nnUNet_results"] = str(NNUNET_DATA_ROOT / "nnUNet_results")
+os.environ.setdefault("nnUNet_raw", str(NNUNET_DATA_ROOT / "nnUNet_raw"))
+os.environ.setdefault("nnUNet_preprocessed", str(NNUNET_DATA_ROOT / "nnUNet_preprocessed"))
+os.environ.setdefault("nnUNet_results", str(NNUNET_DATA_ROOT / "nnUNet_results"))
 
 from nnunet25d.csam.feature_fusion_25d import (  # noqa: E402
     BottleneckFeatureFusion25DUNet,
@@ -26,6 +26,13 @@ from nnunet25d.csam.trainer_25d_feature_fusion import nnUNetTrainer25DCSAM  # no
 
 def print_header(title: str) -> None:
     print(f"\n=== {title} ===")
+
+
+def print_environment() -> None:
+    print_header("Environment")
+    print("nnUNet_raw:", os.environ["nnUNet_raw"])
+    print("nnUNet_preprocessed:", os.environ["nnUNet_preprocessed"])
+    print("nnUNet_results:", os.environ["nnUNet_results"])
 
 
 def summarize_outputs(outputs: Any):
@@ -245,6 +252,7 @@ def validation_behavior_checks() -> None:
 
 
 def main() -> None:
+    print_environment()
     import_checks()
     direct_model_checks()
     bottleneck_attention_check()
