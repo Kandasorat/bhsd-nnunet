@@ -20,7 +20,16 @@ class BHSDEarlyStoppingMixin:
         self._early_stop_triggered = False
 
     def _metric_history(self) -> List[float]:
-        return list(self.logger.my_fantastic_logging.get(self.early_stop_metric, []))
+        logging_state = getattr(self.logger, "my_fantastic_logging", None)
+        if isinstance(logging_state, dict):
+            return list(logging_state.get(self.early_stop_metric, []))
+
+        if hasattr(self.logger, "get_checkpoint"):
+            checkpoint_state = self.logger.get_checkpoint()
+            if isinstance(checkpoint_state, dict):
+                return list(checkpoint_state.get(self.early_stop_metric, []))
+
+        return []
 
     def _reset_early_stopping_state(self) -> None:
         self._early_stop_best = None
