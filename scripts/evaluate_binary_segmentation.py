@@ -34,6 +34,12 @@ def _validate_binary_labels(array: np.ndarray, path: Path, label_name: str) -> N
         raise ValueError(f"{label_name} at {path} contains non-binary labels: {sorted(unique_values)}")
 
 
+def _validate_bhsd_reference_labels(array: np.ndarray, path: Path) -> None:
+    unique_values = set(int(v) for v in np.unique(array))
+    if not unique_values.issubset({0, 1, 2, 3, 4, 5}):
+        raise ValueError(f"Ground-truth at {path} contains unexpected BHSD labels: {sorted(unique_values)}")
+
+
 def _slice_metrics(pred: np.ndarray, gt: np.ndarray) -> tuple[float, float]:
     gt_positive = gt.reshape(gt.shape[0], -1).any(axis=1)
     pred_positive = pred.reshape(pred.shape[0], -1).any(axis=1)
@@ -74,11 +80,11 @@ def evaluate_binary_folder(pred_dir: Path, gt_dir: Path, model_name: str, out_di
         if pred.shape != gt.shape:
             raise ValueError(f"Shape mismatch for {prediction_path.name}: pred {pred.shape}, gt {gt.shape}")
 
-        _validate_binary_labels(gt, gt_path, "Ground-truth")
+        _validate_bhsd_reference_labels(gt, gt_path)
         _validate_binary_labels(pred, prediction_path, "Prediction")
 
         pred_bool = pred.astype(bool)
-        gt_bool = gt.astype(bool)
+        gt_bool = gt > 0
         metrics = binary_metrics(pred_bool, gt_bool, compute_hausdorff=True)
         intersection_voxels = int(np.logical_and(pred_bool, gt_bool).sum())
         pred_positive_voxels = int(pred_bool.sum())

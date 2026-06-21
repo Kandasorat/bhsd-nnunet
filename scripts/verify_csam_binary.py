@@ -12,9 +12,18 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 NNUNET_DATA_ROOT = PROJECT_ROOT / "nnUNet_data"
-os.environ["nnUNet_raw"] = str(NNUNET_DATA_ROOT / "nnUNet_raw")
-os.environ["nnUNet_preprocessed"] = str(NNUNET_DATA_ROOT / "nnUNet_preprocessed")
-os.environ["nnUNet_results"] = str(NNUNET_DATA_ROOT / "nnUNet_results")
+
+
+def _resolve_data_env(var_name: str, fallback: Path) -> None:
+    current = os.environ.get(var_name)
+    if current and Path(current).exists():
+        return
+    os.environ[var_name] = str(fallback)
+
+
+_resolve_data_env("nnUNet_raw", NNUNET_DATA_ROOT / "nnUNet_raw")
+_resolve_data_env("nnUNet_preprocessed", NNUNET_DATA_ROOT / "nnUNet_preprocessed")
+_resolve_data_env("nnUNet_results", NNUNET_DATA_ROOT / "nnUNet_results")
 
 from nnunet25d.csam.feature_fusion_25d import MultiScaleFeatureFusion25DUNet  # noqa: E402
 
@@ -62,14 +71,14 @@ def main() -> None:
     arch_dataset = "Dataset002_BHSD_Binary" if has_preprocessed_binary_dataset() else "Dataset001_BHSD"
     model = MultiScaleFeatureFusion25DUNet(
         input_channels=1,
-        num_classes=2,
+        num_classes=1,
         num_input_slices=3,
         deep_supervision=True,
         **resolve_arch_kwargs(arch_dataset),
     )
     outputs = model(torch.randn(2, 3, 256, 256))
     first = outputs[0] if isinstance(outputs, (list, tuple)) else outputs
-    assert tuple(first.shape) == (2, 2, 256, 256), tuple(first.shape)
+    assert tuple(first.shape) == (2, 1, 256, 256), tuple(first.shape)
     print("binary_output_shape:", tuple(first.shape))
     print("binary_arch_source_dataset:", arch_dataset)
 
@@ -80,10 +89,12 @@ def main() -> None:
 
     trainer = get_trainer()
     trainer.initialize()
-    assert trainer.label_manager.num_segmentation_heads == 2
+    assert trainer.label_manager.has_regions is True
+    assert trainer.label_manager.num_segmentation_heads == 1
     assert trainer.num_input_channels == 3
     assert trainer.num_input_channels_per_slice == 1
     print("binary_dataset_preprocessed: ready")
+    print("binary_has_regions:", trainer.label_manager.has_regions)
     print("binary_num_segmentation_heads:", trainer.label_manager.num_segmentation_heads)
     print("binary_trainer_network:", type(trainer.network).__name__)
 

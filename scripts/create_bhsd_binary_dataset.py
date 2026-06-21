@@ -13,6 +13,7 @@ import SimpleITK as sitk
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 VALID_SOURCE_LABELS = {0, 1, 2, 3, 4, 5}
+HEMORRHAGE_REGION_LABELS = (1, 2, 3, 4, 5)
 
 
 def _copy_tree_files(src_dir: Path, dst_dir: Path, pattern: str = "*.nii.gz") -> int:
@@ -51,14 +52,18 @@ def _assert_subset(values: Iterable[int], allowed: set[int], path: Path, label_t
         raise ValueError(f"{label_type} at {path} contains unexpected labels: {unexpected}")
 
 
-def _build_binary_dataset_json(src_dataset_json: dict, num_training: int) -> dict:
+def _build_binary_region_dataset_json(src_dataset_json: dict, num_training: int) -> dict:
     return {
         "channel_names": {"0": "CT"},
-        "labels": {"background": 0, "hemorrhage": 1},
+        "labels": {
+            "background": 0,
+            "hemorrhage": list(HEMORRHAGE_REGION_LABELS),
+        },
+        "regions_class_order": [1],
         "numTraining": int(num_training),
         "file_ending": src_dataset_json.get("file_ending", ".nii.gz"),
-        "name": "BHSD_Binary",
-        "dataset_name": "BHSD_Binary",
+        "name": "BHSD_BinaryRegions",
+        "dataset_name": "BHSD_BinaryRegions",
     }
 
 
@@ -67,7 +72,7 @@ def create_binary_dataset(src_dataset: Path, dst_dataset: Path, output_csv: Path
         raise FileNotFoundError(f"Source dataset not found: {src_dataset}")
     if dst_dataset.exists():
         raise FileExistsError(
-            f"Destination dataset already exists: {dst_dataset}. Refusing to overwrite the binary dataset."
+            f"Destination dataset already exists: {dst_dataset}. Refusing to overwrite the binary region dataset."
         )
 
     src_images_tr = src_dataset / "imagesTr"
@@ -103,13 +108,14 @@ def create_binary_dataset(src_dataset: Path, dst_dataset: Path, output_csv: Path
         raise RuntimeError(f"Missing labelsTr files for case IDs: {missing_labels[:10]}")
 
     _copy_tree_files(src_images_tr, dst_images_tr)
+    _copy_tree_files(src_labels_tr, dst_labels_tr)
     if src_images_ts.exists():
         _copy_tree_files(src_images_ts, dst_images_ts)
 
     rows = []
     foreground_voxels_per_positive_case: list[int] = []
     total_foreground_voxels = 0
-    binary_positive_cases = 0
+    positive_cases = 0
 
     for case_id, image_group in sorted(image_case_ids.items()):
         label_path = label_case_ids[case_id]
@@ -126,34 +132,27 @@ def create_binary_dataset(src_dataset: Path, dst_dataset: Path, output_csv: Path
                 f"Shape mismatch for case {case_id}: image shape {image_shape} vs label shape {label_shape}"
             )
 
-        binary_array = (label_array > 0).astype(np.uint8)
-        binary_unique = _unique_int_values(binary_array)
-        _assert_subset(binary_unique, {0, 1}, label_path, "Binary label")
-
-        binary_foreground_voxels = int(binary_array.sum())
-        is_positive_case = binary_foreground_voxels > 0
+        hemorrhage_region = np.isin(label_array, HEMORRHAGE_REGION_LABELS)
+        hemorrhage_voxels = int(hemorrhage_region.sum())
+        is_positive_case = hemorrhage_voxels > 0
         if is_positive_case:
-            binary_positive_cases += 1
-            foreground_voxels_per_positive_case.append(binary_foreground_voxels)
-        total_foreground_voxels += binary_foreground_voxels
-
-        binary_label_image = sitk.GetImageFromArray(binary_array)
-        binary_label_image.CopyInformation(label_image)
-        sitk.WriteImage(binary_label_image, str(dst_labels_tr / label_path.name))
+            positive_cases += 1
+            foreground_voxels_per_positive_case.append(hemorrhage_voxels)
+        total_foreground_voxels += hemorrhage_voxels
 
         rows.append(
             {
                 "case_id": case_id,
                 "original_unique_labels": "|".join(str(v) for v in original_unique),
-                "binary_unique_labels": "|".join(str(v) for v in binary_unique),
+                "hemorrhage_region_labels": "|".join(str(v) for v in HEMORRHAGE_REGION_LABELS),
                 "image_shape": "x".join(str(v) for v in image_shape),
                 "label_shape": "x".join(str(v) for v in label_shape),
-                "binary_foreground_voxels": binary_foreground_voxels,
+                "hemorrhage_region_voxels": hemorrhage_voxels,
                 "is_positive_case": bool(is_positive_case),
             }
         )
 
-    binary_dataset_json = _build_binary_dataset_json(src_dataset_json, num_training=len(label_case_ids))
+    binary_dataset_json = _build_binary_region_dataset_json(src_dataset_json, num_training=len(label_case_ids))
     with (dst_dataset / "dataset.json").open("w", encoding="utf-8") as f:
         json.dump(binary_dataset_json, f, indent=2)
         f.write("\n")
@@ -167,11 +166,11 @@ def create_binary_dataset(src_dataset: Path, dst_dataset: Path, output_csv: Path
     max_fg = max(foreground_voxels_per_positive_case) if foreground_voxels_per_positive_case else 0
 
     print(f"training_cases: {len(label_case_ids)}")
-    print(f"binary_positive_cases: {binary_positive_cases}")
-    print(f"total_binary_foreground_voxels: {total_foreground_voxels}")
-    print(f"binary_foreground_voxels_per_positive_case_min: {min_fg}")
-    print(f"binary_foreground_voxels_per_positive_case_median: {median_fg}")
-    print(f"binary_foreground_voxels_per_positive_case_max: {max_fg}")
+    print(f"hemorrhage_positive_cases: {positive_cases}")
+    print(f"total_hemorrhage_region_voxels: {total_foreground_voxels}")
+    print(f"hemorrhage_region_voxels_per_positive_case_min: {min_fg}")
+    print(f"hemorrhage_region_voxels_per_positive_case_median: {median_fg}")
+    print(f"hemorrhage_region_voxels_per_positive_case_max: {max_fg}")
     print(f"dataset_check_csv: {output_csv}")
     return df
 

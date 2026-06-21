@@ -13,19 +13,20 @@ Five-class segmentation uses:
 Binary hemorrhage segmentation uses:
 
 - dataset: `Dataset002_BHSD_Binary`
-- labels: `0 background`, `1 hemorrhage`
+- raw labels on disk stay: `0 background`, `1 epidural`, `2 intraparenchymal`, `3 intraventricular`, `4 subarachnoid`, `5 subdural`
+- training target is one nnU-Net region: `hemorrhage = {1,2,3,4,5}`
 - headline metric: binary hemorrhage Dice
 
 Warning:
 Binary hemorrhage Dice is not directly comparable with strict five-class Dice because binary training merges EDH, IPH, IVH, SAH and SDH into one foreground class.
 
-## 1. Create the Binary Raw Dataset
+## 1. Create the Binary Region Dataset
 
 Source dataset stays unchanged:
 
 - `nnUNet_data/nnUNet_raw/Dataset001_BHSD`
 
-Create the binary raw dataset:
+Create the binary region-training dataset:
 
 ```powershell
 cd "C:\Users\92127\OneDrive - UNSW\project_linpeng\code"
@@ -34,20 +35,28 @@ cd "C:\Users\92127\OneDrive - UNSW\project_linpeng\code"
   --dst-dataset "C:\Users\92127\OneDrive - UNSW\project_linpeng\code\nnUNet_data\nnUNet_raw\Dataset002_BHSD_Binary"
 ```
 
+If a previous incomplete `Dataset002_BHSD_Binary` already exists from the older relabel-based workflow, remove that old partial dataset first before recreating it with the region-based definition.
+
 Expected output CSV:
 
 - `outputs/bhsd_binary_dataset_check.csv`
 
 ## 2. Sanity Check Result
 
-The conversion script prints:
+The dataset creation script:
+
+- copies `imagesTr`, `labelsTr`, and `imagesTs` unchanged
+- preserves the original multi-class label maps on disk
+- writes a new `dataset.json` that defines one `hemorrhage` region over labels `{1,2,3,4,5}`
+
+It prints:
 
 - number of training cases
-- number of binary-positive cases
-- total binary foreground voxels
-- min/median/max foreground voxels per positive case
+- number of hemorrhage-positive cases
+- total hemorrhage-region voxels
+- min/median/max hemorrhage-region voxels per positive case
 
-The binary labels must contain only `{0,1}`.
+The copied label maps still contain only the original BHSD values `{0,1,2,3,4,5}`.
 
 ## 3. Plan and Preprocess
 
@@ -104,8 +113,8 @@ Checks covered:
 
 - direct import of `nnUNetTrainer25DCSAM`
 - shim import through `nnunetv2`
-- binary `num_segmentation_heads == 2`
-- binary CSAM highest-resolution output shape `[2, 2, 256, 256]`
+- region-based `num_segmentation_heads == 1`
+- region-based CSAM highest-resolution output shape `[2, 1, 256, 256]`
 - shared-encoder 2.5D input contract remains unchanged
 
 ## 6. Validation Commands
@@ -174,15 +183,15 @@ Outputs:
 - `binary_segmentation_per_case.csv`
 - `binary_segmentation_summary.csv`
 
-The evaluator enforces exact case-ID matching between `--gt-dir` and `--pred-dir`, rejects labels outside `{0,1}`, and reports Hausdorff distance when the dependency is available and both masks are non-empty.
+The evaluator enforces exact case-ID matching between `--gt-dir` and `--pred-dir`, accepts original BHSD ground-truth labels `{0,1,2,3,4,5}` by collapsing `>0` into one hemorrhage foreground, requires binary predictions `{0,1}`, and reports Hausdorff distance when the dependency is available and both masks are non-empty.
 
 ## 9. Difference From Merged Binary Evaluation of Five-Class Models
 
 This binary retraining workflow is different from taking five-class model outputs and post-hoc merging them into one foreground label.
 
-Here the models are retrained from scratch on:
+Here the models are retrained from scratch on a separate nnU-Net dataset entry that keeps the original BHSD label maps on disk but defines one hemorrhage region in `dataset.json`:
 
 - dataset: `Dataset002_BHSD_Binary`
-- labels: `0 background`, `1 hemorrhage`
+- region target: `hemorrhage = {1,2,3,4,5}`
 
-So the resulting Dice is a training-task-specific binary hemorrhage Dice, not a relabeled five-class Dice.
+So the resulting Dice is a training-task-specific binary hemorrhage Dice under nnU-Net region-based training, not a relabeled five-class Dice.
