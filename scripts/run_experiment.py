@@ -242,6 +242,14 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
     write_metadata(config, stage)
     env = os.environ.copy()
     env["nnUNet_n_proc_DA"] = str(config.get("nnunet_n_proc_da", 4))
+    if "early_stop_patience" in config:
+        env["BHSD_EARLY_STOP_PATIENCE"] = str(config["early_stop_patience"])
+    if "early_stop_min_delta" in config:
+        env["BHSD_EARLY_STOP_MIN_DELTA"] = str(config["early_stop_min_delta"])
+    if "early_stop_metric" in config:
+        env["BHSD_EARLY_STOP_METRIC"] = str(config["early_stop_metric"])
+    if "max_num_epochs" in config:
+        env["BHSD_MAX_EPOCHS"] = str(config["max_num_epochs"])
     for key, path in resolved_paths.items():
         env[key] = str(path)
 
@@ -286,9 +294,9 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
         append_row_to_csv(exp_dir / "stage_metrics.csv", stage_metrics_row)
 
 
-def maybe_install_25d(config: Dict[str, Any]) -> None:
+def maybe_install_custom_trainers(config: Dict[str, Any]) -> None:
     trainer = config.get("trainer", "")
-    if "25D" in trainer or "SpacingAware25D" in trainer:
+    if trainer and trainer != "nnUNetTrainer":
         subprocess.run([sys.executable, str(PROJECT_ROOT / "nnunet25d" / "install_extension.py")], check=True)
 
 
@@ -333,7 +341,7 @@ def _train_command(config: Dict[str, Any], fold: int) -> List[str]:
 
 def train(config: Dict[str, Any]) -> None:
     set_seed(int(config.get("seed", 3407)))
-    maybe_install_25d(config)
+    maybe_install_custom_trainers(config)
     for fold in config.get("folds", [0]):
         run_command(_train_command(config, int(fold)), config, f"train_fold_{fold}")
 
@@ -376,7 +384,7 @@ def infer(config: Dict[str, Any]) -> None:
             "a dedicated 2.5D predictor before running infer/evaluate."
         )
 
-    maybe_install_25d(config)
+    maybe_install_custom_trainers(config)
     for fold in config.get("folds", [0]):
         if not config.get("inference_input"):
             staging_root = results_dir_for_config(config) / "prepared_inference"

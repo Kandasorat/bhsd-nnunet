@@ -45,6 +45,53 @@ class CenterGuidedSliceFusion(nn.Module):
         return fused
 
 
+class TriDirectionalCSAMFusion(nn.Module):
+    def __init__(self, channels: int, num_slices: int, reduction: int = 8):
+        super().__init__()
+        self.channels = channels
+        self.num_slices = num_slices
+        self.slice_fusion = CenterGuidedSliceFusion(channels, num_slices)
+
+        hidden_channels = max(channels // reduction, 1)
+        self.channel_mlp = nn.Sequential(
+            nn.Linear(channels * 2, hidden_channels, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(hidden_channels, channels, bias=False),
+        )
+        self.spatial_conv = nn.Conv2d(4, 1, kernel_size=7, padding=3, bias=False)
+
+    def forward(self, x: torch.Tensor, return_attention: bool = False):
+        center_feature = x[:, self.slice_fusion.center_index]
+        slice_fused, slice_attention = self.slice_fusion(x, return_attention=True)
+
+        center_context = center_feature.mean(dim=(-1, -2))
+        fused_context = slice_fused.mean(dim=(-1, -2))
+        channel_attention = torch.sigmoid(
+            self.channel_mlp(torch.cat([center_context, fused_context], dim=1))
+        ).unsqueeze(-1).unsqueeze(-1)
+
+        spatial_features = torch.cat(
+            [
+                slice_fused.mean(dim=1, keepdim=True),
+                slice_fused.amax(dim=1, keepdim=True),
+                center_feature.mean(dim=1, keepdim=True),
+                torch.abs(slice_fused - center_feature).mean(dim=1, keepdim=True),
+            ],
+            dim=1,
+        )
+        spatial_attention = torch.sigmoid(self.spatial_conv(spatial_features))
+
+        fused = center_feature + slice_fused * channel_attention * spatial_attention
+
+        if return_attention:
+            return fused, {
+                "slice": slice_attention,
+                "channel": channel_attention,
+                "spatial": spatial_attention,
+            }
+        return fused
+
+
 class FeatureFusion25DUNet(nn.Module):
     def __init__(
         self,
@@ -83,6 +130,7 @@ class FeatureFusion25DUNet(nn.Module):
         self.deep_supervision = deep_supervision
         self.fusion_mode = fusion_mode
         self._last_attention_weights = None
+        self._last_attention_details = None
 
         self.encoder = PlainConvEncoder(
             input_channels=input_channels,
@@ -111,7 +159,7 @@ class FeatureFusion25DUNet(nn.Module):
 
         self.fusion_modules = nn.ModuleDict(
             {
-                str(stage_idx): CenterGuidedSliceFusion(self.encoder.output_channels[stage_idx], num_input_slices)
+                str(stage_idx): TriDirectionalCSAMFusion(self.encoder.output_channels[stage_idx], num_input_slices)
                 for stage_idx in self.fusion_stage_indices
             }
         )
@@ -128,8 +176,12 @@ class FeatureFusion25DUNet(nn.Module):
         return self._last_attention_weights
 
     @property
+    def last_attention_details(self):
+        return self._last_attention_details
+
+    @property
     def slice_fusion(self):
-        return self.fusion_modules[str(len(self.encoder.output_channels) - 1)]
+        return self.fusion_modules[str(len(self.encoder.output_channels) - 1)].slice_fusion
 
     def _prepare_input(self, x: torch.Tensor) -> Tuple[torch.Tensor, int]:
         if x.ndim == 4:
@@ -161,7 +213,7 @@ class FeatureFusion25DUNet(nn.Module):
         slice_skips = self.encoder(flat_input)
 
         fused_skips: List[torch.Tensor] = []
-        attention_weights: Dict[int, torch.Tensor] = {}
+        attention_details: Dict[int, Dict[str, torch.Tensor]] = {}
         for stage_idx, stage_feature in enumerate(slice_skips):
             reshaped = stage_feature.reshape(
                 batch_size,
@@ -172,17 +224,22 @@ class FeatureFusion25DUNet(nn.Module):
             )
             if stage_idx in self.fusion_stage_indices:
                 fused_feature, scale_attention = self.fusion_modules[str(stage_idx)](reshaped, return_attention=True)
-                attention_weights[stage_idx] = scale_attention.detach()
+                attention_details[stage_idx] = {
+                    key: value.detach() for key, value in scale_attention.items()
+                }
             else:
                 fused_feature = reshaped[:, self.num_input_slices // 2]
             fused_skips.append(fused_feature)
 
         if self.fusion_mode == "bottleneck":
-            self._last_attention_weights = attention_weights[self.fusion_stage_indices[0]]
+            stage_idx = self.fusion_stage_indices[0]
+            self._last_attention_weights = attention_details[stage_idx]["slice"]
+            self._last_attention_details = attention_details[stage_idx]
         else:
             self._last_attention_weights = {
-                stage_idx: stage_attention.detach() for stage_idx, stage_attention in attention_weights.items()
+                stage_idx: stage_attention["slice"] for stage_idx, stage_attention in attention_details.items()
             }
+            self._last_attention_details = attention_details
         return self.decoder(fused_skips)
 
     def compute_conv_feature_map_size(self, input_size: Sequence[int]):

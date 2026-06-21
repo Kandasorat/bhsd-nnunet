@@ -20,6 +20,7 @@ from nnunet25d.csam.feature_fusion_25d import (  # noqa: E402
     BottleneckFeatureFusion25DUNet,
     CenterGuidedSliceFusion,
     MultiScaleFeatureFusion25DUNet,
+    TriDirectionalCSAMFusion,
 )
 from nnunet25d.csam.trainer_25d_feature_fusion import nnUNetTrainer25DCSAM  # noqa: E402
 
@@ -53,6 +54,50 @@ def count_parameters(model: torch.nn.Module) -> int:
 
 def assert_no_nan_tensor(name: str, tensor: torch.Tensor) -> None:
     assert torch.isfinite(tensor).all().item(), f"{name} contains non-finite values"
+
+
+def assert_tridirectional_attention(details: Any, batch_size: int, num_input_slices: int) -> None:
+    if isinstance(details, dict) and "slice" in details:
+        details = {0: details}
+
+    assert isinstance(details, dict) and details, "Expected tri-directional attention details to be populated"
+    for stage_idx, stage_attention in details.items():
+        slice_attention = stage_attention["slice"]
+        channel_attention = stage_attention["channel"]
+        spatial_attention = stage_attention["spatial"]
+
+        assert tuple(slice_attention.shape) == (batch_size, num_input_slices), (
+            f"Unexpected slice attention shape at stage {stage_idx}: {tuple(slice_attention.shape)}"
+        )
+        assert tuple(channel_attention.shape[:2]) == (batch_size, channel_attention.shape[1]), (
+            f"Unexpected channel attention batch shape at stage {stage_idx}: {tuple(channel_attention.shape)}"
+        )
+        assert channel_attention.ndim == 4 and channel_attention.shape[2:] == (1, 1), (
+            f"Unexpected channel attention shape at stage {stage_idx}: {tuple(channel_attention.shape)}"
+        )
+        assert spatial_attention.ndim == 4 and spatial_attention.shape[0] == batch_size and spatial_attention.shape[1] == 1, (
+            f"Unexpected spatial attention shape at stage {stage_idx}: {tuple(spatial_attention.shape)}"
+        )
+
+        for name, tensor in (
+            ("slice", slice_attention),
+            ("channel", channel_attention),
+            ("spatial", spatial_attention),
+        ):
+            assert tensor.requires_grad is False, f"{name} attention at stage {stage_idx} is not detached"
+            assert_no_nan_tensor(f"{name}_attention_stage_{stage_idx}", tensor)
+
+        assert torch.allclose(
+            slice_attention.sum(dim=1),
+            torch.ones(batch_size, device=slice_attention.device, dtype=slice_attention.dtype),
+            atol=1e-4,
+        ), f"Slice attention weights at stage {stage_idx} do not sum to 1"
+        assert torch.all((channel_attention >= 0) & (channel_attention <= 1)).item(), (
+            f"Channel attention at stage {stage_idx} should be within [0, 1]"
+        )
+        assert torch.all((spatial_attention >= 0) & (spatial_attention <= 1)).item(), (
+            f"Spatial attention at stage {stage_idx} should be within [0, 1]"
+        )
 
 
 def assert_attention_detached(attention: Any, batch_size: int, num_input_slices: int) -> None:
@@ -126,13 +171,13 @@ def import_checks() -> None:
     print("Imported:", nnUNetTrainer25DCSAM.__name__)
     print("Imported:", MultiScaleFeatureFusion25DUNet.__name__)
     print("Imported:", CenterGuidedSliceFusion.__name__)
+    print("Imported:", TriDirectionalCSAMFusion.__name__)
 
     try:
         from nnunetv2.training.nnUNetTrainer.trainer_25d_feature_fusion import nnUNetTrainer25DCSAM as shim_class
     except Exception as exc:
-        print(f"Shim import unavailable: {exc}")
-    else:
-        print("Shim imported:", shim_class.__name__)
+        raise ImportError(f"Shim import unavailable: {exc}") from exc
+    print("Shim imported:", shim_class.__name__)
 
 
 def direct_model_checks() -> None:
@@ -151,6 +196,7 @@ def direct_model_checks() -> None:
         first = primary_output(outputs)
         assert tuple(first.shape) == (2, 6, 256, 256), f"Unexpected output shape: {summarize_outputs(outputs)}"
         assert_attention_detached(model.last_attention_weights, batch_size=2, num_input_slices=3)
+        assert_tridirectional_attention(model.last_attention_details, batch_size=2, num_input_slices=3)
         print(
             f"deep_supervision={deep_supervision} output_shapes={summarize_outputs(outputs)} "
             f"param_count={count_parameters(model):,}"
@@ -162,6 +208,7 @@ def direct_model_checks() -> None:
     first_5 = primary_output(outputs_5)
     assert tuple(first_5.shape) == (2, 6, 256, 256), f"Unexpected K=5 output shape: {summarize_outputs(outputs_5)}"
     assert_attention_detached(model_5.last_attention_weights, batch_size=2, num_input_slices=5)
+    assert_tridirectional_attention(model_5.last_attention_details, batch_size=2, num_input_slices=5)
     print(f"K=5 output_shapes={summarize_outputs(outputs_5)}")
 
 
@@ -186,6 +233,7 @@ def forward_backward_checks() -> None:
                 break
         assert grad_found, f"No gradients found on {device.type}"
         assert_attention_detached(model.last_attention_weights, batch_size=2, num_input_slices=3)
+        assert_tridirectional_attention(model.last_attention_details, batch_size=2, num_input_slices=3)
         print(f"{device.type.upper()} loss={loss.item():.6f}")
 
 
@@ -196,6 +244,7 @@ def bottleneck_attention_check() -> None:
     first = primary_output(outputs)
     assert tuple(first.shape) == (2, 6, 256, 256)
     assert_attention_detached(model.last_attention_weights, batch_size=2, num_input_slices=3)
+    assert_tridirectional_attention(model.last_attention_details, batch_size=2, num_input_slices=3)
     print("Bottleneck attention shape:", tuple(model.last_attention_weights.shape))
 
 

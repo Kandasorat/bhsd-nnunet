@@ -26,13 +26,18 @@ from nnunetv2.utilities.label_handling.label_handling import convert_labelmap_to
 from nnunetv2.inference.sliding_window_prediction import compute_gaussian
 
 from nnunet25d.common.dataloader_25d import nnUNetDataLoader25D
+from nnunet25d.common.early_stopping import BHSDEarlyStoppingMixin
 from nnunet25d.common.dataloader_spacing_aware import nnUNetDataLoaderSpacingAware25D
 
 
-class _nnUNetTrainer25DBase(nnUNetTrainer):
+class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
     num_input_slices = 3
     dataloader_class = nnUNetDataLoader25D
     dataloader_kwargs = {}
+
+    def __init__(self, plans: dict, configuration: str, fold: int, dataset_json: dict, device: torch.device):
+        super().__init__(plans, configuration, fold, dataset_json, device)
+        self.initialize_early_stopping()
 
     def _resolve_architecture_definition(self):
         if all(

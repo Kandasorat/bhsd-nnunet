@@ -10,6 +10,10 @@ resume: false
 disable_checkpointing: false
 seed: 3407
 nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_patience: 80
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
 plans: nnUNetPlans
 slice_mode: csam
 num_input_slices: 5
