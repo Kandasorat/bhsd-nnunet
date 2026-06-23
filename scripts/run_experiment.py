@@ -305,6 +305,14 @@ def is_custom_25d_config(config: Dict[str, Any]) -> bool:
     return "25D" in trainer or "SpacingAware25D" in trainer
 
 
+def is_binary_config(config: Dict[str, Any]) -> bool:
+    return str(config.get("dataset_name", "")).endswith("_Binary")
+
+
+def inference_checkpoint_name(config: Dict[str, Any]) -> str:
+    return str(config.get("inference_checkpoint", "checkpoint_best.pth"))
+
+
 def preprocess(config: Dict[str, Any]) -> None:
     command = [
         "nnUNetv2_plan_and_preprocess",
@@ -368,21 +376,123 @@ def _infer_command(config: Dict[str, Any], fold: int) -> List[str]:
         str(config.get("trainer", "nnUNetTrainer")),
     ]
     command.extend(["-p", str(config.get("plans", "nnUNetPlans"))])
+    command.extend(["-chk", inference_checkpoint_name(config)])
     return command
+
+
+def _run_inprocess_stage(config: Dict[str, Any], stage: str, command_description: str, work) -> None:
+    resolved_paths = ensure_required_env()
+    exp_dir = results_dir_for_config(config)
+    exp_dir.mkdir(parents=True, exist_ok=True)
+    write_metadata(config, stage)
+    start_wall_time = pd.Timestamp.utcnow()
+    start_perf = time.perf_counter()
+    monitor = NvidiaSmiMonitor(
+        gpu_index=gpu_index_for_config(config),
+        sample_interval_s=float(config.get("resource_monitor_interval_s", 30)),
+    )
+    exit_code = None
+    monitor.start()
+    try:
+        for key, path in resolved_paths.items():
+            os.environ[key] = str(path)
+        work()
+        exit_code = 0
+    except Exception:
+        exit_code = 1
+        raise
+    finally:
+        monitor.stop()
+        end_wall_time = pd.Timestamp.utcnow()
+        duration_seconds = time.perf_counter() - start_perf
+
+        resource_samples_csv = exp_dir / f"{stage}_resource_samples.csv"
+        if monitor.samples:
+            pd.DataFrame(monitor.samples).to_csv(resource_samples_csv, index=False)
+
+        stage_metrics_row = {
+            "experiment_name": config["experiment_name"],
+            "stage": stage,
+            "command": command_description,
+            "start_time_utc": start_wall_time.isoformat(),
+            "end_time_utc": end_wall_time.isoformat(),
+            "duration_seconds": round(duration_seconds, 3),
+            "exit_code": exit_code,
+            "device": config.get("device", "cuda"),
+            "nnunet_n_proc_da": os.environ.get("nnUNet_n_proc_DA", str(config.get("nnunet_n_proc_da", 4))),
+            "resume": bool(config.get("resume", False)),
+        }
+        stage_metrics_row.update(monitor.summary())
+        append_row_to_csv(exp_dir / "stage_metrics.csv", stage_metrics_row)
+
+
+def _custom_25d_infer(config: Dict[str, Any], fold: int) -> None:
+    from nnunet25d.inference import StackedSlicePredictor
+    from nnunetv2.run.run_training import get_trainer_from_args
+
+    resolved_paths = ensure_required_env()
+    input_folder = config.get(f"_prepared_inference_input_fold_{fold}") or config.get("inference_input") or str(
+        resolved_paths["nnUNet_raw"] / config["dataset_name"] / "imagesTs"
+    )
+    output_folder = results_dir_for_config(config) / f"inference_fold_{fold}"
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    device_name = str(config.get("device", "cuda"))
+    if device_name.startswith("cuda") and torch is not None and torch.cuda.is_available():
+        gpu_index = gpu_index_for_config(config)
+        device = torch.device("cuda", gpu_index)
+    else:
+        device = torch.device("cpu")
+
+    predictor = StackedSlicePredictor(
+        tile_step_size=float(config.get("tile_step_size", 0.5)),
+        use_gaussian=bool(config.get("use_gaussian", True)),
+        use_mirroring=bool(config.get("use_mirroring", True)),
+        perform_everything_on_device=bool(config.get("perform_everything_on_device", device.type == "cuda")),
+        device=device,
+        verbose=bool(config.get("predict_verbose", False)),
+        verbose_preprocessing=bool(config.get("predict_verbose_preprocessing", False)),
+        allow_tqdm=bool(config.get("predict_allow_tqdm", True)),
+        num_input_slices=int(config.get("num_input_slices", 3)),
+    )
+    trainer = get_trainer_from_args(
+        config["dataset_name"],
+        str(config["configuration"]),
+        int(fold),
+        trainer_name=str(config.get("trainer", "nnUNetTrainer")),
+        plans_identifier=str(config.get("plans", "nnUNetPlans")),
+        device=device,
+    )
+    checkpoint_path = Path(trainer.output_folder) / inference_checkpoint_name(config)
+    if not checkpoint_path.exists():
+        raise FileNotFoundError(
+            f"Could not find inference checkpoint for fold {fold}: {checkpoint_path}"
+        )
+    trainer.load_checkpoint(str(checkpoint_path))
+    trainer.set_deep_supervision_enabled(False)
+    trainer.network.eval()
+    checkpoint = torch.load(str(checkpoint_path), map_location=torch.device("cpu"), weights_only=False)
+
+    predictor.manual_initialization(
+        trainer.network,
+        trainer.plans_manager,
+        trainer.configuration_manager,
+        [checkpoint["network_weights"]],
+        trainer.dataset_json,
+        trainer.__class__.__name__,
+        trainer.inference_allowed_mirroring_axes,
+    )
+    predictor.predict_from_files_sequential_stacked(
+        list_of_lists_or_source_folder=str(input_folder),
+        output_folder_or_list_of_truncated_output_files=str(output_folder),
+        save_probabilities=bool(config.get("save_probabilities", False)),
+        overwrite=not bool(config.get("continue_prediction", False)),
+        folder_with_segs_from_prev_stage=config.get("prev_stage_predictions"),
+    )
 
 
 def infer(config: Dict[str, Any]) -> None:
     from scripts.prepare_inference_data import prepare_fold_validation_data
-
-    if is_custom_25d_config(config):
-        raise NotImplementedError(
-            "The custom 2.5D trainers currently support training only. "
-            "Their training-time dataloader stacks neighbouring slices into "
-            "multi-channel inputs, but this repository does not yet provide a "
-            "matching nnUNetPredictor/nnUNetv2_predict inference path. "
-            "Use the saved checkpoints for training comparisons, or implement "
-            "a dedicated 2.5D predictor before running infer/evaluate."
-        )
 
     maybe_install_custom_trainers(config)
     for fold in config.get("folds", [0]):
@@ -396,19 +506,28 @@ def infer(config: Dict[str, Any]) -> None:
             )
             config[f"_prepared_inference_input_fold_{fold}"] = str(images_dir)
             config[f"_prepared_ground_truth_fold_{fold}"] = str(labels_dir)
-        run_command(_infer_command(config, int(fold)), config, f"infer_fold_{fold}")
+        fold = int(fold)
+        if is_custom_25d_config(config):
+            _run_inprocess_stage(
+                config,
+                f"infer_fold_{fold}",
+                (
+                    f"custom_25d_predict -i {config[f'_prepared_inference_input_fold_{fold}'] if not config.get('inference_input') else config.get('inference_input')} "
+                    f"-o {results_dir_for_config(config) / f'inference_fold_{fold}'} "
+                    f"-d {config['dataset_name']} -c {config['configuration']} -f {fold} "
+                    f"-tr {config.get('trainer', 'nnUNetTrainer')} -p {config.get('plans', 'nnUNetPlans')} "
+                    f"-chk {inference_checkpoint_name(config)}"
+                ),
+                lambda current_fold=fold: _custom_25d_infer(config, current_fold),
+            )
+        else:
+            run_command(_infer_command(config, fold), config, f"infer_fold_{fold}")
 
 
 def evaluate(config: Dict[str, Any]) -> None:
     from evaluation.aggregate_results import aggregate_case_metrics
     from evaluation.run_evaluation import evaluate_folder
-
-    if is_custom_25d_config(config):
-        raise NotImplementedError(
-            "The custom 2.5D pipeline currently has no dedicated inference "
-            "implementation, so standalone evaluate is also unsupported. "
-            "Training metrics and checkpoints are still produced correctly."
-        )
+    from scripts.evaluate_binary_segmentation import evaluate_binary_folder
 
     model_name = config["experiment_name"]
     all_case_csvs = []
@@ -420,13 +539,22 @@ def evaluate(config: Dict[str, Any]) -> None:
                 "Evaluation requires 'ground_truth_dir' in the config or a prepared validation label folder. "
                 "Point it to the folder containing reference label .nii.gz files."
             )
-        case_csv = results_dir_for_config(config) / f"{model_name}_fold_{fold}_case_metrics.csv"
-        evaluate_folder(
-            prediction_dir=prediction_dir,
-            ground_truth_dir=Path(ground_truth_dir),
-            output_csv=case_csv,
-            model_name=model_name,
-        )
+        if is_binary_config(config):
+            fold_output_dir = results_dir_for_config(config) / f"binary_eval_fold_{fold}"
+            case_csv, _ = evaluate_binary_folder(
+                pred_dir=prediction_dir,
+                gt_dir=Path(ground_truth_dir),
+                model_name=f"{model_name}_fold_{fold}",
+                out_dir=fold_output_dir,
+            )
+        else:
+            case_csv = results_dir_for_config(config) / f"{model_name}_fold_{fold}_case_metrics.csv"
+            evaluate_folder(
+                prediction_dir=prediction_dir,
+                ground_truth_dir=Path(ground_truth_dir),
+                output_csv=case_csv,
+                model_name=model_name,
+            )
         all_case_csvs.append(case_csv)
 
     merged_csv = results_dir_for_config(config) / f"{model_name}_case_metrics.csv"
@@ -439,8 +567,41 @@ def evaluate(config: Dict[str, Any]) -> None:
     merged.to_csv(merged_csv, index=False)
 
     summary_csv = results_dir_for_config(config) / f"{model_name}_summary.csv"
-    aggregate_case_metrics(merged_csv, summary_csv)
+    if is_binary_config(config):
+        summary_rows = [
+            {
+                "model": model_name,
+                "n_cases": int(len(merged)),
+                "mean_dice": float(merged["dice"].mean()),
+                "median_dice": float(merged["dice"].median()),
+                "std_dice": float(merged["dice"].std(ddof=1)) if len(merged) > 1 else 0.0,
+                "min_dice": float(merged["dice"].min()),
+                "max_dice": float(merged["dice"].max()),
+                "mean_precision": float(merged["precision"].mean()),
+                "mean_recall": float(merged["recall"].mean()),
+                "n_false_positive_cases": int(merged["false_positive_case"].sum()),
+                "n_false_negative_cases": int(merged["false_negative_case"].sum()),
+                "mean_gt_negative_slice_false_positive_rate": float(merged["gt_negative_slice_false_positive_rate"].mean()),
+                "mean_gt_positive_slice_recall": float(merged["gt_positive_slice_recall"].mean()),
+                "mean_hausdorff": float(merged["hausdorff"].dropna().mean())
+                if merged["hausdorff"].notna().any()
+                else float("nan"),
+            }
+        ]
+        pd.DataFrame(summary_rows).to_csv(summary_csv, index=False)
+    else:
+        aggregate_case_metrics(merged_csv, summary_csv)
     write_metadata(config, "evaluate")
+
+
+def final_test(config: Dict[str, Any]) -> None:
+    infer(config)
+    ground_truth_dir = config.get("ground_truth_dir")
+    prepared_ground_truth_available = any(
+        config.get(f"_prepared_ground_truth_fold_{fold}") for fold in config.get("folds", [0])
+    )
+    if ground_truth_dir or prepared_ground_truth_available:
+        evaluate(config)
 
 
 def run_all(config: Dict[str, Any]) -> None:
@@ -452,7 +613,7 @@ def run_all(config: Dict[str, Any]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("stage", choices=["preprocess", "train", "infer", "evaluate", "run_all"])
+    parser.add_argument("stage", choices=["preprocess", "train", "infer", "evaluate", "final_test", "run_all"])
     parser.add_argument("--config", required=True)
     parser.add_argument("--resume", action="store_true", help="Override config and resume training from checkpoints.")
     args = parser.parse_args()
@@ -469,6 +630,8 @@ def main() -> None:
         infer(config)
     elif args.stage == "evaluate":
         evaluate(config)
+    elif args.stage == "final_test":
+        final_test(config)
     elif args.stage == "run_all":
         run_all(config)
 
