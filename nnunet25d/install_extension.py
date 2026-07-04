@@ -29,8 +29,8 @@ def main() -> None:
     copy_file(package_root / "trainer_spacing_aware.py", nnunet_root / "training" / "nnUNetTrainer" / "trainer_spacing_aware.py")
     copy_file(package_root / "trainer_bhsd.py", nnunet_root / "training" / "nnUNetTrainer" / "trainer_bhsd.py")
     copy_file(
-        package_root / "trainer_25d_feature_fusion_shim.py",
-        nnunet_root / "training" / "nnUNetTrainer" / "trainer_25d_feature_fusion.py",
+        package_root / "trainer_csam_official_shim.py",
+        nnunet_root / "training" / "nnUNetTrainer" / "trainer_csam_official.py",
     )
 
     print("")

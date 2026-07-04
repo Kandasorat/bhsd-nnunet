@@ -1,4 +1,4 @@
-from nnunet25d.csam.trainer_25d_feature_fusion import (
+from nnunet25d.trainer_25d_feature_fusion_shim import (
     nnUNetTrainer25DCSAM,
     nnUNetTrainer25DCSAMBottleneck,
     nnUNetTrainer25DCSAM_5Slide,
@@ -6,6 +6,8 @@ from nnunet25d.csam.trainer_25d_feature_fusion import (
     nnUNetTrainer25DFeatureFusionBottleneck,
     nnUNetTrainer25DFeatureFusionMultiScale,
     nnUNetTrainer25DFeatureFusionMultiScale_5Slice,
+    nnUNetTrainer25DCSAMOfficial,
+    nnUNetTrainer25DCSAMOfficialNoUncertainty,
 )
 
 __all__ = [
@@ -16,4 +18,6 @@ __all__ = [
     "nnUNetTrainer25DFeatureFusionBottleneck",
     "nnUNetTrainer25DFeatureFusionMultiScale",
     "nnUNetTrainer25DFeatureFusionMultiScale_5Slice",
+    "nnUNetTrainer25DCSAMOfficial",
+    "nnUNetTrainer25DCSAMOfficialNoUncertainty",
 ]
