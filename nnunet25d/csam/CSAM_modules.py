@@ -79,13 +79,15 @@ class SliceAttentionModule(nn.Module):
         att = max_x + avg_x
         if self.uncertainty:
             original_dtype = att.dtype
-            temp = self.non_linear(att).float()
-            mean = self.mean(temp).float()
-            diag = self.log_diag(temp).float().exp()
-            factor = self.factor(temp).float()
-            factor = factor.view(1, -1, self.rank)
-            dist = td.LowRankMultivariateNormal(loc=mean, cov_factor=factor, cov_diag=diag)
-            att = dist.sample()
+            device_type = x.device.type if isinstance(x, torch.Tensor) else "cpu"
+            with torch.autocast(device_type=device_type, enabled=False):
+                temp = self.non_linear(att.float())
+                mean = self.mean(temp)
+                diag = self.log_diag(temp).exp()
+                factor = self.factor(temp)
+                factor = factor.view(1, -1, self.rank)
+                dist = td.LowRankMultivariateNormal(loc=mean, cov_factor=factor, cov_diag=diag)
+                att = dist.sample()
             att = att.to(dtype=original_dtype)
         att = torch.sigmoid(att).squeeze().unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
         return x * att
