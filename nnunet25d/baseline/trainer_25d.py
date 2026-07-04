@@ -37,7 +37,7 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
 
     def __init__(self, plans: dict, configuration: str, fold: int, dataset_json: dict, device: torch.device):
         super().__init__(plans, configuration, fold, dataset_json, device)
-        self.configuration_manager.patch_size = np.array([256, 256], dtype=int)
+        self.configuration_manager.configuration["patch_size"] = [256, 256]
         self.initialize_early_stopping()
 
     def _resolve_architecture_definition(self):
