@@ -78,13 +78,15 @@ class SliceAttentionModule(nn.Module):
         avg_x = self.linear(avg_x)
         att = max_x + avg_x
         if self.uncertainty:
-            temp = self.non_linear(att)
-            mean = self.mean(temp)
-            diag = self.log_diag(temp).exp()
-            factor = self.factor(temp)
+            original_dtype = att.dtype
+            temp = self.non_linear(att).float()
+            mean = self.mean(temp).float()
+            diag = self.log_diag(temp).float().exp()
+            factor = self.factor(temp).float()
             factor = factor.view(1, -1, self.rank)
             dist = td.LowRankMultivariateNormal(loc=mean, cov_factor=factor, cov_diag=diag)
-            att = mean if not self.training else dist.sample()
+            att = dist.sample()
+            att = att.to(dtype=original_dtype)
         att = torch.sigmoid(att).squeeze().unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
         return x * att
 
