@@ -23,6 +23,10 @@ class nnUNetTrainer25DCSAMOfficial(_nnUNetTrainer25DBase):
         # Keep nnU-Net's deep-supervision toggles as a no-op for compatibility.
         self.enable_deep_supervision = False
 
+    def _set_batch_size_and_oversample(self):
+        super()._set_batch_size_and_oversample()
+        self.batch_size = 1
+
     def initialize(self):
         if self.was_initialized:
             raise RuntimeError(
