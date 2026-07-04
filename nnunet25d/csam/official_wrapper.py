@@ -42,6 +42,10 @@ class OfficialCSAMCenterSliceWrapper(nn.Module):
             rank=rank,
         )
 
+    @property
+    def decoder(self):
+        return self.official_csam.decoder
+
     def _prepare_input(self, x: torch.Tensor) -> Tuple[torch.Tensor, int]:
         if x.ndim == 4:
             batch_size, num_channels, _, _ = x.shape

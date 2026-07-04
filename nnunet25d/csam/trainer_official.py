@@ -18,6 +18,11 @@ class nnUNetTrainer25DCSAMOfficial(_nnUNetTrainer25DBase):
     slice_attention = True
     rank = 5
 
+    def set_deep_supervision_enabled(self, enabled: bool):
+        # The official CSAM network always emits a single center-slice prediction.
+        # Keep nnU-Net's deep-supervision toggles as a no-op for compatibility.
+        self.enable_deep_supervision = False
+
     def initialize(self):
         if self.was_initialized:
             raise RuntimeError(
