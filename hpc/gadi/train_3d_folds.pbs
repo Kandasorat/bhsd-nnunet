@@ -4,6 +4,7 @@
 #PBS -q gpuvolta
 #PBS -N bhsd_3d_cv
 #PBS -J 0-4
+#PBS -r y
 #PBS -l walltime=48:00:00
 #PBS -l ncpus=12
 #PBS -l ngpus=1
@@ -38,7 +39,11 @@ cd "$REPO_DIR"
 ) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
 
 args=(train --config baseline_3d --fold "$PBS_ARRAY_INDEX")
-if [[ "${BHSD_RESUME:-0}" == "1" ]]; then
+checkpoint_dir="$nnUNet_results/Dataset001_BHSD/nnUNetTrainer_BHSDEarlyStop__nnUNetPlans__3d_fullres/fold_$PBS_ARRAY_INDEX"
+if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_latest.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_final.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_best.pth" ]]; then
     args+=(--resume)
 fi
 

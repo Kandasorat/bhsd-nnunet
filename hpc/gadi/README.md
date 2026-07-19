@@ -25,14 +25,14 @@ output and error files do not appear in the Git checkout:
 
 ```bash
 cd "$BHSD_ROOT/logs"
-qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_folds.pbs"
+qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_folds.pbs"
 ```
 
 After the 2D jobs have been checked, submit the 3D folds:
 
 ```bash
 cd "$BHSD_ROOT/logs"
-qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
+qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
 ```
 
 Monitor all subjobs with:
@@ -46,7 +46,7 @@ index from the latest nnU-Net checkpoint. Replace `N` with the fold number:
 
 ```bash
 cd "$BHSD_ROOT/logs"
-qsub -J N-N -v BHSD_RESUME=1 \
+qsub -r y -J N-N -v BHSD_RESUME=1 \
   "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_folds.pbs"
 ```
 
