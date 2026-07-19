@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_DIR = PROJECT_ROOT / "configs"
-RESULTS_DIR = PROJECT_ROOT / "results"
+RESULTS_DIR = Path(os.environ.get("BHSD_RESULTS_DIR", PROJECT_ROOT / "results"))
 LOCAL_NNUNET_DATA_ROOT = PROJECT_ROOT / "nnUNet_data"
 LOCAL_NNUNET_PATHS = {
     "nnUNet_raw": LOCAL_NNUNET_DATA_ROOT / "nnUNet_raw",
@@ -295,6 +295,8 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
 
 
 def maybe_install_custom_trainers(config: Dict[str, Any]) -> None:
+    if os.environ.get("BHSD_SKIP_EXTENSION_INSTALL", "0") == "1":
+        return
     trainer = config.get("trainer", "")
     if trainer and trainer != "nnUNetTrainer":
         subprocess.run([sys.executable, str(PROJECT_ROOT / "nnunet25d" / "install_extension.py")], check=True)
@@ -338,6 +340,14 @@ def _train_command(config: Dict[str, Any], fold: int) -> List[str]:
         command.extend(["-p", plans])
     if config.get("save_npz", False):
         command.append("--npz")
+    validation_checkpoint = str(config.get("validation_checkpoint", "final")).lower()
+    if validation_checkpoint == "best":
+        command.append("--val_best")
+    elif validation_checkpoint != "final":
+        raise ValueError(
+            "validation_checkpoint must be either 'best' or 'final', "
+            f"got: {validation_checkpoint!r}"
+        )
     if config.get("resume", False):
         command.append("--c")
     if config.get("disable_checkpointing", False):
@@ -616,11 +626,19 @@ def main() -> None:
     parser.add_argument("stage", choices=["preprocess", "train", "infer", "evaluate", "final_test", "run_all"])
     parser.add_argument("--config", required=True)
     parser.add_argument("--resume", action="store_true", help="Override config and resume training from checkpoints.")
+    parser.add_argument(
+        "--fold",
+        type=int,
+        choices=range(5),
+        help="Run only one cross-validation fold (0-4), overriding the config fold list.",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
     if args.resume:
         config["resume"] = True
+    if args.fold is not None:
+        config["folds"] = [args.fold]
 
     if args.stage == "preprocess":
         preprocess(config)

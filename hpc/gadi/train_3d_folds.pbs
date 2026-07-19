@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N bhsd_3d_cv
+#PBS -J 0-4
+#PBS -l walltime=48:00:00
+#PBS -l ncpus=12
+#PBS -l ngpus=1
+#PBS -l mem=32GB
+#PBS -l jobfs=20GB
+#PBS -l storage=scratch/ke17
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+export BHSD_RESULTS_DIR="$BHSD_ROOT/runs/experiment_metadata"
+export BHSD_SKIP_EXTENSION_INSTALL=1
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+mkdir -p "$BHSD_RESULTS_DIR" "$BHSD_ROOT/logs"
+cd "$REPO_DIR"
+
+(
+    flock -x 9
+    python nnunet25d/install_extension.py
+) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
+
+args=(train --config baseline_3d --fold "$PBS_ARRAY_INDEX")
+if [[ "${BHSD_RESUME:-0}" == "1" ]]; then
+    args+=(--resume)
+fi
+
+python scripts/run_experiment.py "${args[@]}"
