@@ -53,7 +53,7 @@ Both pilots use:
 - Dataset001_BHSD and the existing fold 0 split;
 - 256x256 spatial patches;
 - maximum 1000 epochs;
-- early stopping on `ema_fg_dice`, patience 50, minimum delta 0.0001;
+- early stopping on `ema_fg_dice`, minimum 300 epochs, then patience 100, minimum delta 0.0001;
 - `checkpoint_best.pth` for full validation;
 - saved validation probabilities (`--npz`).
 

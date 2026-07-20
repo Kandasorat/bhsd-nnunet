@@ -1,101 +1,108 @@
-# BHSD nnU-Net Reproducible Research Pipeline
+# BHSD nnU-Net Research Pipeline
 
-This repository contains a reproducible MSc dissertation pipeline for intracranial hemorrhage segmentation on the BHSD dataset using nnU-Net v2.
+Reproducible BHSD intracranial-haemorrhage segmentation experiments built on
+nnU-Net v2. The active execution target is NCI Gadi; datasets, preprocessing
+caches, checkpoints, and predictions stay outside Git.
 
-The codebase is organized to support:
+## Active experiments
 
-- data preparation
-- baseline 2D and 3D training
-- legacy 2.5D 3-slide custom trainer experiments
-- CSAM-based 2.5D feature-fusion experiments
-- inference
-- quantitative evaluation
-- statistical comparison
-- publication-quality figure generation
-- experiment metadata tracking
-- Linux/AWS deployment
+- 2D and 3D full-resolution nnU-Net baselines
+- three-slice and spacing-aware 2.5D baselines
+- binary 2D, 3D, and 2.5D baselines
+- paper-based volume-wise CSAM and three-slice CSA-Net fold-0 pilots
 
-## Repository Layout
+The active source package is `nnunet25d/`. Historical duplicate implementations
+are retained under `archive/` and are not server entrypoints.
 
-```text
-configs/        experiment configurations
-scripts/        bash and python entrypoints
-nnunet25d/      custom 2.5D and CSAM nnU-Net v2 extensions
-evaluation/     metrics, aggregation, statistical tests
-analysis/       table and figure orchestration
-figures/        plotting scripts
-results/        generated experiment outputs
-docs/           project documentation and static homepage
-nnUNet_data/    local data directory (not tracked in Git)
-```
+## Fixed comparison policy
 
-## Recommended AWS Upload Layout
+- 2D and 2.5D spatial patch: `256 x 256`
+- 3D patch: keep the existing Dataset001 nnU-Net plan (`28 x 256 x 256` on Gadi)
+- maximum epochs: 1000
+- minimum epochs before patience monitoring: 300
+- patience after epoch 300: 100
+- minimum improvement: 0.0001 on `ema_fg_dice`
+- formal validation and inference checkpoint: `checkpoint_best.pth`
 
-Do not upload the current folder to AWS as one flat directory with mixed code and data.
-Use this split layout instead:
+Do not edit a patch size in place for an existing experiment. Patch-size
+ablations must use a separate configuration and output directory.
+
+## Gadi layout
 
 ```text
-~/projects/bhsd-nnunet/   code repository
-~/data/nnUNet_data/       dataset, preprocessing cache, and nnU-Net results
+/scratch/ke17/bhsd-nnunet/
+  software/bhsd-nnunet/       Git checkout
+  envs/bhsd-nnunet-py310/     Python environment
+  data/nnUNet_raw/            raw nnU-Net datasets
+  data/nnUNet_preprocessed/   plans, splits, and preprocessed arrays
+  runs/nnUNet_results/        checkpoints and validation predictions
+  runs/experiment_metadata/   config and resource records
+  logs/                       PBS stdout/stderr
 ```
 
-To help with that, the repository includes a local Windows packaging script:
+## Update and verify on Gadi
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\package_aws_bundle.ps1
+Run these lightweight commands on a login node:
+
+```bash
+ssh ly6399@gadi.nci.org.au
+
+export BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+
+cd "$BHSD_ROOT/software/bhsd-nnunet"
+git pull --ff-only origin main
+git status --short
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+python scripts/check_gadi_ready.py --server
 ```
 
-It creates:
+`git status --short` should be empty. Do not train on a login node. Each PBS job
+installs the current custom extension under a lock before starting GPU work.
+
+## Submit jobs
+
+Submit from the external log directory:
+
+```bash
+cd "$BHSD_ROOT/logs"
+
+# Formal five-fold baselines
+qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_folds.pbs"
+qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
+
+# Standard three-slice 2.5D fold 0
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_25d_3slice_fold0.pbs"
+
+# Paper-based attention pilots, one at a time
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csam_volume_fold0.pbs"
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csa_net_fold0.pbs"
+```
+
+The CSA-Net job additionally requires
+`$BHSD_ROOT/software/pretrained/R50+ViT-B_16.npz`.
+
+Monitor jobs with `qstat -u "$USER"`. Closing the local terminal does not stop a
+submitted non-interactive PBS job.
+
+## Repository map
 
 ```text
-aws_upload_bundle/
-  bhsd-nnunet/    code bundle
-  nnUNet_data/    data bundle
-  UPLOAD_TO_AWS.md
+configs/       experiment records
+hpc/gadi/      production PBS jobs and Gadi instructions
+nnunet25d/     custom trainers and paper-based modules
+scripts/       config runner, extension installer, and readiness checker
+evaluation/    metrics and aggregation
+analysis/      tables, reports, and figures
+docs/          project handoff and method notes
+archive/       historical source retained for reference only
 ```
 
-You can zip and upload those two folders separately, then place them on the server as:
-
-```text
-~/projects/bhsd-nnunet/
-~/data/nnUNet_data/
-```
-
-## Quick Start On AWS
-
-1. Create the conda environment:
-
-```bash
-bash scripts/setup_env.sh
-```
-
-2. Export nnU-Net paths:
-
-```bash
-export PROJECT_ROOT=/path/to/bhsd-nnunet
-export nnUNet_raw=/path/to/nnUNet_data/nnUNet_raw
-export nnUNet_preprocessed=/path/to/nnUNet_data/nnUNet_preprocessed
-export nnUNet_results=/path/to/nnUNet_data/nnUNet_results
-```
-
-3. Install the custom 2.5D extensions:
-
-```bash
-python scripts/install_extension.py
-```
-
-4. Run experiments:
-
-```bash
-bash scripts/run_experiment.sh baseline_2d
-bash scripts/run_experiment.sh baseline_3d
-python scripts/run_experiment.py train --config baseline_25d_3slide
-python scripts/run_experiment.py train --config csam_3slide
-```
-
-## Notes
-
-- The BHSD dataset itself is not versioned in Git.
-- All dissertation tables, plots, and summaries should be generated by code into `results/`.
-- The current repository includes local smoke test documentation in `SMOKE_TEST.md`.
-- `aws_upload_bundle/` is a generated staging directory and should not be committed.
+Start with `hpc/gadi/README.md` for execution and `docs/PROJECT_HANDOFF.md` for
+the experiment history. Local `nnUNet_data/`, `results/`, and `outputs/` are
+ignored by Git.

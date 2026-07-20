@@ -1,54 +1,99 @@
-# Gadi training jobs
+# Production jobs for NCI Gadi
 
-These PBS array jobs run the five formal cross-validation folds for the BHSD
-2D and 3D nnU-Net baselines. Experiment settings remain in `configs/`; the PBS
-files only declare Gadi resources and select the array fold.
+These PBS scripts are the supported Gadi launchers. Run Git, file inspection,
+and `qsub` on a login node; training runs only inside PBS GPU jobs.
 
-Both jobs use the shared early-stopping trainer and request full-case validation
-with `checkpoint_best.pth`. Model outputs are written below
-`/scratch/ke17/bhsd-nnunet/runs/nnUNet_results`, while run metadata is written
-below `/scratch/ke17/bhsd-nnunet/runs/experiment_metadata`.
-
-## Before submission
-
-Update and verify the server checkout:
+## 1. Refresh and validate the checkout
 
 ```bash
 export BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+
 cd "$BHSD_ROOT/software/bhsd-nnunet"
 git pull --ff-only origin main
 git status --short
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+python scripts/check_gadi_ready.py --server
 ```
 
-The status output must be empty. Submit from the log directory so PBS standard
-output and error files do not appear in the Git checkout:
+Do not submit from inside the Git checkout. Use the external log directory so
+PBS stdout and stderr never dirty the repository:
 
 ```bash
 cd "$BHSD_ROOT/logs"
+```
+
+## 2. Multiclass jobs
+
+```bash
+# Five-fold 2D and 3D baselines
 qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_folds.pbs"
+qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
+
+# Standard three-slice 2.5D fold 0
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_25d_3slice_fold0.pbs"
+
+# Paper-based attention pilots; run separately first
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csam_volume_fold0.pbs"
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csa_net_fold0.pbs"
 ```
 
-After the 2D jobs have been checked, submit the 3D folds:
+CSA-Net requires:
+
+```text
+/scratch/ke17/bhsd-nnunet/software/pretrained/R50+ViT-B_16.npz
+```
+
+## 3. Binary jobs
+
+Dataset002 is a separate derived dataset; Dataset001 remains unchanged.
 
 ```bash
-cd "$BHSD_ROOT/logs"
-qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/prepare_binary_dataset.pbs"
 ```
 
-Monitor all subjobs with:
+After preparation finishes with exit status 0:
+
+```bash
+cd "$BHSD_ROOT/software/bhsd-nnunet"
+python scripts/check_gadi_ready.py --server --require-binary
+cd "$BHSD_ROOT/logs"
+
+qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_binary_folds.pbs"
+qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_binary_folds.pbs"
+```
+
+## 4. Monitoring and resuming
 
 ```bash
 qstat -u "$USER"
+qstat -x -t "JOB_ID[].gadi-pbs"
 ```
 
-If a fold reaches its walltime before training finishes, resume the same array
-index from the latest nnU-Net checkpoint. Replace `N` with the fold number:
+For an interrupted array fold, replace `N` and use the matching PBS file:
 
 ```bash
-cd "$BHSD_ROOT/logs"
 qsub -r y -J N-N -v BHSD_RESUME=1 \
   "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_folds.pbs"
 ```
 
-Use the corresponding 3D PBS path when resuming a 3D fold. Do not use resume for
-a fold that completed successfully.
+The scripts also detect existing checkpoints and add `--resume`. Do not remove
+or overwrite a completed result directory unless that specific experiment is
+being intentionally restarted.
+
+## Shared policy
+
+- 2D/2.5D patch remains `256 x 256`
+- Dataset001 3D plan remains `28 x 256 x 256`
+- maximum 1000 epochs
+- minimum 300 epochs, followed by patience 100
+- minimum delta 0.0001 on `ema_fg_dice`
+- formal validation and inference use `checkpoint_best.pth`
+
+Each GPU job installs the checked-out custom trainers under a `flock` lock, so
+simultaneous array jobs cannot copy the extension concurrently.

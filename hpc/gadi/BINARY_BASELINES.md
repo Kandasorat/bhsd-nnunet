@@ -16,7 +16,7 @@ Dice.
 - Exact same five case splits as `Dataset001_BHSD`
 - Trainer: `nnUNetTrainer_BHSDEarlyStop`
 - Maximum epochs: 1000
-- Early stopping: `ema_fg_dice`, patience 50, minimum delta 0.0001
+- Early stopping: `ema_fg_dice`, minimum 300 epochs, then patience 100, minimum delta 0.0001
 - Formal validation and inference: `checkpoint_best.pth`
 - 2D patch: 256x256 (trainer override)
 - 3D patch: nnU-Net planned depth with 256x256 in-plane size

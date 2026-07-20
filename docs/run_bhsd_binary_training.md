@@ -66,7 +66,28 @@ Dataset ID `2` is used because the raw folder is `Dataset002_BHSD_Binary`.
 nnUNetv2_plan_and_preprocess -d 2 --verify_dataset_integrity
 ```
 
-## 4. Fold-0 Training Commands
+## 4. Gadi five-fold baseline workflow
+
+Prepare Dataset002, run nnU-Net planning/preprocessing, and copy the exact
+Dataset001 five-fold split:
+
+```bash
+cd /scratch/ke17/bhsd-nnunet/logs
+qsub /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet/hpc/gadi/prepare_binary_dataset.pbs
+```
+
+Only after that job finishes with exit status 0, submit the two five-fold GPU
+arrays separately:
+
+```bash
+qsub -r y /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet/hpc/gadi/train_2d_binary_folds.pbs
+qsub -r y /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet/hpc/gadi/train_3d_binary_folds.pbs
+```
+
+Both use the same Early Stopping rule as the multiclass baselines and perform
+formal validation with `checkpoint_best.pth`.
+
+## 5. Direct fold-0 training commands
 
 Standard 2D binary:
 
@@ -92,32 +113,29 @@ Standard 3D full-resolution binary:
 python scripts/run_experiment.py train --config baseline_3d_binary
 ```
 
-CSAM binary, 3 slices:
-Only use after the binary CSAM verification below passes.
+Official CSAM binary, 3 slices:
+Only use after the binary official-CSAM verification below passes.
 
 ```bash
-python scripts/run_experiment.py train --config csam_3slide_binary
+python scripts/run_experiment.py train --config csam_official_3slice_binary
 ```
 
-## 5. Binary CSAM Verification
+## 6. Binary Official CSAM Verification
 
 Verify imports and binary output shape first:
 
 ```bash
-python scripts/verify_csam_binary.py
+python scripts/verify_csam_official_binary.py
 ```
 
 This verification expects `Dataset002_BHSD_Binary` to already exist and to have completed `nnUNetv2_plan_and_preprocess -d 2`.
 
 Checks covered:
 
-- direct import of `nnUNetTrainer25DCSAM`
-- shim import through `nnunetv2`
-- region-based `num_segmentation_heads == 1`
-- region-based CSAM highest-resolution output shape `[2, 1, 256, 256]`
-- shared-encoder 2.5D input contract remains unchanged
+- region-based official-CSAM wrapper highest-resolution output shape `[2, 1, 256, 256]`
+- current 2.5D stacked-slice input contract remains unchanged
 
-## 6. Validation Commands
+## 7. Validation Commands
 
 Standard 2D binary final validation:
 
@@ -137,23 +155,23 @@ Simple 2.5D binary final validation:
 nnUNetv2_train Dataset002_BHSD_Binary 2d 0 -tr nnUNetTrainer_25D --val
 ```
 
-CSAM binary final validation:
+Official CSAM binary final validation:
 
 ```bash
-nnUNetv2_train Dataset002_BHSD_Binary 2d 0 -tr nnUNetTrainer25DCSAM --val
+nnUNetv2_train Dataset002_BHSD_Binary 2d 0 -tr nnUNetTrainer25DCSAMOfficial --val
 ```
 
 Debug-only fallback if only `checkpoint_latest.pth` exists:
 
 ```bash
 cp \
-  "$nnUNet_results/Dataset002_BHSD_Binary/nnUNetTrainer25DCSAM__nnUNetPlans__2d/fold_0/checkpoint_latest.pth" \
-  "$nnUNet_results/Dataset002_BHSD_Binary/nnUNetTrainer25DCSAM__nnUNetPlans__2d/fold_0/checkpoint_final.pth"
+  "$nnUNet_results/Dataset002_BHSD_Binary/nnUNetTrainer25DCSAMOfficial__nnUNetPlans__2d/fold_0/checkpoint_latest.pth" \
+  "$nnUNet_results/Dataset002_BHSD_Binary/nnUNetTrainer25DCSAMOfficial__nnUNetPlans__2d/fold_0/checkpoint_final.pth"
 ```
 
 Treat that as debug-only, not final.
 
-## 7. 2.5D / CSAM Validation Compatibility
+## 8. 2.5D / Official CSAM Validation Compatibility
 
 The current trainer-driven formal validation path reconstructs adjacent-slice input through `_stack_case_for_inference()`.
 
@@ -162,11 +180,11 @@ That means for each axial slice `z` it reconstructs neighboring slices with boun
 This is currently compatible with:
 
 - simple 2.5D validation
-- CSAM 2.5D validation
+- official CSAM 2.5D validation
 
 Standalone `nnUNetv2_predict` inference is still not implemented for the custom 2.5D trainers in `scripts/run_experiment.py`.
 
-## 8. Binary Evaluation
+## 9. Binary Evaluation
 
 Binary-trained models should use the dedicated binary evaluation script:
 
@@ -174,7 +192,7 @@ Binary-trained models should use the dedicated binary evaluation script:
 python scripts/evaluate_binary_segmentation.py \
   --gt-dir /path/to/ground_truth_binary_labels \
   --pred-dir /path/to/predictions \
-  --model-name csam_3slide_binary \
+  --model-name csam_official_3slice_binary \
   --out-dir /path/to/output_dir
 ```
 
@@ -185,7 +203,7 @@ Outputs:
 
 The evaluator enforces exact case-ID matching between `--gt-dir` and `--pred-dir`, accepts original BHSD ground-truth labels `{0,1,2,3,4,5}` by collapsing `>0` into one hemorrhage foreground, requires binary predictions `{0,1}`, and reports Hausdorff distance when the dependency is available and both masks are non-empty.
 
-## 9. Difference From Merged Binary Evaluation of Five-Class Models
+## 10. Difference From Merged Binary Evaluation of Five-Class Models
 
 This binary retraining workflow is different from taking five-class model outputs and post-hoc merging them into one foreground label.
 

@@ -10,6 +10,7 @@ import torch
 class BHSDEarlyStoppingMixin:
     def initialize_early_stopping(self) -> None:
         self.early_stop_patience = int(os.environ.get("BHSD_EARLY_STOP_PATIENCE", "0"))
+        self.early_stop_min_epochs = int(os.environ.get("BHSD_EARLY_STOP_MIN_EPOCHS", "0"))
         self.early_stop_min_delta = float(os.environ.get("BHSD_EARLY_STOP_MIN_DELTA", "0.0"))
         self.early_stop_metric = os.environ.get("BHSD_EARLY_STOP_METRIC", "ema_fg_dice")
         self.num_epochs = int(os.environ.get("BHSD_MAX_EPOCHS", str(self.num_epochs)))
@@ -36,11 +37,13 @@ class BHSDEarlyStoppingMixin:
         self._early_stop_bad_epochs = 0
         self._early_stop_triggered = False
 
-        for score in self._metric_history():
+        for completed_epochs, score in enumerate(self._metric_history(), start=1):
             if score is None or not np.isfinite(score):
                 continue
             if self._early_stop_best is None or score > (self._early_stop_best + self.early_stop_min_delta):
                 self._early_stop_best = float(score)
+                self._early_stop_bad_epochs = 0
+            elif completed_epochs <= self.early_stop_min_epochs:
                 self._early_stop_bad_epochs = 0
             else:
                 self._early_stop_bad_epochs += 1
@@ -69,6 +72,15 @@ class BHSDEarlyStoppingMixin:
         if self._early_stop_best is None or current_score > (self._early_stop_best + self.early_stop_min_delta):
             self._early_stop_best = float(current_score)
             self._early_stop_bad_epochs = 0
+            return
+
+        if self.current_epoch <= self.early_stop_min_epochs:
+            self._early_stop_bad_epochs = 0
+            if self.current_epoch == self.early_stop_min_epochs:
+                self.print_to_log_file(
+                    f"Early stopping warm-up completed after {self.early_stop_min_epochs} epochs; "
+                    f"patience monitoring starts with the next epoch."
+                )
             return
 
         self._early_stop_bad_epochs += 1

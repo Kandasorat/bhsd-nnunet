@@ -244,6 +244,8 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
     env["nnUNet_n_proc_DA"] = str(config.get("nnunet_n_proc_da", 4))
     if "early_stop_patience" in config:
         env["BHSD_EARLY_STOP_PATIENCE"] = str(config["early_stop_patience"])
+    if "early_stop_min_epochs" in config:
+        env["BHSD_EARLY_STOP_MIN_EPOCHS"] = str(config["early_stop_min_epochs"])
     if "early_stop_min_delta" in config:
         env["BHSD_EARLY_STOP_MIN_DELTA"] = str(config["early_stop_min_delta"])
     if "early_stop_metric" in config:

@@ -46,7 +46,10 @@ cd "$REPO_DIR"
 
 args=(train --config csa_net_official_3slice_fold0 --fold 0)
 checkpoint_dir="$nnUNet_results/Dataset001_BHSD/nnUNetTrainer25DCSANetOfficial__nnUNetPlans__2d/fold_0"
-if [[ "${BHSD_RESUME:-0}" == "1" ]] || [[ -f "$checkpoint_dir/checkpoint_latest.pth" ]]; then
+if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_latest.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_final.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_best.pth" ]]; then
     args+=(--resume)
 fi
 

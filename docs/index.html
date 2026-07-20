@@ -68,7 +68,7 @@
         <li><strong>2D baseline:</strong> standard single-slice nnU-Net v2 training.</li>
         <li><strong>3D baseline:</strong> standard full-resolution 3D nnU-Net v2 training.</li>
         <li><strong>3-slide baseline:</strong> stacked adjacent slices used as multi-channel 2D input.</li>
-        <li><strong>CSAM:</strong> center-guided slice-attention models with bottleneck or multi-scale fusion.</li>
+        <li><strong>Paper-based attention pilots:</strong> volume-wise CSAM and three-slice CSA-Net.</li>
       </ul>
     </section>
 
@@ -87,15 +87,11 @@
     <section>
       <h2>Project Files</h2>
       <ul>
-<<<<<<< HEAD
-        <li><code>scripts/</code>: baseline PowerShell launch scripts and Linux/AWS pipeline entrypoints</li>
-        <li><code>nnunet25d/</code>: custom 2.5D dataloaders, trainers, CSAM modules, and install script</li>
-        <li><code>configs/</code>: YAML experiment definitions for baseline, legacy 3-slide, and CSAM runs</li>
-=======
-        <li><code>scripts/</code>: baseline PowerShell launch scripts</li>
-        <li><code>nnunet25d/</code>: custom 2.5D dataloader, trainers, and install script</li>
->>>>>>> 15202b5 (Add BHSD experiment pipeline and CSAM 2.5D trainers)
-        <li><code>nnUNet_data/</code>: local dataset, preprocessing outputs, and results</li>
+        <li><code>scripts/</code>: config runner, extension installer, and readiness checks</li>
+        <li><code>hpc/gadi/</code>: production PBS launchers</li>
+        <li><code>nnunet25d/</code>: active 2.5D, CSAM, and CSA-Net extensions</li>
+        <li><code>configs/</code>: active YAML experiment records</li>
+        <li><code>nnUNet_data/</code>: local runtime data excluded from Git</li>
       </ul>
     </section>
   </main>

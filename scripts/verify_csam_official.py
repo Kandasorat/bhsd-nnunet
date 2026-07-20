@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import sys
+import json
 
 import torch
 
@@ -10,30 +11,27 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 NNUNET_DATA_ROOT = PROJECT_ROOT / "nnUNet_data"
-os.environ.setdefault("nnUNet_raw", str(NNUNET_DATA_ROOT / "nnUNet_raw"))
-os.environ.setdefault("nnUNet_preprocessed", str(NNUNET_DATA_ROOT / "nnUNet_preprocessed"))
-os.environ.setdefault("nnUNet_results", str(NNUNET_DATA_ROOT / "nnUNet_results"))
+for key, local_path in {
+    "nnUNet_raw": NNUNET_DATA_ROOT / "nnUNet_raw",
+    "nnUNet_preprocessed": NNUNET_DATA_ROOT / "nnUNet_preprocessed",
+    "nnUNet_results": NNUNET_DATA_ROOT / "nnUNet_results",
+}.items():
+    configured = os.environ.get(key)
+    if not configured or not Path(configured).exists():
+        os.environ[key] = str(local_path)
 
 from nnunet25d.csam.CSAM_networks import C2BAMUNet  # noqa: E402
 from nnunet25d.csam.official_wrapper import OfficialCSAMCenterSliceWrapper  # noqa: E402
 from nnunet25d.csam.trainer_official import nnUNetTrainer25DCSAMOfficial  # noqa: E402
 
 
-def get_trainer():
-    from nnunetv2.run.run_training import get_trainer_from_args
-
-    return get_trainer_from_args(
-        "Dataset001_BHSD",
-        "2d",
-        0,
-        "nnUNetTrainer25DCSAMOfficial",
-        device=torch.device("cpu"),
-    )
-
-
 def build_wrapper():
-    trainer = get_trainer()
-    _, arch_init_kwargs, _ = trainer._resolve_architecture_definition()
+    plans_path = Path(os.environ["nnUNet_preprocessed"]) / "Dataset001_BHSD" / "nnUNetPlans.json"
+    plans = json.loads(plans_path.read_text(encoding="utf-8"))
+    architecture = plans["configurations"]["2d"]["architecture"]
+    arch_init_kwargs = architecture.get("arch_kwargs", architecture.get("arch_kwargs_req_import"))
+    if not isinstance(arch_init_kwargs, dict):
+        raise RuntimeError(f"Could not read 2D architecture kwargs from {plans_path}")
     return OfficialCSAMCenterSliceWrapper(
         input_channels_per_slice=1,
         num_classes=6,

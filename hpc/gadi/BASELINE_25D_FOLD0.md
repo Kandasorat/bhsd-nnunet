@@ -9,7 +9,7 @@ This pilot is the simple 2.5D baseline, not CSAM and not CSA-Net.
 - Target: centre-slice six-label segmentation
 - Spatial patch: 256x256
 - Maximum epochs: 1000
-- Early stopping: `ema_fg_dice`, patience 50, minimum delta 0.0001
+- Early stopping: `ema_fg_dice`, minimum 300 epochs, then patience 100, minimum delta 0.0001
 - Formal validation: `checkpoint_best.pth`
 - Validation probabilities: saved for consistent baseline comparison
 
