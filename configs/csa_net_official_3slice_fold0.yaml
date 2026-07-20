@@ -1,0 +1,22 @@
+experiment_name: csa_net_official_3slice_fold0
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer25DCSANetOfficial
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_patience: 50
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+patch_size: [256, 256]
+num_input_slices: 3
+csa_batch_size: 2
+pretrained_model: R50+ViT-B_16.npz

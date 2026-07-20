@@ -250,6 +250,10 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
         env["BHSD_EARLY_STOP_METRIC"] = str(config["early_stop_metric"])
     if "max_num_epochs" in config:
         env["BHSD_MAX_EPOCHS"] = str(config["max_num_epochs"])
+    if "csam_sequence_length" in config:
+        env["BHSD_CSAM_SEQUENCE_LENGTH"] = str(config["csam_sequence_length"])
+    if "csa_batch_size" in config:
+        env["BHSD_CSA_BATCH_SIZE"] = str(config["csa_batch_size"])
     for key, path in resolved_paths.items():
         env[key] = str(path)
 
@@ -304,7 +308,7 @@ def maybe_install_custom_trainers(config: Dict[str, Any]) -> None:
 
 def is_custom_25d_config(config: Dict[str, Any]) -> bool:
     trainer = str(config.get("trainer", ""))
-    return "25D" in trainer or "SpacingAware25D" in trainer
+    return "25D" in trainer or "SpacingAware25D" in trainer or "CSAMVolume" in trainer
 
 
 def is_binary_config(config: Dict[str, Any]) -> bool:

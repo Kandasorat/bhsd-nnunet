@@ -87,7 +87,9 @@ class SliceAttentionModule(nn.Module):
                 factor = self.factor(temp)
                 factor = factor.view(1, -1, self.rank)
                 dist = td.LowRankMultivariateNormal(loc=mean, cov_factor=factor, cov_diag=diag)
-                att = dist.sample()
+                # Keep uncertainty sampling during training, but make
+                # validation/checkpoint selection deterministic.
+                att = dist.rsample() if self.training else dist.mean
             att = att.to(dtype=original_dtype)
         att = torch.sigmoid(att).squeeze().unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
         return x * att

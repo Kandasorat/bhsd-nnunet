@@ -32,6 +32,14 @@ def main() -> None:
         package_root / "trainer_csam_official_shim.py",
         nnunet_root / "training" / "nnUNetTrainer" / "trainer_csam_official.py",
     )
+    copy_file(
+        package_root / "trainer_csam_volume_official.py",
+        nnunet_root / "training" / "nnUNetTrainer" / "trainer_csam_volume_official.py",
+    )
+    copy_file(
+        package_root / "trainer_csa_net_official.py",
+        nnunet_root / "training" / "nnUNetTrainer" / "trainer_csa_net_official.py",
+    )
 
     print("")
     print("2.5D extension install finished.")
