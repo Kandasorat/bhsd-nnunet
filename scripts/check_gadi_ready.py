@@ -13,6 +13,12 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_DIR = PROJECT_ROOT / "configs"
 
+# When invoked as ``python scripts/check_gadi_ready.py``, Python otherwise puts
+# only ``scripts/`` at the front of sys.path. Prefer this checkout over a stale
+# installed copy while validating the server environment.
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 ACTIVE_CONFIGS = (
     "baseline_2d",
     "baseline_3d",
