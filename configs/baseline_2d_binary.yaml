@@ -3,9 +3,11 @@ dataset_name: Dataset002_BHSD_Binary
 dataset_id: 2
 configuration: 2d
 trainer: nnUNetTrainer_BHSDEarlyStop
-folds: [0]
+folds: [0, 1, 2, 3, 4]
 device: cuda
 save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
 resume: false
 disable_checkpointing: false
 seed: 3407

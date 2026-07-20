@@ -1,0 +1,90 @@
+#!/bin/bash
+
+#PBS -P ke17
+#PBS -q normal
+#PBS -N bhsd_bin_prep
+#PBS -r y
+#PBS -l walltime=04:00:00
+#PBS -l ncpus=12
+#PBS -l mem=48GB
+#PBS -l jobfs=20GB
+#PBS -l storage=scratch/ke17
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+SRC_RAW="$BHSD_ROOT/data/nnUNet_raw/Dataset001_BHSD"
+DST_RAW="$BHSD_ROOT/data/nnUNet_raw/Dataset002_BHSD_Binary"
+SRC_PRE="$BHSD_ROOT/data/nnUNet_preprocessed/Dataset001_BHSD"
+DST_PRE="$BHSD_ROOT/data/nnUNet_preprocessed/Dataset002_BHSD_Binary"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+cd "$REPO_DIR"
+mkdir -p "$BHSD_ROOT/logs"
+
+if [[ ! -d "$DST_RAW" ]]; then
+    python scripts/create_bhsd_binary_dataset.py \
+        --src-dataset "$SRC_RAW" \
+        --dst-dataset "$DST_RAW"
+else
+    echo "Binary raw dataset already exists; validating and reusing: $DST_RAW"
+fi
+
+python - "$DST_RAW/dataset.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    dataset = json.load(handle)
+
+expected = [1, 2, 3, 4, 5]
+if dataset.get("labels", {}).get("hemorrhage") != expected:
+    raise SystemExit(
+        "Dataset002 is not the expected region-based binary dataset: "
+        f"{dataset.get('labels')}"
+    )
+if dataset.get("regions_class_order") != [1]:
+    raise SystemExit("Dataset002 regions_class_order must be [1]")
+print("Binary region definition verified:", dataset["labels"])
+PY
+
+nnUNetv2_plan_and_preprocess -d 2 --verify_dataset_integrity
+
+test -f "$SRC_PRE/splits_final.json"
+cp "$SRC_PRE/splits_final.json" "$DST_PRE/splits_final.json"
+
+python - "$SRC_PRE/splits_final.json" "$DST_PRE/splits_final.json" "$DST_PRE/nnUNetPlans.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    source_splits = json.load(handle)
+with open(sys.argv[2], encoding="utf-8") as handle:
+    binary_splits = json.load(handle)
+with open(sys.argv[3], encoding="utf-8") as handle:
+    plans = json.load(handle)
+
+if source_splits != binary_splits or len(binary_splits) != 5:
+    raise SystemExit("Binary split file does not exactly match Dataset001 five-fold splits")
+
+patch_2d = plans["configurations"]["2d"]["patch_size"]
+patch_3d = plans["configurations"]["3d_fullres"]["patch_size"]
+if list(patch_3d[-2:]) != [256, 256]:
+    raise SystemExit(f"Unexpected 3D in-plane patch size: {patch_3d}")
+
+print("Five-fold split copied exactly from Dataset001_BHSD")
+print("planned 2D patch:", patch_2d, "(trainer overrides this to [256, 256])")
+print("planned 3D patch:", patch_3d)
+print("Binary dataset preparation completed successfully")
+PY
