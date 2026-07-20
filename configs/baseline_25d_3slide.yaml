@@ -5,7 +5,9 @@ configuration: 2d
 trainer: nnUNetTrainer_25D
 folds: [0]
 device: cuda
-save_npz: false
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
 resume: false
 disable_checkpointing: false
 seed: 3407
