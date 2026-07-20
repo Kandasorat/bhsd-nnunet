@@ -113,14 +113,15 @@ Standard 3D full-resolution binary:
 python scripts/run_experiment.py train --config baseline_3d_binary
 ```
 
-Official CSAM binary, 3 slices:
-Only use after the binary official-CSAM verification below passes.
+Upstream-architecture CSAM binary nnU-Net adaptation, 3 slices:
+Only use after the compatibility verification below passes. This is not a
+source-faithful official training-protocol reproduction.
 
 ```bash
 python scripts/run_experiment.py train --config csam_official_3slice_binary
 ```
 
-## 6. Binary Official CSAM Verification
+## 6. Binary upstream-CSAM architecture compatibility verification
 
 Verify imports and binary output shape first:
 
@@ -155,7 +156,7 @@ Simple 2.5D binary final validation:
 nnUNetv2_train Dataset002_BHSD_Binary 2d 0 -tr nnUNetTrainer_25D --val
 ```
 
-Official CSAM binary final validation:
+Upstream-CSAM architecture binary adaptation final validation:
 
 ```bash
 nnUNetv2_train Dataset002_BHSD_Binary 2d 0 -tr nnUNetTrainer25DCSAMOfficial --val
@@ -171,7 +172,7 @@ cp \
 
 Treat that as debug-only, not final.
 
-## 8. 2.5D / Official CSAM Validation Compatibility
+## 8. 2.5D / upstream-CSAM architecture validation compatibility
 
 The current trainer-driven formal validation path reconstructs adjacent-slice input through `_stack_case_for_inference()`.
 

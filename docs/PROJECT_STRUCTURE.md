@@ -4,7 +4,8 @@
 
 The active codebase now centers on these locations:
 
-- `nnunet25d/` for all current custom 2.5D and official-CSAM extensions
+- `nnunet25d/` for current custom 2.5D and upstream-architecture attention
+  adaptations
 - `configs/` for active experiment configs only
 - `scripts/` for active run and verification entrypoints
 - `final_project/` for a curated map of the current recommended project entrypoints

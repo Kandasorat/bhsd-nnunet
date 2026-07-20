@@ -22,4 +22,5 @@ Archived location:
 - `../archive/tests_legacy/2.1_feature_fusion_smoke_test/`
 
 Reason:
-- tied to the removed custom feature-fusion CSAM path and no longer part of the active official-CSAM route.
+- tied to the removed custom feature-fusion CSAM path and no longer part of the
+  active upstream-architecture adaptation route.

@@ -9,7 +9,7 @@ caches, checkpoints, and predictions stay outside Git.
 - 2D and 3D full-resolution nnU-Net baselines
 - three-slice and spacing-aware 2.5D baselines
 - binary 2D, 3D, and 2.5D baselines
-- paper-based volume-wise CSAM and three-slice CSA-Net fold-0 pilots
+- upstream-architecture CSAM and CSA-Net nnU-Net adaptation pilots
 
 The active source package is `nnunet25d/`. Historical duplicate implementations
 are retained under `archive/` and are not server entrypoints.
@@ -79,13 +79,18 @@ qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
 # Standard three-slice 2.5D fold 0
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_25d_3slice_fold0.pbs"
 
-# Paper-based attention pilots, one at a time
+# Tier-3 nnU-Net attention adaptations; run only after source-faithful references
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csam_volume_fold0.pbs"
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csa_net_fold0.pbs"
 ```
 
 The CSA-Net job additionally requires
 `$BHSD_ROOT/software/pretrained/R50+ViT-B_16.npz`.
+
+Before any CSAM/CSA-Net submission, read
+`docs/ATTENTION_REPRODUCTION_POLICY.md`. These PBS jobs adapt upstream
+architectures to nnU-Net; they are not source-faithful official training
+protocol reproductions.
 
 Monitor jobs with `qstat -u "$USER"`. Closing the local terminal does not stop a
 submitted non-interactive PBS job.

@@ -57,6 +57,13 @@ EXPECTED_EARLY_STOP = {
     "early_stop_metric": "ema_fg_dice",
 }
 
+ATTENTION_ADAPTATION_CONFIGS = {
+    "csam_official_3slice",
+    "csam_official_3slice_binary",
+    "csam_official_volume32_fold0",
+    "csa_net_official_3slice_fold0",
+}
+
 
 def load_config(name: str) -> dict:
     path = CONFIG_DIR / f"{name}.yaml"
@@ -107,6 +114,13 @@ def check_repository() -> tuple[list[str], list[str]]:
             errors.append(f"{path.name}: inference_checkpoint must be checkpoint_best.pth")
         if config.get("save_npz") is not True:
             errors.append(f"{path.name}: save_npz must be true for reproducible validation")
+        if name in ATTENTION_ADAPTATION_CONFIGS:
+            if config.get("protocol_tier") != "harmonized_nnunet_adaptation":
+                errors.append(f"{path.name}: attention protocol tier is not declared accurately")
+            if config.get("source_faithful") is not False:
+                errors.append(f"{path.name}: must declare source_faithful: false")
+            if not config.get("upstream_repository") or not config.get("upstream_commit"):
+                errors.append(f"{path.name}: missing pinned upstream provenance")
 
     trainer_source = (PROJECT_ROOT / "nnunet25d" / "trainer_bhsd.py").read_text(encoding="utf-8")
     baseline_25d_source = (PROJECT_ROOT / "nnunet25d" / "baseline" / "trainer_25d.py").read_text(

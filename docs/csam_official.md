@@ -1,6 +1,6 @@
-# Official CSAM Integration
+# Upstream CSAM architecture integration
 
-This repository now vendors the official CSAM implementation from:
+This repository vendors the CSAM architecture from the authors' repository:
 
 - https://github.com/aL3x-O-o-Hung/CSAM
 
@@ -30,5 +30,7 @@ The current BHSD 2.5D wrapper keeps the existing center-slice supervision pipeli
 2. running the official CSAM network on that slice stack
 3. returning only the center-slice logits to nnU-Net training/inference
 
-This means the attention and backbone are official-code-based, while the final
-center-slice reduction is the compatibility wrapper needed for the current BHSD pipeline.
+This means the attention and backbone are upstream-code-based, while the final
+center-slice reduction and nnU-Net training protocol are BHSD compatibility
+adaptations. This is not a source-faithful reproduction of the paper's training
+protocol. See `docs/ATTENTION_REPRODUCTION_POLICY.md`.

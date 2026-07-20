@@ -1,4 +1,8 @@
-experiment_name: csam_official_3slice_binary
+experiment_name: csam_architecture_nnunet_adapted_3slice_binary
+protocol_tier: harmonized_nnunet_adaptation
+source_faithful: false
+upstream_repository: https://github.com/aL3x-O-o-Hung/CSAM
+upstream_commit: a0029206ef3b4147351813b7d67eb7b5964c8f33
 dataset_name: Dataset002_BHSD_Binary
 dataset_id: 2
 configuration: 2d

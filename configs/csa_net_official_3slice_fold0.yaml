@@ -1,4 +1,8 @@
-experiment_name: csa_net_official_3slice_fold0
+experiment_name: csa_net_architecture_nnunet_adapted_3slice_fold0
+protocol_tier: harmonized_nnunet_adaptation
+source_faithful: false
+upstream_repository: https://github.com/mirthAI/CSA-Net
+upstream_commit: 9be2dbe8d2247ab91d03f18bd8af92448a675ff9
 dataset_name: Dataset001_BHSD
 dataset_id: 1
 configuration: 2d

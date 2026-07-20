@@ -40,8 +40,8 @@ Completed:
 - multiclass 2D nnU-Net baseline, folds 0-4;
 - multiclass 3D full-resolution nnU-Net baseline, folds 0-4;
 - local verification of all five best 2D and 3D checkpoints;
-- implementation of paper-based volume-wise CSAM and official three-slice
-  CSA-Net fold-0 pilots;
+- implementation of upstream-architecture volume-wise CSAM and three-slice
+  CSA-Net nnU-Net adaptation pilots (not source-faithful training protocols);
 - implementation of reproducible binary 2D/3D five-fold Gadi workflows;
 - preparation and preprocessing of `Dataset002_BHSD_Binary`, with the same
   five-fold split as Dataset001 and verified 2D/3D plans.
@@ -55,6 +55,12 @@ Not yet run at this snapshot:
 
 All models use the same model-selection policy unless a separately declared
 ablation changes it.
+
+Attention-method priority is source-faithful first. The existing CSAM and
+CSA-Net configs are tier-3 harmonized nnU-Net adaptations and must not be
+reported as official reproductions. Implement and smoke-test the upstream
+training protocols described in `docs/ATTENTION_REPRODUCTION_POLICY.md` before
+submitting those adaptation pilots.
 
 ## Current platform and access
 
@@ -418,8 +424,10 @@ Do not resubmit a completed fold without a documented reason.
    min-300/patience-100 experiment.
 4. Run the standard three-slice 2.5D fold-0 experiment under the new locked
    policy, using a clean output path.
-5. Review that pilot before running the volume-wise CSAM fold-0 and official
-   CSA-Net fold-0 pilots; run the two attention pilots separately.
+5. Implement and smoke-test source-faithful BHSD ports of the CSAM and CSA-Net
+   protocols described in `docs/ATTENTION_REPRODUCTION_POLICY.md`. Only then
+   run the existing harmonized nnU-Net adaptations, separately, as tier-3
+   comparisons.
 6. Restart the binary 2D/3D arrays only when binary baselines are again the
    active priority. Dataset002 preparation does not need to be repeated unless
    its source data or plans change.

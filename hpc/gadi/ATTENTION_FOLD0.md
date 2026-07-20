@@ -1,9 +1,15 @@
-# BHSD fold-0 attention pilots
+# BHSD fold-0 nnU-Net-adapted attention pilots
+
+> **Protocol warning:** these jobs reuse upstream architectures inside the
+> BHSD nnU-Net training framework. They are not source-faithful reproductions
+> of the papers' training protocols. Read
+> `docs/ATTENTION_REPRODUCTION_POLICY.md` before submission. Source-faithful
+> BHSD ports must be implemented and tested first.
 
 Two distinct paper-based experiments are provided. They must not be described
 as the same 3-slice model.
 
-## 1. Volume-wise CSAM
+## 1. nnU-Net-adapted volume-wise CSAM
 
 - Trainer: `nnUNetTrainerCSAMVolumeOfficial`
 - Config: `configs/csam_official_volume32_fold0.yaml`
@@ -20,14 +26,14 @@ cd /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet
 qsub hpc/gadi/train_csam_volume_fold0.pbs
 ```
 
-## 2. Official CSA-Net three-slice model
+## 2. nnU-Net-adapted CSA-Net three-slice model
 
 - Trainer: `nnUNetTrainer25DCSANetOfficial`
 - Config: `configs/csa_net_official_3slice_fold0.yaml`
 - PBS: `hpc/gadi/train_csa_net_fold0.pbs`
 - Input: previous, center, and next slice
 - Output: center-slice six-class segmentation
-- Architecture: official R50-ViT-B/16 CSA-Net with registered 16-head
+- Architecture: upstream R50-ViT-B/16 CSA-Net with registered 16-head
   cross-slice attention
 
 The official ImageNet-21k pretrained file is required at:
@@ -46,7 +52,7 @@ cd /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet
 qsub hpc/gadi/train_csa_net_fold0.pbs
 ```
 
-## Shared experiment rules
+## Shared harmonized nnU-Net rules
 
 Both pilots use:
 
@@ -60,3 +66,6 @@ Both pilots use:
 Run them separately first because each requests one V100. Do not submit either
 as a five-fold array until fold 0 completes, memory use is checked, and its
 per-class validation results are reviewed.
+
+These submission commands are retained for the later tier-3 comparison. They
+must not be used as the first CSAM/CSA-Net reference experiments.

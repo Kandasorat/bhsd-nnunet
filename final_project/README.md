@@ -14,9 +14,9 @@ configs, and scripts that should be used for ongoing work.
 - 3D baseline
 - 2.5D baseline
 - spacing-aware 2.5D baseline
-- official CSAM 2.5D
-- paper-based volume-wise CSAM pilot
-- official CSA-Net three-slice pilot
+- upstream CSAM architecture adaptations
+- nnU-Net-adapted volume-wise CSAM pilot
+- nnU-Net-adapted CSA-Net three-slice pilot
 - binary 2D/3D/2.5D baselines
 
 ## Use these first

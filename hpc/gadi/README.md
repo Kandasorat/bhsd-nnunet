@@ -38,7 +38,8 @@ qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
 # Standard three-slice 2.5D fold 0
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_25d_3slice_fold0.pbs"
 
-# Paper-based attention pilots; run separately first
+# Tier-3 nnU-Net adaptations; first implement the source-faithful references
+# described in docs/ATTENTION_REPRODUCTION_POLICY.md
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csam_volume_fold0.pbs"
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csa_net_fold0.pbs"
 ```

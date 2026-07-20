@@ -36,6 +36,7 @@
 - `../docs/csam_official.md`
 - `../docs/run_bhsd_binary_training.md`
 - `../docs/run_25d_server.md`
+- `../docs/ATTENTION_REPRODUCTION_POLICY.md`
 - `../hpc/gadi/README.md`
 - `../hpc/gadi/BASELINE_25D_FOLD0.md`
 - `../hpc/gadi/ATTENTION_FOLD0.md`

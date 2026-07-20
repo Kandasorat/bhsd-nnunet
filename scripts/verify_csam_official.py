@@ -42,7 +42,7 @@ def build_wrapper():
 
 
 def main():
-    print("Imported official network:", C2BAMUNet.__name__)
+    print("Imported upstream architecture:", C2BAMUNet.__name__)
     print("Imported wrapper:", OfficialCSAMCenterSliceWrapper.__name__)
     print("Imported trainer:", nnUNetTrainer25DCSAMOfficial.__name__)
     try:
@@ -61,7 +61,7 @@ def main():
     )
     raw_outputs = official_model(torch.randn(3, 1, 256, 256))
     assert tuple(raw_outputs.shape) == (3, 6, 256, 256), tuple(raw_outputs.shape)
-    print("official_forward_shape:", tuple(raw_outputs.shape))
+    print("upstream_architecture_forward_shape:", tuple(raw_outputs.shape))
 
     wrapper = build_wrapper()
     wrapped_outputs = wrapper(torch.randn(2, 3, 256, 256))
