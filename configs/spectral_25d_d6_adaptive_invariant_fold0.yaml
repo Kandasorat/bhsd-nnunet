@@ -1,0 +1,33 @@
+experiment_name: spectral_25d_d6_adaptive_invariant_multiclass_fold0_seed3407
+protocol_tier: controlled_nnunet_spectral_ablation
+source_faithful: false
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_SpectralD6AdaptiveInvariant
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+data_seed: 1003410
+deterministic: true
+nnunet_n_proc_da: 0
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: spectral_d6_pixel_adaptive_neighbor_swap_invariant
+num_input_slices: 3
+descriptor_channels: 8
+gate_normalization: softmax_across_bands
+prediction_group_average: neighbor_swap
+notes:
+  - Replaces the signed odd band with its magnitude.
+  - Averages predictions for original and neighbor-swapped inputs to enforce exact output invariance.
+  - This arm uses two backbone passes and must be compared with runtime as well as Dice.

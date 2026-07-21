@@ -19,6 +19,13 @@ from nnunet25d.baseline.trainer_25d import (
     nnUNetTrainer_25D_AxialSliceConvControlled,
     nnUNetTrainer_25D_AxialCSASequential,
     nnUNetTrainer_25D_AxialCSAParallel,
+    nnUNetTrainer_25D_SpectralD0Control,
+    nnUNetTrainer_25D_SpectralD1LowPass,
+    nnUNetTrainer_25D_SpectralD2OddDifference,
+    nnUNetTrainer_25D_SpectralD3CurvatureGate,
+    nnUNetTrainer_25D_SpectralD4Orthogonal,
+    nnUNetTrainer_25D_SpectralD5AdaptiveOriented,
+    nnUNetTrainer_25D_SpectralD6AdaptiveInvariant,
 )
 
 __all__ = [
@@ -42,4 +49,11 @@ __all__ = [
     "nnUNetTrainer_25D_AxialSliceConvControlled",
     "nnUNetTrainer_25D_AxialCSASequential",
     "nnUNetTrainer_25D_AxialCSAParallel",
+    "nnUNetTrainer_25D_SpectralD0Control",
+    "nnUNetTrainer_25D_SpectralD1LowPass",
+    "nnUNetTrainer_25D_SpectralD2OddDifference",
+    "nnUNetTrainer_25D_SpectralD3CurvatureGate",
+    "nnUNetTrainer_25D_SpectralD4Orthogonal",
+    "nnUNetTrainer_25D_SpectralD5AdaptiveOriented",
+    "nnUNetTrainer_25D_SpectralD6AdaptiveInvariant",
 ]

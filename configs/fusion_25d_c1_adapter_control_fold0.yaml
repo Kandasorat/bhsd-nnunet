@@ -12,6 +12,7 @@ inference_checkpoint: checkpoint_best.pth
 resume: false
 disable_checkpointing: false
 seed: 3407
+data_seed: 1003410
 deterministic: true
 nnunet_n_proc_da: 0
 max_num_epochs: 1000

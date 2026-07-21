@@ -286,6 +286,7 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
     env = os.environ.copy()
     env["nnUNet_n_proc_DA"] = str(config.get("nnunet_n_proc_da", 4))
     env["BHSD_SEED"] = str(int(config.get("seed", 3407)))
+    env["BHSD_DATA_SEED"] = str(int(config.get("data_seed", int(env["BHSD_SEED"]) + 1_000_003)))
     env["PYTHONHASHSEED"] = env["BHSD_SEED"]
     env["BHSD_DETERMINISTIC"] = "1" if bool(config.get("deterministic", False)) else "0"
     if env["BHSD_DETERMINISTIC"] == "1":
@@ -343,6 +344,7 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
             "device": config.get("device", "cuda"),
             "nnunet_n_proc_da": env["nnUNet_n_proc_DA"],
             "seed": env["BHSD_SEED"],
+            "data_seed": env["BHSD_DATA_SEED"],
             "deterministic": env["BHSD_DETERMINISTIC"],
             "resume": bool(config.get("resume", False)),
         }

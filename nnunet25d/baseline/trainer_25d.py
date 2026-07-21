@@ -32,6 +32,7 @@ from nnunet25d.common.early_stopping import BHSDEarlyStoppingMixin
 from nnunet25d.common.dataloader_spacing_aware import nnUNetDataLoaderSpacingAware25D
 from nnunet25d.attention.lightweight_slice_attention import LightweightSliceAttentionInputAdapter
 from nnunet25d.attention.unified_slice_adapters import UnifiedSliceAdapter
+from nnunet25d.attention.spectral_slice_fusion import SpectralSliceFusionInputAdapter
 
 
 class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
@@ -42,12 +43,13 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
     def __init__(self, plans: dict, configuration: str, fold: int, dataset_json: dict, device: torch.device):
         super().__init__(plans, configuration, fold, dataset_json, device)
         self.bhsd_seed = int(os.environ.get("BHSD_SEED", "3407"))
+        self.bhsd_data_seed = int(os.environ.get("BHSD_DATA_SEED", str(self.bhsd_seed + 1_000_003)))
         self.bhsd_deterministic = os.environ.get("BHSD_DETERMINISTIC", "0") == "1"
         self.configuration_manager.configuration["patch_size"] = [256, 256]
         self.initialize_early_stopping()
 
-    def _apply_reproducibility_settings(self) -> None:
-        seed = self.bhsd_seed + int(getattr(self, "local_rank", 0))
+    def _apply_reproducibility_settings(self, base_seed: int | None = None) -> None:
+        seed = (self.bhsd_seed if base_seed is None else int(base_seed)) + int(getattr(self, "local_rank", 0))
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
@@ -60,14 +62,28 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
 
     def on_train_start(self):
         # nnU-Net's CLI enables cuDNN benchmarking immediately before this hook.
-        # Reapply the locked experiment policy before initialization/dataloaders.
-        self._apply_reproducibility_settings()
+        # Seed model initialization identically, then reset to a separate data
+        # seed so different adapter parameter counts cannot shift augmentation.
+        if not self.was_initialized:
+            self._apply_reproducibility_settings(self.bhsd_seed)
+            self.initialize()
+        self._apply_reproducibility_settings(self.bhsd_data_seed)
         super().on_train_start()
         self.print_to_log_file(
-            f"BHSD reproducibility: seed={self.bhsd_seed}, "
+            f"BHSD reproducibility: model_seed={self.bhsd_seed}, data_seed={self.bhsd_data_seed}, "
             f"deterministic={self.bhsd_deterministic}, n_proc_DA={get_allowed_n_proc_DA()}",
             also_print_to_console=True,
         )
+
+    def on_train_epoch_start(self):
+        # Epoch-scoped seeds make resumed runs reproduce the same augmentation
+        # stream instead of depending on how many random draws preceded resume.
+        self._apply_reproducibility_settings(self.bhsd_data_seed + 2 * self.current_epoch)
+        super().on_train_epoch_start()
+
+    def on_validation_epoch_start(self):
+        self._apply_reproducibility_settings(self.bhsd_data_seed + 2 * self.current_epoch + 1)
+        super().on_validation_epoch_start()
 
     def _resolve_architecture_definition(self):
         if all(
@@ -524,6 +540,50 @@ class nnUNetTrainer_25D_AxialCSAParallel(_nnUNetTrainer25DUnifiedAdapter):
     """F2: learnable parallel fusion of axial and CSA branches."""
 
     adapter_method = "axial_csa_parallel"
+
+
+class _nnUNetTrainer25DSpectralAdapter(_nnUNetTrainer25DBase):
+    """Shared controlled policy for the D0-D6 slice-spectrum screen."""
+
+    num_input_slices = 3
+    spectral_method: str
+
+    def _adapt_network(self, network: torch.nn.Module, channels_per_slice: int) -> torch.nn.Module:
+        return SpectralSliceFusionInputAdapter(
+            backbone=network,
+            method=self.spectral_method,
+            num_slices=self.num_input_slices,
+            channels_per_slice=channels_per_slice,
+            descriptor_channels=8,
+        )
+
+
+class nnUNetTrainer_25D_SpectralD0Control(_nnUNetTrainer25DSpectralAdapter):
+    spectral_method = "d0_control"
+
+
+class nnUNetTrainer_25D_SpectralD1LowPass(_nnUNetTrainer25DSpectralAdapter):
+    spectral_method = "d1_lowpass"
+
+
+class nnUNetTrainer_25D_SpectralD2OddDifference(_nnUNetTrainer25DSpectralAdapter):
+    spectral_method = "d2_odd_difference"
+
+
+class nnUNetTrainer_25D_SpectralD3CurvatureGate(_nnUNetTrainer25DSpectralAdapter):
+    spectral_method = "d3_curvature_gate"
+
+
+class nnUNetTrainer_25D_SpectralD4Orthogonal(_nnUNetTrainer25DSpectralAdapter):
+    spectral_method = "d4_orthogonal_all"
+
+
+class nnUNetTrainer_25D_SpectralD5AdaptiveOriented(_nnUNetTrainer25DSpectralAdapter):
+    spectral_method = "d5_adaptive_oriented"
+
+
+class nnUNetTrainer_25D_SpectralD6AdaptiveInvariant(_nnUNetTrainer25DSpectralAdapter):
+    spectral_method = "d6_adaptive_invariant"
 
 
 class nnUNetTrainer_25D_5Slice(_nnUNetTrainer25DBase):

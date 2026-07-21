@@ -1,9 +1,10 @@
-experiment_name: fusion_25d_f1_axial_csa_sequential_multiclass_fold0_seed3407
-protocol_tier: controlled_nnunet_fusion_screen
+experiment_name: spectral_25d_d0_control_multiclass_fold0_seed3407
+protocol_tier: controlled_nnunet_spectral_ablation
+source_faithful: false
 dataset_name: Dataset001_BHSD
 dataset_id: 1
 configuration: 2d
-trainer: nnUNetTrainer_25D_AxialCSASequential
+trainer: nnUNetTrainer_25D_SpectralD0Control
 folds: [0]
 device: cuda
 save_npz: true
@@ -21,10 +22,9 @@ early_stop_patience: 100
 early_stop_min_delta: 0.0001
 early_stop_metric: ema_fg_dice
 plans: nnUNetPlans
-slice_mode: axial_then_csa_sequential
+slice_mode: spectral_d0_center_descriptor_control
 num_input_slices: 3
 descriptor_channels: 8
-axial_kernel: [3, 1, 1]
-csa_token_grid: 16
 notes:
-  - F1 applies A8-style local axial aggregation before A5-style center-neighbor attention.
+  - Capacity control using only the center descriptor in the first spectral slot.
+  - The dormant slots keep the final projection shape identical across D0-D6.

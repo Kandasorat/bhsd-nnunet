@@ -209,6 +209,38 @@ the augmentation workers used `seeds=None`; therefore small A1-A8 differences
 are not strict same-seed paired evidence. The results remain valid for
 screening A8 and A5 into the controlled fusion experiment.
 
+## Revised slice-spectrum D0-D6 screen (code ready, not yet run)
+
+The earlier difference-based proposal was revised after prior-art review. Slice
+differencing itself is not new and must not be claimed as such: SDC-UNet already
+applies Slice Difference Convolution to intracranial-haemorrhage CT segmentation
+(doi:10.15938/j.jhust.2025.03.001), with related adjacent-slice difference or
+interaction ideas in CLDSINet, ASD-Net, and ACSFormer.
+
+The implemented experiment is therefore a controlled, falsifiable ablation of
+the orthonormal graph-Fourier basis of a three-node slice path:
+
+```text
+Z0 = (F- + F0 + F+) / sqrt(3)       low-frequency persistence
+Z1 = (F- - F+) / sqrt(2)            signed orientation contrast
+Z2 = (F- - 2 F0 + F+) / sqrt(6)     even curvature contrast
+```
+
+These are slice-index spectral contrasts, not physical z derivatives. D0 is a
+centre-descriptor capacity control; D1-D3 isolate Z0, Z1, and gated Z2; D4 uses
+all bands; D5 learns pixel-wise softmax band weights while retaining direction;
+D6 tests hard neighbour-swap invariance by averaging complete predictions for
+the original and reversed-neighbour inputs. D6 deliberately uses two backbone
+passes and must be judged on runtime as well as Dice.
+
+All seven multiclass fold-0 configs use isolated trainer/output namespaces,
+model seed 3407, data seed 1003410, epoch-indexed train/validation seeds,
+single-thread augmentation, best-effort deterministic CUDA, and the locked
+nnU-Net checkpoint/evaluation policy. Verification covers orthonormal energy,
+zero-initialized residual identity, deep supervision, backward gradients, and
+exact D6 swap invariance. See `docs/SPECTRAL_SLICE_SCREEN.md`. No D0-D6 Gadi
+job has been submitted at this snapshot.
+
 ## Verified local backups
 
 Each current backup contains 609 files, including five each of
@@ -271,11 +303,10 @@ available 194.64 KSU. The completed baseline GPUs have been released.
 
 - GitHub: `https://github.com/Kandasorat/bhsd-nnunet.git`.
 - Branch: `main`.
-- Last verified and pushed code revision before the fusion implementation:
-  `47d7e8a`.
-- Gadi array `174338292[]` was launched from that revision.
-- Canonical and repository-copy handoff files were synchronized on 2026-07-22;
-  this documentation update does not change the code used by active jobs.
+- Last pushed fusion-screen implementation revision: `fcdda53`.
+- Gadi A1-A8 array `174338292[]` was launched from revision `1167efe`.
+- The revised D0-D6 slice-spectrum implementation is locally verified and is
+  included in the current handoff revision.
 
 Read `docs/ATTENTION_REPRODUCTION_POLICY.md` before attention work. Current
 CSAM/CSA-Net configs are labelled `harmonized_nnunet_adaptation` and
@@ -300,23 +331,28 @@ necessary deviations are recorded in `docs/ATTENTION_MODULE_SCREEN.md`.
 
 ## Immediate next work
 
-1. Pull the fusion-screen revision on Gadi and submit
-   `hpc/gadi/train_25d_fusion_screen_fold0.pbs` once. Its six indices are C0
-   controlled baseline, C1 adapter control, C2 controlled A5, C3 controlled A8,
-   F1 sequential A8-to-A5 fusion, and F2 parallel learnable fusion.
-2. Do not mix these new controlled namespaces with the older A0-A8 output
-   paths. All six use seed 3407 inside the actual training child process,
-   single-thread augmentation, deterministic cuDNN settings, and isolated
-   trainer names.
-3. Require `Exit_status = 0`, inspect warnings/errors, then download all six
-   result trees together. Compare only `checkpoint_best.pth` full-case
-   `validation/summary.json` values and retain runtime metadata.
-4. Advance a fusion only if it materially exceeds controlled C3 (target about
-   +0.01 foreground Dice) without a major per-class regression. Treat fold 0
-   as screening evidence, not a final claim.
-5. If F1 or F2 passes, run the winner and necessary controls across multiple
-   seeds, then multiclass folds 1-4. Binary confirmation comes later and should
-   not include every discarded arm.
-6. CUDA loss/pooling kernels in this PyTorch stack are not guaranteed bitwise
-   deterministic; report the new runs as controlled/best-effort reproducible,
-   and use multi-seed confirmation for claims.
+1. On Gadi, pull `main`, confirm the displayed revision matches the latest
+   pushed commit, activate the existing environment, and run
+   `scripts/check_gadi_ready.py --server --require-binary` plus
+   `scripts/verify_spectral_slice_fusion.py`.
+2. Submit `hpc/gadi/train_25d_fusion_screen_fold0.pbs` once if it has not yet
+   been submitted. Its six indices are C0-C3 and F1-F2. Do not mix their new
+   controlled namespaces with A0-A8 paths.
+3. The D0-D6 spectral screen is independently runnable with
+   `hpc/gadi/train_25d_spectral_screen_fold0.pbs`. It is a seven-job multiclass
+   fold-0 ablation, not an official reproduction or a novelty claim. Record the
+   PBS job ID before leaving the shell.
+4. Require `Exit_status = 0`, inspect warnings/errors, then download each
+   completed array's result trees together. Rank only the best-checkpoint
+   full-case `validation/summary.json`; retain timing metadata. D6's two-pass
+   runtime is not directly comparable as an efficiency result.
+5. Advance a fusion only if it materially exceeds controlled C3 (target about
+   +0.01 foreground Dice) without a major per-class regression. Advance a
+   spectral arm only if it beats D0 and the appropriate ungated control with a
+   coherent subtype pattern. Fold 0 remains screening evidence.
+6. Confirm any winner and necessary controls over multiple seeds and then
+   multiclass folds 1-4. Binary confirmation comes later; do not run all
+   discarded arms on binary.
+7. CUDA loss/pooling kernels in this PyTorch stack are not guaranteed bitwise
+   deterministic; report these as controlled/best-effort reproducible and use
+   multi-seed confirmation for claims.

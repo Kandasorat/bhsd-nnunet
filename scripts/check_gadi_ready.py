@@ -47,6 +47,13 @@ ACTIVE_CONFIGS = (
     "fusion_25d_c3_axial_fold0",
     "fusion_25d_f1_sequential_fold0",
     "fusion_25d_f2_parallel_fold0",
+    "spectral_25d_d0_control_fold0",
+    "spectral_25d_d1_lowpass_fold0",
+    "spectral_25d_d2_odd_difference_fold0",
+    "spectral_25d_d3_curvature_gate_fold0",
+    "spectral_25d_d4_orthogonal_fold0",
+    "spectral_25d_d5_adaptive_oriented_fold0",
+    "spectral_25d_d6_adaptive_invariant_fold0",
 )
 
 REQUIRED_FILES = (
@@ -57,9 +64,11 @@ REQUIRED_FILES = (
     "nnunet25d/trainer_csam_volume_official.py",
     "nnunet25d/trainer_csa_net_official.py",
     "nnunet25d/attention/unified_slice_adapters.py",
+    "nnunet25d/attention/spectral_slice_fusion.py",
     "scripts/verify_attention_screen.py",
     "scripts/summarize_attention_screen.py",
     "scripts/run_experiment.py",
+    "scripts/verify_spectral_slice_fusion.py",
     "hpc/gadi/train_2d_folds.pbs",
     "hpc/gadi/train_3d_folds.pbs",
     "hpc/gadi/train_25d_3slice_fold0.pbs",
@@ -69,8 +78,10 @@ REQUIRED_FILES = (
     "hpc/gadi/train_csa_net_fold0.pbs",
     "hpc/gadi/train_25d_attention_screen_fold0.pbs",
     "hpc/gadi/train_25d_fusion_screen_fold0.pbs",
+    "hpc/gadi/train_25d_spectral_screen_fold0.pbs",
     "docs/ATTENTION_MODULE_SCREEN.md",
     "docs/FUSION_SCREEN.md",
+    "docs/SPECTRAL_SLICE_SCREEN.md",
     "source_faithful/bhsd_data.py",
     "source_faithful/train_attention.py",
     "hpc/gadi/smoke_source_faithful_attention.pbs",
@@ -111,6 +122,16 @@ FUSION_CONFIGS = {
     "fusion_25d_c3_axial_fold0",
     "fusion_25d_f1_sequential_fold0",
     "fusion_25d_f2_parallel_fold0",
+}
+
+SPECTRAL_CONFIGS = {
+    "spectral_25d_d0_control_fold0",
+    "spectral_25d_d1_lowpass_fold0",
+    "spectral_25d_d2_odd_difference_fold0",
+    "spectral_25d_d3_curvature_gate_fold0",
+    "spectral_25d_d4_orthogonal_fold0",
+    "spectral_25d_d5_adaptive_oriented_fold0",
+    "spectral_25d_d6_adaptive_invariant_fold0",
 }
 
 SOURCE_FAITHFUL_CONFIGS = {
@@ -221,10 +242,23 @@ def check_repository() -> tuple[list[str], list[str]]:
         if name in FUSION_CONFIGS:
             if config.get("protocol_tier") != "controlled_nnunet_fusion_screen":
                 errors.append(f"{path.name}: incorrect controlled fusion protocol tier")
-            if config.get("seed") != 3407 or config.get("deterministic") is not True:
-                errors.append(f"{path.name}: controlled seed 3407/deterministic policy is not locked")
+            if config.get("seed") != 3407 or config.get("data_seed") != 1003410:
+                errors.append(f"{path.name}: model/data seed pair is not locked")
+            if config.get("deterministic") is not True:
+                errors.append(f"{path.name}: controlled deterministic policy is not locked")
             if config.get("nnunet_n_proc_da") != 0:
                 errors.append(f"{path.name}: controlled fusion must use single-thread augmentation")
+        if name in SPECTRAL_CONFIGS:
+            if config.get("protocol_tier") != "controlled_nnunet_spectral_ablation":
+                errors.append(f"{path.name}: incorrect spectral ablation protocol tier")
+            if config.get("source_faithful") is not False:
+                errors.append(f"{path.name}: must not be labelled source-faithful")
+            if config.get("seed") != 3407 or config.get("data_seed") != 1003410:
+                errors.append(f"{path.name}: model/data seed pair is not locked")
+            if config.get("deterministic") is not True:
+                errors.append(f"{path.name}: controlled deterministic policy is not locked")
+            if config.get("nnunet_n_proc_da") != 0:
+                errors.append(f"{path.name}: spectral screen must use single-thread augmentation")
 
     for name, expected_fields in SOURCE_FAITHFUL_CONFIGS.items():
         path = CONFIG_DIR / f"{name}.yaml"

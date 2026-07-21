@@ -26,7 +26,11 @@ residual output projection. F2 starts with branch weights `[0.5, 0.5]`.
 All six configs fix seed 3407 in the actual `nnUNetv2_train` child process,
 set `PYTHONHASHSEED`, seed Python/NumPy/PyTorch/CUDA, disable cuDNN benchmarking,
 request deterministic PyTorch algorithms, and force single-thread data
-augmentation. This controls the experiment's stochastic inputs.
+augmentation. A separate data seed is reapplied after network initialization,
+so modules with different parameter counts cannot shift augmentation randomness;
+epoch-indexed train/validation seeds also make a resumed epoch independent of
+the number of random draws made before resumption. This controls the
+experiment's stochastic inputs.
 
 PyTorch 2.7.1 reports that CUDA `nll_loss2d` and
 `adaptive_avg_pool2d_backward` do not have deterministic implementations on
