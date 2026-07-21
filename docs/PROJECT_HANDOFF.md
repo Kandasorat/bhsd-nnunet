@@ -242,8 +242,13 @@ residual identity, deep supervision, backward gradients, and exact D6 swap
 invariance. A real Dataset001 plans initialization audit confirmed all seven
 trainers use three input channels, batch 12, six output heads, 256 x 256
 patches, and standard nnU-Net SGD with initial LR 0.01. See
-`docs/SPECTRAL_SLICE_SCREEN.md`. No D0-D6 Gadi job has been submitted at this
-snapshot.
+`docs/SPECTRAL_SLICE_SCREEN.md`.
+
+The multiclass fold-0 D0-D6 spectral array was submitted as
+`174360420[].gadi-pbs` after the cost-aware revision was pulled. Its seven
+indices map directly to D0-D6. Do not submit this array a second time. Each
+subjob validates the spectral and cost rules, writes `compute_profile.json`,
+then trains and performs best-checkpoint full-case validation.
 
 Compute cost is a co-primary screening constraint, not a proxy for quality.
 Every new C0-C3/F1-F2 and D0-D6 subjob profiles total/adapter parameters,
@@ -358,10 +363,9 @@ necessary deviations are recorded in `docs/ATTENTION_MODULE_SCREEN.md`.
 2. Submit `hpc/gadi/train_25d_fusion_screen_fold0.pbs` once if it has not yet
    been submitted. Its six indices are C0-C3 and F1-F2. Do not mix their new
    controlled namespaces with A0-A8 paths.
-3. The D0-D6 spectral screen is independently runnable with
+3. Monitor the submitted D0-D6 spectral array `174360420[]`; do not resubmit
    `hpc/gadi/train_25d_spectral_screen_fold0.pbs`. It is a seven-job multiclass
-   fold-0 ablation, not an official reproduction or a novelty claim. Record the
-   PBS job ID before leaving the shell.
+   fold-0 ablation, not an official reproduction or a novelty claim.
 4. Require `Exit_status = 0`, inspect warnings/errors, then download each
    completed array's result trees together. Rank only the best-checkpoint
    full-case `validation/summary.json`; retain timing and `compute_profile.json`.
