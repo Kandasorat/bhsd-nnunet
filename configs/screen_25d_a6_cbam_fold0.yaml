@@ -1,0 +1,32 @@
+experiment_name: screen_25d_a6_cbam_multiclass_fold0
+protocol_tier: harmonized_nnunet_module_ablation
+source_faithful: false
+module_provenance: Official CBAM channel-then-spatial attention adapted to stacked slice descriptors
+upstream_repository: https://github.com/Jongchan/attention-module
+upstream_commit: 459efad0e05ee7dde50c41ca10a3d0800bc3792a
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_CBAM
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: unified_cbam
+num_input_slices: 3
+ground_truth_dir: null
+inference_input: null
+notes:
+  - Preserves shared average/max channel MLP followed by the 7x7 spatial gate.
+  - Applies CBAM to the concatenated slice-descriptor channels before restoring the slice axis.

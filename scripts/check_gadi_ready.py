@@ -33,6 +33,14 @@ ACTIVE_CONFIGS = (
     "csam_official_3slice_binary",
     "csam_official_volume32_fold0",
     "csa_net_official_3slice_fold0",
+    "screen_25d_a1_adapter_control_fold0",
+    "screen_25d_a2_csam_slice_gate_fold0",
+    "screen_25d_a3_eca_slice_gate_fold0",
+    "screen_25d_a4_pixelwise_cross_slice_fold0",
+    "screen_25d_a5_csa_center_neighbor_fold0",
+    "screen_25d_a6_cbam_fold0",
+    "screen_25d_a7_coordinate_attention_fold0",
+    "screen_25d_a8_axial_slice_conv_fold0",
 )
 
 REQUIRED_FILES = (
@@ -42,6 +50,9 @@ REQUIRED_FILES = (
     "nnunet25d/trainer_25d.py",
     "nnunet25d/trainer_csam_volume_official.py",
     "nnunet25d/trainer_csa_net_official.py",
+    "nnunet25d/attention/unified_slice_adapters.py",
+    "scripts/verify_attention_screen.py",
+    "scripts/summarize_attention_screen.py",
     "scripts/run_experiment.py",
     "hpc/gadi/train_2d_folds.pbs",
     "hpc/gadi/train_3d_folds.pbs",
@@ -50,6 +61,8 @@ REQUIRED_FILES = (
     "hpc/gadi/train_lightweight_slice_attention_25d_fold0.pbs",
     "hpc/gadi/train_csam_volume_fold0.pbs",
     "hpc/gadi/train_csa_net_fold0.pbs",
+    "hpc/gadi/train_25d_attention_screen_fold0.pbs",
+    "docs/ATTENTION_MODULE_SCREEN.md",
     "source_faithful/bhsd_data.py",
     "source_faithful/train_attention.py",
     "hpc/gadi/smoke_source_faithful_attention.pbs",
@@ -73,6 +86,14 @@ ATTENTION_ADAPTATION_CONFIGS = {
     "csam_official_3slice_binary",
     "csam_official_volume32_fold0",
     "csa_net_official_3slice_fold0",
+    "screen_25d_a1_adapter_control_fold0",
+    "screen_25d_a2_csam_slice_gate_fold0",
+    "screen_25d_a3_eca_slice_gate_fold0",
+    "screen_25d_a4_pixelwise_cross_slice_fold0",
+    "screen_25d_a5_csa_center_neighbor_fold0",
+    "screen_25d_a6_cbam_fold0",
+    "screen_25d_a7_coordinate_attention_fold0",
+    "screen_25d_a8_axial_slice_conv_fold0",
 }
 
 SOURCE_FAITHFUL_CONFIGS = {

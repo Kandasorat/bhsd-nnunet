@@ -1,0 +1,32 @@
+experiment_name: screen_25d_a1_adapter_control_multiclass_fold0
+protocol_tier: harmonized_nnunet_module_ablation
+source_faithful: false
+module_provenance: Same-capacity control for the unified input adapter
+upstream_repository: https://github.com/Kandasorat/bhsd-nnunet
+upstream_commit: a91779e
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_AdapterControl
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: unified_adapter_control
+num_input_slices: 3
+ground_truth_dir: null
+inference_input: null
+notes:
+  - Shared descriptor and residual projection without an attention mechanism.
+  - Controls for the capacity introduced by the common adapter.

@@ -5,6 +5,14 @@ from nnunet25d.baseline.trainer_25d import (
     nnUNetTrainer_25D_LightweightSliceAttention,
     nnUNetTrainer_25D_5Slice,
     nnUNetTrainer_SpacingAware25D,
+    nnUNetTrainer_25D_AdapterControl,
+    nnUNetTrainer_25D_CSAMSliceGate,
+    nnUNetTrainer_25D_ECASliceGate,
+    nnUNetTrainer_25D_PixelWiseCrossSlice,
+    nnUNetTrainer_25D_CSACenterNeighbor,
+    nnUNetTrainer_25D_CBAM,
+    nnUNetTrainer_25D_CoordinateAttention,
+    nnUNetTrainer_25D_AxialSliceConv,
 )
 
 __all__ = [
@@ -14,4 +22,12 @@ __all__ = [
     "nnUNetTrainer_25D_LightweightSliceAttention",
     "nnUNetTrainer_25D_5Slice",
     "nnUNetTrainer_SpacingAware25D",
+    "nnUNetTrainer_25D_AdapterControl",
+    "nnUNetTrainer_25D_CSAMSliceGate",
+    "nnUNetTrainer_25D_ECASliceGate",
+    "nnUNetTrainer_25D_PixelWiseCrossSlice",
+    "nnUNetTrainer_25D_CSACenterNeighbor",
+    "nnUNetTrainer_25D_CBAM",
+    "nnUNetTrainer_25D_CoordinateAttention",
+    "nnUNetTrainer_25D_AxialSliceConv",
 ]

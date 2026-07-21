@@ -29,6 +29,7 @@ from nnunet25d.common.dataloader_25d import nnUNetDataLoader25D
 from nnunet25d.common.early_stopping import BHSDEarlyStoppingMixin
 from nnunet25d.common.dataloader_spacing_aware import nnUNetDataLoaderSpacingAware25D
 from nnunet25d.attention.lightweight_slice_attention import LightweightSliceAttentionInputAdapter
+from nnunet25d.attention.unified_slice_adapters import UnifiedSliceAdapter
 
 
 class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
@@ -414,6 +415,54 @@ class nnUNetTrainer_25D_LightweightSliceAttention(_nnUNetTrainer25DBase):
             descriptor_channels=8,
             expansion=4,
         )
+
+
+class _nnUNetTrainer25DUnifiedAdapter(_nnUNetTrainer25DBase):
+    """Shared trainer policy for the controlled three-slice module screen."""
+
+    num_input_slices = 3
+    adapter_method: str
+
+    def _adapt_network(self, network: torch.nn.Module, channels_per_slice: int) -> torch.nn.Module:
+        return UnifiedSliceAdapter(
+            backbone=network,
+            method=self.adapter_method,
+            num_slices=self.num_input_slices,
+            channels_per_slice=channels_per_slice,
+            descriptor_channels=8,
+        )
+
+
+class nnUNetTrainer_25D_AdapterControl(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "adapter_control"
+
+
+class nnUNetTrainer_25D_CSAMSliceGate(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "csam_slice_gate"
+
+
+class nnUNetTrainer_25D_ECASliceGate(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "eca_slice_gate"
+
+
+class nnUNetTrainer_25D_PixelWiseCrossSlice(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "pixelwise_cross_slice"
+
+
+class nnUNetTrainer_25D_CSACenterNeighbor(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "csa_center_neighbor"
+
+
+class nnUNetTrainer_25D_CBAM(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "cbam"
+
+
+class nnUNetTrainer_25D_CoordinateAttention(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "coordinate_attention"
+
+
+class nnUNetTrainer_25D_AxialSliceConv(_nnUNetTrainer25DUnifiedAdapter):
+    adapter_method = "axial_slice_conv"
 
 
 class nnUNetTrainer_25D_5Slice(_nnUNetTrainer25DBase):

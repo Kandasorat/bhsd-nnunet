@@ -1,0 +1,33 @@
+experiment_name: screen_25d_a8_axial_slice_conv_multiclass_fold0
+protocol_tier: harmonized_nnunet_module_ablation
+source_faithful: false
+module_provenance: P3D-inspired temporal-only convolution control
+upstream_repository: https://github.com/ZhaofanQiu/pseudo-3d-residual-networks
+upstream_commit: e91f95de5ae7e69183ea014e06ac105debb0cfe9
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_AxialSliceConv
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: unified_axial_slice_conv
+num_input_slices: 3
+axial_kernel: [3, 1, 1]
+ground_truth_dir: null
+inference_input: null
+notes:
+  - Uses a residual 3x1x1 convolution across the ordered slice axis after the common spatial descriptor.
+  - This is a non-attention control inspired by P3D factorization, not a full P3D network reproduction.

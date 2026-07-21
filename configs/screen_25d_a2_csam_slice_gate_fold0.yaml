@@ -1,0 +1,33 @@
+experiment_name: screen_25d_a2_csam_slice_gate_multiclass_fold0
+protocol_tier: harmonized_nnunet_module_ablation
+source_faithful: false
+module_provenance: Deterministic batched adaptation of the official CSAM SliceAttentionModule
+upstream_repository: https://github.com/aL3x-O-o-Hung/CSAM
+upstream_commit: a0029206ef3b4147351813b7d67eb7b5964c8f33
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_CSAMSliceGate
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: unified_csam_slice_gate
+num_input_slices: 3
+slice_attention_uncertainty: false
+ground_truth_dir: null
+inference_input: null
+notes:
+  - Preserves CSAM average/max pooling, shared expansion MLP, sigmoid, and multiplicative slice gate.
+  - Uses per-sample vectorization and excludes stochastic uncertainty for a deterministic module ablation.

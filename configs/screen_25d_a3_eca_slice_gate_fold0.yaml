@@ -1,0 +1,33 @@
+experiment_name: screen_25d_a3_eca_slice_gate_multiclass_fold0
+protocol_tier: harmonized_nnunet_module_ablation
+source_faithful: false
+module_provenance: ECA channel gate adapted to the ordered slice axis
+upstream_repository: https://github.com/BangguWu/ECANet
+upstream_commit: b332f6b3e6e2afe8a3287dc8ee8440a0fbec74c4
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_ECASliceGate
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: unified_eca_slice_gate
+num_input_slices: 3
+eca_kernel_size: 3
+ground_truth_dir: null
+inference_input: null
+notes:
+  - Preserves ECA global pooling, non-reducing Conv1d, sigmoid, and multiplicative gate.
+  - The ECA channel axis is deliberately reinterpreted as the three-slice axis.

@@ -38,6 +38,10 @@ qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_folds.pbs"
 # Standard three-slice 2.5D fold 0
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_25d_3slice_fold0.pbs"
 
+# Harmonized multiclass A1-A8 module screen (eight fold-0 array subjobs)
+# Submit after the standard A0 fold-0 job has completed.
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_25d_attention_screen_fold0.pbs"
+
 # Tier-3 nnU-Net adaptations; first implement the source-faithful references
 # described in docs/ATTENTION_REPRODUCTION_POLICY.md
 qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csam_volume_fold0.pbs"

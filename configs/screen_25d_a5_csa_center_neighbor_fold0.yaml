@@ -1,0 +1,33 @@
+experiment_name: screen_25d_a5_csa_center_neighbor_multiclass_fold0
+protocol_tier: harmonized_nnunet_module_ablation
+source_faithful: false
+module_provenance: Registered compact adaptation of CSA-Net multi-cross non-local attention
+upstream_repository: https://github.com/mirthAI/CSA-Net
+upstream_commit: 9be2dbe8d2247ab91d03f18bd8af92448a675ff9
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_CSACenterNeighbor
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+nnunet_n_proc_da: 4
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: unified_csa_center_neighbor
+num_input_slices: 3
+csa_token_grid: 16
+ground_truth_dir: null
+inference_input: null
+notes:
+  - Preserves CSA-Net theta/phi/g non-local cross attention for center-to-previous, center-to-self, and center-to-next branches.
+  - Registers all branches in init and uses a 16x16 descriptor grid so parameters train correctly and memory remains bounded.
