@@ -389,6 +389,12 @@ class nnUNetTrainer_25D(_nnUNetTrainer25DBase):
     num_input_slices = 3
 
 
+class nnUNetTrainer_25D_HarmonizedMin300Patience100(_nnUNetTrainer25DBase):
+    """Three-slice baseline isolated from earlier fold-0 stopping policies."""
+
+    num_input_slices = 3
+
+
 class nnUNetTrainer_25D_5Slice(_nnUNetTrainer25DBase):
     num_input_slices = 5
 

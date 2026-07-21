@@ -39,7 +39,7 @@ cd "$REPO_DIR"
 ) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
 
 args=(train --config baseline_25d_3slide --fold 0)
-checkpoint_dir="$nnUNet_results/Dataset001_BHSD/nnUNetTrainer_25D__nnUNetPlans__2d/fold_0"
+checkpoint_dir="$nnUNet_results/Dataset001_BHSD/nnUNetTrainer_25D_HarmonizedMin300Patience100__nnUNetPlans__2d/fold_0"
 if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
    [[ -f "$checkpoint_dir/checkpoint_latest.pth" ]] || \
    [[ -f "$checkpoint_dir/checkpoint_final.pth" ]] || \

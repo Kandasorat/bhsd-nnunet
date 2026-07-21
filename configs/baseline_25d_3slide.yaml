@@ -1,8 +1,8 @@
-experiment_name: baseline_25d_3slide
+experiment_name: baseline_25d_3slide_harmonized_min300_patience100_fold0
 dataset_name: Dataset001_BHSD
 dataset_id: 1
 configuration: 2d
-trainer: nnUNetTrainer_25D
+trainer: nnUNetTrainer_25D_HarmonizedMin300Patience100
 folds: [0]
 device: cuda
 save_npz: true

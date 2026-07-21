@@ -2,7 +2,8 @@
 
 The active 2.5D routes are:
 
-- `baseline_25d_3slide`: standard previous/centre/next slice stacking
+- `baseline_25d_3slide`: standard previous/centre/next slice stacking in the
+  isolated `nnUNetTrainer_25D_HarmonizedMin300Patience100` result namespace
 - `spacing_aware_25d`: spacing-aware three-slice sampling
 - `csam_official_volume32_fold0`: upstream CSAM architecture in a harmonized
   nnU-Net protocol (not a source-faithful official reproduction)

@@ -1,0 +1,26 @@
+method: csa_net
+experiment_name: csa_net_source_faithful_bhsd_fold0
+protocol_tier: source_faithful_bhsd_port
+source_faithful: true
+upstream_repository: https://github.com/mirthAI/CSA-Net
+upstream_commit: 9be2dbe8d2247ab91d03f18bd8af92448a675ff9
+dataset_name: Dataset001_BHSD
+fold: 0
+num_classes: 6
+device: cuda
+seed: 1234
+deterministic: true
+epochs: 40
+batch_size: 16
+input_size: 224
+smoke_input_size: 64
+learning_rate: 0.001
+num_workers: 8
+pretrained_path: /scratch/ke17/bhsd-nnunet/software/pretrained/R50+ViT-B_16.npz
+output_dir: /scratch/ke17/bhsd-nnunet/runs/source_faithful/csa_net_bhsd_fold0
+model_selection: validation_foreground_macro_dice
+unavoidable_deviations:
+  - BHSD nnU-Net CT preprocessing and the frozen Dataset001 fold split replace ProstateX preprocessing and lists.
+  - nnU-Net's -1 crop-padding label is mapped to semantic background for the upstream losses.
+  - Six BHSD labels replace the upstream five labels; selection uses frozen foreground macro Dice.
+  - Cross-attention modules are registered in __init__ and hard-coded CUDA placement is removed so parameters are trainable and checkpointed.

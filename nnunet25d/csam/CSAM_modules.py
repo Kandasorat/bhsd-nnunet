@@ -60,6 +60,7 @@ class SliceAttentionModule(nn.Module):
         super(SliceAttentionModule, self).__init__()
         self.uncertainty = uncertainty
         self.rank = rank
+        self.source_faithful_sampling = False
         self.linear = []
         self.linear.append(nn.Linear(in_features=in_features, out_features=int(in_features * rate)))
         self.linear.append(nn.ReLU())
@@ -89,7 +90,10 @@ class SliceAttentionModule(nn.Module):
                 dist = td.LowRankMultivariateNormal(loc=mean, cov_factor=factor, cov_diag=diag)
                 # Keep uncertainty sampling during training, but make
                 # validation/checkpoint selection deterministic.
-                att = dist.rsample() if self.training else dist.mean
+                if self.training:
+                    att = dist.sample() if self.source_faithful_sampling else dist.rsample()
+                else:
+                    att = dist.mean
             att = att.to(dtype=original_dtype)
         att = torch.sigmoid(att).squeeze().unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
         return x * att

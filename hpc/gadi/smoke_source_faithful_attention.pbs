@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N bhsd_src_smoke
+#PBS -J 0-1
+#PBS -l walltime=02:00:00
+#PBS -l ncpus=8
+#PBS -l ngpus=1
+#PBS -l mem=64GB
+#PBS -l jobfs=10GB
+#PBS -l storage=scratch/ke17
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+export BHSD_SOURCE_SMOKE_DIR="$BHSD_ROOT/runs/source_faithful_smoke"
+export BHSD_EXACT_SMOKE=1
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+configs=(csam_source_faithful_bhsd_fold0 csa_net_source_faithful_bhsd_fold0)
+config="${configs[$PBS_ARRAY_INDEX]}"
+
+test -f "$nnUNet_preprocessed/Dataset001_BHSD/splits_final.json"
+if [[ "$config" == csa_net_* ]]; then
+    test -f "$BHSD_ROOT/software/pretrained/R50+ViT-B_16.npz"
+fi
+
+cd "$REPO_DIR"
+python -m source_faithful.train_attention --config "$config" --smoke

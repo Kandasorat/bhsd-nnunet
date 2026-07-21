@@ -5,6 +5,7 @@ This package stores custom nnU-Net v2 extensions used for BHSD experiments.
 Supported trainers:
 
 - `nnUNetTrainer_25D`
+- `nnUNetTrainer_25D_HarmonizedMin300Patience100` (clean fold-0 namespace for the locked policy)
 - `nnUNetTrainer_25D_5Slice`
 - `nnUNetTrainer_SpacingAware25D`
 - `nnUNetTrainer25DCSAMOfficial`

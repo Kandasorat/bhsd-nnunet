@@ -47,6 +47,11 @@ REQUIRED_FILES = (
     "hpc/gadi/train_25d_3slice_fold0.pbs",
     "hpc/gadi/train_csam_volume_fold0.pbs",
     "hpc/gadi/train_csa_net_fold0.pbs",
+    "source_faithful/bhsd_data.py",
+    "source_faithful/train_attention.py",
+    "hpc/gadi/smoke_source_faithful_attention.pbs",
+    "hpc/gadi/train_csam_source_faithful_fold0.pbs",
+    "hpc/gadi/train_csa_net_source_faithful_fold0.pbs",
 )
 
 EXPECTED_EARLY_STOP = {
@@ -62,6 +67,26 @@ ATTENTION_ADAPTATION_CONFIGS = {
     "csam_official_3slice_binary",
     "csam_official_volume32_fold0",
     "csa_net_official_3slice_fold0",
+}
+
+SOURCE_FAITHFUL_CONFIGS = {
+    "csam_source_faithful_bhsd_fold0": {
+        "method": "csam",
+        "epochs": 150,
+        "batch_size": 2,
+        "sequence_length": 20,
+        "input_size": 128,
+        "learning_rate": 0.0001,
+    },
+    "csa_net_source_faithful_bhsd_fold0": {
+        "method": "csa_net",
+        "epochs": 40,
+        "batch_size": 16,
+        "input_size": 224,
+        "learning_rate": 0.001,
+        "seed": 1234,
+        "deterministic": True,
+    },
 }
 
 
@@ -122,6 +147,26 @@ def check_repository() -> tuple[list[str], list[str]]:
             if not config.get("upstream_repository") or not config.get("upstream_commit"):
                 errors.append(f"{path.name}: missing pinned upstream provenance")
 
+    for name, expected_fields in SOURCE_FAITHFUL_CONFIGS.items():
+        path = CONFIG_DIR / f"{name}.yaml"
+        if not path.is_file():
+            errors.append(f"Missing source-faithful config: {path.relative_to(PROJECT_ROOT)}")
+            continue
+        try:
+            config = load_config(name)
+        except Exception as exc:
+            errors.append(f"Cannot parse {path.name}: {exc}")
+            continue
+        if config.get("protocol_tier") != "source_faithful_bhsd_port" or config.get("source_faithful") is not True:
+            errors.append(f"{path.name}: source-faithful protocol tier is not declared accurately")
+        if not config.get("upstream_repository") or not config.get("upstream_commit"):
+            errors.append(f"{path.name}: missing pinned upstream provenance")
+        if not config.get("unavoidable_deviations"):
+            errors.append(f"{path.name}: unavoidable BHSD deviations are not documented")
+        for key, expected in expected_fields.items():
+            if config.get(key) != expected:
+                errors.append(f"{path.name}: {key}={config.get(key)!r}, expected {expected!r}")
+
     trainer_source = (PROJECT_ROOT / "nnunet25d" / "trainer_bhsd.py").read_text(encoding="utf-8")
     baseline_25d_source = (PROJECT_ROOT / "nnunet25d" / "baseline" / "trainer_25d.py").read_text(
         encoding="utf-8"
@@ -140,6 +185,7 @@ def check_repository() -> tuple[list[str], list[str]]:
             errors.append(f"PBS script references missing config: {name}")
 
     notes.append(f"Validated {len(ACTIVE_CONFIGS)} active experiment configs")
+    notes.append(f"Validated {len(SOURCE_FAITHFUL_CONFIGS)} source-faithful protocol configs")
     notes.append(f"Validated {len(referenced_configs)} config references from Gadi PBS scripts")
     return errors, notes
 
@@ -184,7 +230,9 @@ def check_server(require_binary: bool) -> tuple[list[str], list[str]]:
         import nnunetv2  # noqa: F401
         import torch  # noqa: F401
 
-        from nnunet25d.trainer_25d import nnUNetTrainer_25D  # noqa: F401
+        from nnunet25d.trainer_25d import (  # noqa: F401
+            nnUNetTrainer_25D_HarmonizedMin300Patience100,
+        )
         from nnunet25d.trainer_bhsd import nnUNetTrainer_BHSDEarlyStop  # noqa: F401
         from nnunet25d.trainer_csa_net_official import nnUNetTrainer25DCSANetOfficial  # noqa: F401
         from nnunet25d.trainer_csam_volume_official import nnUNetTrainerCSAMVolumeOfficial  # noqa: F401
