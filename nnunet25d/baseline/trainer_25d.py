@@ -28,6 +28,7 @@ from nnunetv2.inference.sliding_window_prediction import compute_gaussian
 from nnunet25d.common.dataloader_25d import nnUNetDataLoader25D
 from nnunet25d.common.early_stopping import BHSDEarlyStoppingMixin
 from nnunet25d.common.dataloader_spacing_aware import nnUNetDataLoaderSpacingAware25D
+from nnunet25d.attention.lightweight_slice_attention import LightweightSliceAttentionInputAdapter
 
 
 class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
@@ -70,6 +71,10 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
 
     def _do_i_compile(self):
         return False
+
+    def _adapt_network(self, network: torch.nn.Module, channels_per_slice: int) -> torch.nn.Module:
+        """Optional architecture hook that preserves the standard 2.5D backbone by default."""
+        return network
 
     def _get_slice_indices(self, center_slice: int, num_slices: int):
         half = self.num_input_slices // 2
@@ -273,7 +278,7 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
         self.num_input_channels = base_num_input_channels * self.num_input_slices
 
         arch_class_name, arch_init_kwargs, arch_init_kwargs_req_import = self._resolve_architecture_definition()
-        self.network = get_network_from_plans(
+        backbone = get_network_from_plans(
             arch_class_name,
             arch_init_kwargs,
             arch_init_kwargs_req_import,
@@ -281,7 +286,8 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
             self.label_manager.num_segmentation_heads,
             allow_init=True,
             deep_supervision=self.enable_deep_supervision,
-        ).to(self.device)
+        )
+        self.network = self._adapt_network(backbone, base_num_input_channels).to(self.device)
 
         if self._do_i_compile():
             self.print_to_log_file("Using torch.compile...")
@@ -393,6 +399,21 @@ class nnUNetTrainer_25D_HarmonizedMin300Patience100(_nnUNetTrainer25DBase):
     """Three-slice baseline isolated from earlier fold-0 stopping policies."""
 
     num_input_slices = 3
+
+
+class nnUNetTrainer_25D_LightweightSliceAttention(_nnUNetTrainer25DBase):
+    """Harmonized 3-slice nnU-Net with a vectorized CSAM-inspired slice gate."""
+
+    num_input_slices = 3
+
+    def _adapt_network(self, network: torch.nn.Module, channels_per_slice: int) -> torch.nn.Module:
+        return LightweightSliceAttentionInputAdapter(
+            backbone=network,
+            num_slices=self.num_input_slices,
+            channels_per_slice=channels_per_slice,
+            descriptor_channels=8,
+            expansion=4,
+        )
 
 
 class nnUNetTrainer_25D_5Slice(_nnUNetTrainer25DBase):

@@ -23,6 +23,7 @@ ACTIVE_CONFIGS = (
     "baseline_2d",
     "baseline_3d",
     "baseline_25d_3slide",
+    "lightweight_slice_attention_25d_fold0",
     "spacing_aware_25d",
     "baseline_2d_binary",
     "baseline_3d_binary",
@@ -46,6 +47,7 @@ REQUIRED_FILES = (
     "hpc/gadi/train_3d_folds.pbs",
     "hpc/gadi/train_25d_3slice_fold0.pbs",
     "hpc/gadi/train_binary_25d_3slice_fold0.pbs",
+    "hpc/gadi/train_lightweight_slice_attention_25d_fold0.pbs",
     "hpc/gadi/train_csam_volume_fold0.pbs",
     "hpc/gadi/train_csa_net_fold0.pbs",
     "source_faithful/bhsd_data.py",
@@ -66,6 +68,7 @@ EXPECTED_EARLY_STOP = {
 }
 
 ATTENTION_ADAPTATION_CONFIGS = {
+    "lightweight_slice_attention_25d_fold0",
     "csam_official_3slice",
     "csam_official_3slice_binary",
     "csam_official_volume32_fold0",
@@ -168,7 +171,10 @@ def check_repository() -> tuple[list[str], list[str]]:
         if config.get("save_npz") is not True:
             errors.append(f"{path.name}: save_npz must be true for reproducible validation")
         if name in ATTENTION_ADAPTATION_CONFIGS:
-            if config.get("protocol_tier") != "harmonized_nnunet_adaptation":
+            if config.get("protocol_tier") not in {
+                "harmonized_nnunet_adaptation",
+                "harmonized_nnunet_module_ablation",
+            }:
                 errors.append(f"{path.name}: attention protocol tier is not declared accurately")
             if config.get("source_faithful") is not False:
                 errors.append(f"{path.name}: must declare source_faithful: false")
@@ -260,6 +266,7 @@ def check_server(require_binary: bool) -> tuple[list[str], list[str]]:
 
         from nnunet25d.trainer_25d import (  # noqa: F401
             nnUNetTrainer_25D_HarmonizedMin300Patience100,
+            nnUNetTrainer_25D_LightweightSliceAttention,
         )
         from nnunet25d.trainer_bhsd import nnUNetTrainer_BHSDEarlyStop  # noqa: F401
         from nnunet25d.trainer_csa_net_official import nnUNetTrainer25DCSANetOfficial  # noqa: F401
