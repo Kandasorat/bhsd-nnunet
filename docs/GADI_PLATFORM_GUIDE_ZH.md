@@ -1,217 +1,213 @@
 # NCI Gadi 简明使用说明
 
-本文面向第一次使用 Gadi 的老师和组员，以 BHSD nnU-Net 项目为例，只介绍日常最常用的操作。
+本文介绍在 Gadi 上运行个人研究项目的基本流程。每位使用者的 GitHub 仓库、NCI 项目、数据集和保存路径可能不同，因此不要直接照抄其他人的路径。
 
-## 1. 基本流程
+## 1. 先替换自己的信息
 
-一次实验通常按下面的顺序进行：
+后面的命令使用以下占位符：
 
-1. 在本地修改代码并推送到 GitHub；
-2. 登录 Gadi；
-3. 从 GitHub 拉取最新代码；
-4. 使用 `qsub` 提交任务；
-5. 使用 `qstat` 查看任务状态；
-6. 查看日志和结果；
-7. 将结果下载到本地保存。
+| 占位符 | 替换为 |
+|---|---|
+| `YOUR_NCI_USERNAME` | 自己的 NCI 用户名 |
+| `NCI_PROJECT` | 自己获准使用的 NCI 项目代码 |
+| `PROJECT_NAME` | 自己的研究项目名称 |
+| `REPOSITORY_URL` | 自己的 GitHub 仓库地址 |
+| `REPOSITORY_NAME` | GitHub 仓库名称 |
+| `DATASET_NAME` | 自己的数据集名称 |
 
-Gadi 的登录节点主要用于管理文件和提交任务。训练等计算工作必须通过 PBS 作业运行，不应直接在登录节点执行。
+建议个人项目使用下面的目录结构：
 
-## 2. 登录 Gadi
+```text
+/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/
+├── code/
+├── data/
+├── logs/
+└── results/
+```
 
-在 Windows PowerShell 中运行：
+例如，BHSD 项目使用的是 `/scratch/ke17/bhsd-nnunet`，但其他成员应根据自己的 NCI 项目和数据集设置路径。
+
+## 2. 基本流程
+
+1. 登录 Gadi；
+2. 创建自己的项目目录；
+3. 克隆自己的 GitHub 仓库；
+4. 上传自己的数据集；
+5. 修改并检查 PBS 脚本中的项目代码和路径；
+6. 使用 `qsub` 提交任务；
+7. 使用 `qstat` 查看状态；
+8. 下载自己的结果。
+
+训练必须通过 PBS 作业运行，不应直接在 Gadi 登录节点长时间计算。
+
+## 3. 登录并创建目录
+
+在本地 Windows PowerShell 中登录：
 
 ```powershell
 ssh YOUR_NCI_USERNAME@gadi.nci.org.au
 ```
 
-将 `YOUR_NCI_USERNAME` 替换为自己的 NCI 用户名。每位成员都应使用自己的账户，不要共享密码、MFA 或 SSH 私钥。
-
-本项目在 Gadi 上的主要目录为：
-
-```text
-/scratch/ke17/bhsd-nnunet
-```
-
-## 3. 拉取最新代码
-
-登录 Gadi 后运行：
+登录后创建自己的目录：
 
 ```bash
-cd /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet
+mkdir -p /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code
+mkdir -p /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data
+mkdir -p /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/logs
+mkdir -p /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/results
+```
+
+每位成员都应使用自己的 NCI 账户，不要共享密码、MFA 或 SSH 私钥。
+
+## 4. 使用自己的 GitHub 仓库
+
+第一次使用时，在 Gadi 上克隆自己的仓库：
+
+```bash
+cd /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code
+git clone REPOSITORY_URL
+cd REPOSITORY_NAME
+```
+
+例如，`REPOSITORY_URL` 可以是：
+
+```text
+https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY.git
+```
+
+以后代码更新后，只需进入自己的仓库并拉取：
+
+```bash
+cd /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code/REPOSITORY_NAME
 git pull --ff-only origin main
 ```
 
-这样即可获得已经推送到 GitHub 的最新脚本。正式提交前可以运行项目检查：
+如果仓库是私有的，需要先按照 GitHub 要求配置访问权限。不要把 GitHub 密码、令牌或私钥写入代码和 PBS 脚本。
+
+## 5. 上传自己的数据集
+
+先在 Gadi 登录节点确认远端数据目录已经建立。然后回到本地 Windows PowerShell，使用数据传输主机上传：
+
+```powershell
+scp -r "D:\本地数据路径\DATASET_NAME" YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/
+```
+
+上传单个文件：
+
+```powershell
+scp "D:\本地数据路径\file.zip" YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/
+```
+
+上传后登录 Gadi 检查：
 
 ```bash
-python3 scripts/check_gadi_ready.py
+ls -lah /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data
+du -sh /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/DATASET_NAME
 ```
 
-## 4. 提交任务
+不同数据集的文件结构和预处理方式不同，应使用自己项目对应的代码和配置。涉及患者或敏感数据时，上传位置和使用方式必须符合伦理审批、数据协议和 NCI 项目要求。
 
-本项目已经准备好 PBS 脚本，一般只需运行：
+## 6. 提交任务
+
+提交前检查 PBS 脚本，至少确认：
+
+- `#PBS -P` 是自己获准使用的 NCI 项目代码；
+- 代码路径属于自己的项目；
+- 输入路径指向自己的数据集；
+- 日志和结果输出到自己的目录；
+- CPU、GPU、内存和运行时间申请合理。
+
+进入自己的代码仓库后提交：
 
 ```bash
-qsub hpc/gadi/脚本名称.pbs
+cd /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code/REPOSITORY_NAME
+qsub path/to/YOUR_SCRIPT.pbs
 ```
 
-例如提交一个任务数组：
+成功后会返回任务编号，请记录任务编号、实验名称和提交日期。
 
-```bash
-qsub hpc/gadi/train_25d_fusion_screen_array.pbs
-```
+## 7. 查看任务和日志
 
-提交成功后会返回任务编号，例如：
-
-```text
-174360420[].gadi-pbs
-```
-
-请记录任务编号、实验名称和提交日期，以便之后查看和整理结果。
-
-## 5. 查看任务状态
-
-查看自己当前的全部任务：
+查看自己的全部任务：
 
 ```bash
 qstat -t -u "$USER"
 ```
 
-常见状态：
-
-| 状态 | 含义 |
-|---|---|
-| `Q` | 正在排队等待资源 |
-| `R` | 正在运行 |
-| `X` 或 `F` | 已结束，可进一步检查退出状态 |
-
-查看某个已完成任务的详细信息：
+常见状态：`Q` 表示排队，`R` 表示运行。查看已结束任务：
 
 ```bash
-qstat -x -f 任务编号
+qstat -x -f JOB_ID
 ```
 
-重点查看：
+重点查看 `Exit_status` 和 `resources_used.walltime`。`Exit_status = 0` 通常表示正常结束。
 
-```text
-job_state
-Exit_status
-resources_used.walltime
-```
-
-`Exit_status = 0` 通常表示任务正常结束。任务数组需要保留方括号，例如：
+查看自己的日志：
 
 ```bash
-qstat -x -t "174360420[].gadi-pbs"
-```
-
-## 6. 查看日志和结果
-
-本项目日志通常保存在：
-
-```text
-/scratch/ke17/bhsd-nnunet/logs
-```
-
-查看最新日志：
-
-```bash
-cd /scratch/ke17/bhsd-nnunet/logs
+cd /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/logs
 ls -lt | head
+tail -n 50 LOG_FILE
 ```
 
-查看日志末尾：
+持续查看正在更新的日志：
 
 ```bash
-tail -n 50 日志文件名
+tail -f LOG_FILE
 ```
 
-持续观察正在写入的日志：
+## 8. 下载自己的结果
 
-```bash
-tail -f 日志文件名
-```
-
-训练结果主要位于：
-
-```text
-/scratch/ke17/bhsd-nnunet/runs/nnUNet_results
-```
-
-实验时间和资源记录主要位于：
-
-```text
-/scratch/ke17/bhsd-nnunet/runs/experiment_metadata
-```
-
-## 7. 下载结果到本地
-
-下载操作应在本地 Windows PowerShell 中执行，不是在 Gadi 终端中执行。
-
-先创建本地保存目录：
+下载操作在本地 Windows PowerShell 中执行。先建立自己的本地保存目录：
 
 ```powershell
-$backupRoot = 'C:\Users\92127\OneDrive - UNSW\project_linpeng\server_backups'
-New-Item -ItemType Directory -Force -Path $backupRoot
+$localResultDir = 'D:\自己的项目\gadi_results'
+New-Item -ItemType Directory -Force -Path $localResultDir
 ```
 
-然后下载结果目录：
+下载自己的结果：
 
 ```powershell
-scp -r YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/ke17/bhsd-nnunet/runs/需要下载的目录 "$backupRoot\"
+scp -r YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/results/RESULT_NAME "$localResultDir\"
 ```
 
-如果要在一次登录中下载多个目录，可以使用：
+一次登录下载多个目录可以使用：
 
 ```powershell
 sftp YOUR_NCI_USERNAME@gadi-dm.nci.org.au
 ```
 
-进入 `sftp>` 后依次运行：
+进入 `sftp>` 后运行：
 
 ```text
-lcd C:\Users\92127\OneDrive - UNSW\project_linpeng\server_backups
-get -r /scratch/ke17/bhsd-nnunet/runs/目录一
-get -r /scratch/ke17/bhsd-nnunet/runs/目录二
+lcd D:\自己的项目\gadi_results
+get -r /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/results/RESULT_ONE
+get -r /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/results/RESULT_TWO
 exit
 ```
 
-下载完成后，应检查文件数量、大小和关键结果文件，再考虑清理服务器文件。
+下载完成后先检查文件数量、大小和关键结果，再决定是否清理服务器文件。
 
-## 8. 常用命令速查
+## 9. 常用命令
 
 ```bash
-# 拉取代码
-cd /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet
+# 更新自己的代码
+cd /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code/REPOSITORY_NAME
 git pull --ff-only origin main
 
 # 提交任务
-qsub hpc/gadi/脚本名称.pbs
+qsub path/to/YOUR_SCRIPT.pbs
 
 # 查看任务
 qstat -t -u "$USER"
 
 # 查看已完成任务
-qstat -x -f 任务编号
-
-# 查看最新日志
-cd /scratch/ke17/bhsd-nnunet/logs
-ls -lt | head
+qstat -x -f JOB_ID
 
 # 取消误提交的任务（确认编号后使用）
-qdel 任务编号
+qdel JOB_ID
 ```
 
-关闭 PowerShell 或断开 SSH，不会终止已经通过 `qsub` 提交的非交互式任务。
+关闭本地 PowerShell 或断开 SSH，不会终止已经通过 `qsub` 提交的非交互式作业。
 
-## 9. 遇到问题时
-
-先保存以下信息：
-
-- 执行的命令；
-- 完整报错；
-- PBS 任务编号；
-- 输出和错误日志；
-- 使用的脚本和 Git 提交版本。
-
-项目当前状态和下一步工作以项目根目录中的 `PROJECT_HANDOFF.md` 最顶部 **AUTHORITATIVE CURRENT SNAPSHOT** 为准。Gadi 平台问题也可查阅 [NCI Job Submission Tutorial](https://opus.nci.org.au/spaces/Help/pages/241927319/Job%2BSubmission%2BTutorial) 或联系 [NCI Helpdesk](https://help.nci.org.au/)。
+遇到问题时，应保存执行命令、完整报错、PBS 任务编号、日志文件和 Git 提交版本。平台问题可查阅 [NCI Job Submission Tutorial](https://opus.nci.org.au/spaces/Help/pages/241927319/Job%2BSubmission%2BTutorial) 或联系 [NCI Helpdesk](https://help.nci.org.au/)。
