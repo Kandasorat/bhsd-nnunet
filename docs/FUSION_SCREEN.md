@@ -53,6 +53,21 @@ F1/F2 are promising only if they exceed controlled C3 by a material margin
 Fold-0 outcomes remain screening evidence; the winning fusion must then be
 confirmed across multiple seeds and folds.
 
+## Compute-cost rule
+
+Every array arm runs `scripts/profile_25d_compute.py` before training and saves
+the same `compute_profile.json` in experiment metadata and the fold result
+tree. It records total/adapter parameters, batch-1 forward latency, allocated
+GPU-memory peak, and backbone passes per prediction. Full-run wall time and
+sampled training memory remain in `stage_metrics.csv` and `run_timing.json`.
+
+After all arms finish, use `scripts/summarize_controlled_screens.py --screen
+fusion` to combine full-case Dice and cost. A complex fusion is not advanced
+merely because it is larger: F1/F2 must provide at least 0.01 foreground-Dice
+gain over C3, avoid a class decrease greater than 0.02 relative to C3, and
+remain on the Dice/runtime/memory/parameter Pareto frontier. Resource ratios
+are also reported against C0.
+
 ## Gadi submission
 
 ```bash

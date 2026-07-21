@@ -172,6 +172,12 @@ def gpu_index_for_config(config: Dict[str, Any]) -> int:
 class NvidiaSmiMonitor:
     def __init__(self, gpu_index: int, sample_interval_s: float = 30.0):
         self.gpu_index = int(gpu_index)
+        visible_devices = [
+            item.strip() for item in os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",") if item.strip()
+        ]
+        self.gpu_selector = (
+            visible_devices[self.gpu_index] if self.gpu_index < len(visible_devices) else str(self.gpu_index)
+        )
         self.sample_interval_s = float(sample_interval_s)
         self.samples: List[Dict[str, Any]] = []
         self.command = shutil.which("nvidia-smi") or shutil.which("nvidia-smi.exe")
@@ -184,7 +190,7 @@ class NvidiaSmiMonitor:
         result = subprocess.run(
             [
                 self.command,
-                f"--query-gpu=index,name,utilization.gpu,memory.used,memory.total,temperature.gpu",
+                "--query-gpu=index,uuid,name,utilization.gpu,memory.used,memory.total,temperature.gpu",
                 "--format=csv,noheader,nounits",
             ],
             check=False,
@@ -196,22 +202,28 @@ class NvidiaSmiMonitor:
 
         for line in result.stdout.splitlines():
             parts = [p.strip() for p in line.split(",")]
-            if len(parts) != 6:
+            if len(parts) != 7:
                 continue
             try:
                 gpu_index = int(parts[0])
             except ValueError:
                 continue
-            if gpu_index != self.gpu_index:
+            selector_matches = (
+                (self.gpu_selector.isdigit() and gpu_index == int(self.gpu_selector))
+                or parts[1] == self.gpu_selector
+                or parts[1].startswith(self.gpu_selector)
+            )
+            if not selector_matches:
                 continue
             return {
                 "timestamp": pd.Timestamp.utcnow().isoformat(),
                 "gpu_index": gpu_index,
-                "gpu_name": parts[1],
-                "utilization_gpu_pct": float(parts[2]),
-                "memory_used_mb": float(parts[3]),
-                "memory_total_mb": float(parts[4]),
-                "temperature_gpu_c": float(parts[5]),
+                "gpu_uuid": parts[1],
+                "gpu_name": parts[2],
+                "utilization_gpu_pct": float(parts[3]),
+                "memory_used_mb": float(parts[4]),
+                "memory_total_mb": float(parts[5]),
+                "temperature_gpu_c": float(parts[6]),
             }
         return None
 
@@ -238,6 +250,8 @@ class NvidiaSmiMonitor:
             return {
                 "gpu_monitor_available": self.command is not None,
                 "gpu_sample_count": 0,
+                "gpu_selector": self.gpu_selector,
+                "gpu_uuid": None,
                 "gpu_name": None,
                 "mean_gpu_utilization_pct": None,
                 "max_gpu_utilization_pct": None,
@@ -250,6 +264,8 @@ class NvidiaSmiMonitor:
         return {
             "gpu_monitor_available": True,
             "gpu_sample_count": int(len(frame)),
+            "gpu_selector": self.gpu_selector,
+            "gpu_uuid": frame["gpu_uuid"].iloc[-1],
             "gpu_name": frame["gpu_name"].iloc[-1],
             "mean_gpu_utilization_pct": float(frame["utilization_gpu_pct"].mean()),
             "max_gpu_utilization_pct": float(frame["utilization_gpu_pct"].max()),

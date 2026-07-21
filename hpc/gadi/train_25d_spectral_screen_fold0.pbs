@@ -67,6 +67,13 @@ cd "$REPO_DIR"
 ) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
 
 python3 scripts/verify_spectral_slice_fusion.py
+python3 scripts/verify_compute_cost.py
+
+python3 scripts/profile_25d_compute.py \
+    --config "$config" \
+    --device cuda \
+    --warmup 3 \
+    --iterations 10
 
 args=(train --config "$config" --fold 0)
 checkpoint_dir="$nnUNet_results/Dataset001_BHSD/${trainer}__nnUNetPlans__2d/fold_0"

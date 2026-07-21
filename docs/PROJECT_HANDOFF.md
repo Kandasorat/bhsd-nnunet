@@ -245,6 +245,18 @@ patches, and standard nnU-Net SGD with initial LR 0.01. See
 `docs/SPECTRAL_SLICE_SCREEN.md`. No D0-D6 Gadi job has been submitted at this
 snapshot.
 
+Compute cost is a co-primary screening constraint, not a proxy for quality.
+Every new C0-C3/F1-F2 and D0-D6 subjob profiles total/adapter parameters,
+batch-1 forward latency, allocated GPU-memory peak, and backbone passes before
+training; the runner separately records complete wall time and sampled training
+memory. `scripts/summarize_controlled_screens.py` combines these measurements
+with full-case Dice, ratios to C0/D0, per-class regression, and Pareto status.
+F1/F2 candidacy requires at least +0.01 foreground Dice over C3; spectral arms
+use D0 as the automatic reference, with mechanism-specific comparisons also
+reported. All candidates require no class decrease worse than 0.02 and no
+domination by an equally accurate lower-cost arm. D6 is explicitly a
+two-backbone-pass experiment.
+
 ## Verified local backups
 
 Each current backup contains 609 files, including five each of
@@ -350,8 +362,9 @@ necessary deviations are recorded in `docs/ATTENTION_MODULE_SCREEN.md`.
    PBS job ID before leaving the shell.
 4. Require `Exit_status = 0`, inspect warnings/errors, then download each
    completed array's result trees together. Rank only the best-checkpoint
-   full-case `validation/summary.json`; retain timing metadata. D6's two-pass
-   runtime is not directly comparable as an efficiency result.
+   full-case `validation/summary.json`; retain timing and `compute_profile.json`.
+   Run `scripts/summarize_controlled_screens.py` for the relevant screen rather
+   than ranking by Dice alone. D6's two-pass runtime must be charged in full.
 5. Advance a fusion only if it materially exceeds controlled C3 (target about
    +0.01 foreground Dice) without a major per-class regression. Advance a
    spectral arm only if it beats D0 and the appropriate ungated control with a

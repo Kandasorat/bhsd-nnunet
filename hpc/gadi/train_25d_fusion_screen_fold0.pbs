@@ -64,6 +64,14 @@ cd "$REPO_DIR"
     python3 nnunet25d/install_extension.py
 ) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
 
+python3 scripts/verify_compute_cost.py
+
+python3 scripts/profile_25d_compute.py \
+    --config "$config" \
+    --device cuda \
+    --warmup 3 \
+    --iterations 10
+
 args=(train --config "$config" --fold 0)
 checkpoint_dir="$nnUNet_results/Dataset001_BHSD/${trainer}__nnUNetPlans__2d/fold_0"
 if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
@@ -73,7 +81,7 @@ if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
     args+=(--resume)
 fi
 
-echo "array_index=$index config=$config trainer=$trainer controlled_seed=3407"
+echo "array_index=$index config=$config trainer=$trainer model_seed=3407 data_seed=1003410"
 python3 scripts/run_experiment.py "${args[@]}"
 
 # Literal references retained for repository readiness validation:

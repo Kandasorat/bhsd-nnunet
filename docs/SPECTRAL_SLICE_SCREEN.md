@@ -83,6 +83,23 @@ The screen tests plausibility, not publication novelty. Any winning D5/D6 arm
 must be compared structurally with the full SDC-UNet paper and confirmed across
 multiple seeds and folds before a new-method claim.
 
+## Compute-cost rule
+
+Each array arm profiles batch-1 inference before training and stores
+`compute_profile.json` both with metadata and in the normal fold result tree.
+The profile records total/adapter parameters, forward latency, allocated-memory
+peak, and backbone passes per prediction. Actual training wall time and sampled
+GPU memory are recorded separately by the experiment runner. D6 is expected to
+report two backbone passes and is not preferred unless its gain justifies that
+cost.
+
+After D0-D6 complete, `scripts/summarize_controlled_screens.py --screen
+spectral` combines Dice and compute measurements, reports ratios to D0, and
+marks Pareto-dominated arms. Automatic candidacy requires at least +0.01
+foreground Dice over D0, no class loss worse than 0.02, and Pareto efficiency;
+mechanism-specific comparisons such as D5 versus D4 are still interpreted
+manually.
+
 ## Verification and Gadi submission
 
 The verifier checks transform energy and neighbor-reversal parity, controlled

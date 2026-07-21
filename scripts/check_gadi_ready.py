@@ -67,6 +67,9 @@ REQUIRED_FILES = (
     "nnunet25d/attention/spectral_slice_fusion.py",
     "scripts/verify_attention_screen.py",
     "scripts/summarize_attention_screen.py",
+    "scripts/profile_25d_compute.py",
+    "scripts/summarize_controlled_screens.py",
+    "scripts/verify_compute_cost.py",
     "scripts/run_experiment.py",
     "scripts/verify_spectral_slice_fusion.py",
     "hpc/gadi/train_2d_folds.pbs",
@@ -296,6 +299,16 @@ def check_repository() -> tuple[list[str], list[str]]:
     for name in sorted(referenced_configs):
         if not (CONFIG_DIR / f"{name}.yaml").is_file():
             errors.append(f"PBS script references missing config: {name}")
+
+    for relative in (
+        "hpc/gadi/train_25d_fusion_screen_fold0.pbs",
+        "hpc/gadi/train_25d_spectral_screen_fold0.pbs",
+    ):
+        pbs_text = (PROJECT_ROOT / relative).read_text(encoding="utf-8")
+        if "scripts/profile_25d_compute.py" not in pbs_text:
+            errors.append(f"{relative}: controlled screen no longer records a compute profile")
+        if "scripts/verify_compute_cost.py" not in pbs_text:
+            errors.append(f"{relative}: controlled screen no longer validates cost-aware rules")
 
     notes.append(f"Validated {len(ACTIVE_CONFIGS)} active experiment configs")
     notes.append(f"Validated {len(SOURCE_FAITHFUL_CONFIGS)} source-faithful protocol configs")
