@@ -14,6 +14,8 @@
 | `REPOSITORY_URL` | 自己的 GitHub 仓库地址 |
 | `REPOSITORY_NAME` | GitHub 仓库名称 |
 | `DATASET_NAME` | 自己的数据集名称 |
+| `LOCAL_DATASET_PATH` | 数据集在自己电脑上的完整路径 |
+| `LOCAL_RESULT_PATH` | 结果在自己电脑上的保存路径 |
 
 建议个人项目使用下面的目录结构：
 
@@ -25,7 +27,7 @@
 └── results/
 ```
 
-例如，BHSD 项目使用的是 `/scratch/ke17/bhsd-nnunet`，但其他成员应根据自己的 NCI 项目和数据集设置路径。
+这里的目录只是通用示例。应按照自己所属 NCI 项目的权限和课题组约定确定实际目录。
 
 ## 2. 基本流程
 
@@ -86,16 +88,22 @@ git pull --ff-only origin main
 
 ## 5. 上传自己的数据集
 
-先在 Gadi 登录节点确认远端数据目录已经建立。然后回到本地 Windows PowerShell，使用数据传输主机上传：
+先在 Gadi 登录节点创建并确认远端数据目录：
+
+```bash
+mkdir -p /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data
+```
+
+然后退出 Gadi，回到**本地 Windows PowerShell**。上传方向是“自己电脑 → Gadi”，使用数据传输主机 `gadi-dm`：
 
 ```powershell
-scp -r "D:\本地数据路径\DATASET_NAME" YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/
+scp -r "LOCAL_DATASET_PATH\DATASET_NAME" YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/
 ```
 
 上传单个文件：
 
 ```powershell
-scp "D:\本地数据路径\file.zip" YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/
+scp "LOCAL_DATASET_PATH\file.zip" YOUR_NCI_USERNAME@gadi-dm.nci.org.au:/scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/
 ```
 
 上传后登录 Gadi 检查：
@@ -117,12 +125,21 @@ du -sh /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/data/DATASET_NAME
 - 日志和结果输出到自己的目录；
 - CPU、GPU、内存和运行时间申请合理。
 
-进入自己的代码仓库后提交：
+`qsub hpc/gadi/YOUR_SCRIPT.pbs` 使用的是**相对路径**，因此必须先进入包含 `hpc` 文件夹的代码仓库。建议先用 `ls` 确认脚本存在，再提交：
 
 ```bash
 cd /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code/REPOSITORY_NAME
-qsub path/to/YOUR_SCRIPT.pbs
+ls hpc/gadi/YOUR_SCRIPT.pbs
+qsub hpc/gadi/YOUR_SCRIPT.pbs
 ```
+
+如果不想先进入仓库，也可以把 PBS 脚本的**完整绝对路径**交给 `qsub`：
+
+```bash
+qsub /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code/REPOSITORY_NAME/hpc/gadi/YOUR_SCRIPT.pbs
+```
+
+两种写法效果相同。文件扩展名应为 `.pbs`，不是 `.pbz`。如果 PBS 脚本内部使用相对路径，仍建议先 `cd` 到仓库根目录再提交。
 
 成功后会返回任务编号，请记录任务编号、实验名称和提交日期。
 
@@ -161,7 +178,7 @@ tail -f LOG_FILE
 下载操作在本地 Windows PowerShell 中执行。先建立自己的本地保存目录：
 
 ```powershell
-$localResultDir = 'D:\自己的项目\gadi_results'
+$localResultDir = 'LOCAL_RESULT_PATH'
 New-Item -ItemType Directory -Force -Path $localResultDir
 ```
 
@@ -180,7 +197,7 @@ sftp YOUR_NCI_USERNAME@gadi-dm.nci.org.au
 进入 `sftp>` 后运行：
 
 ```text
-lcd D:\自己的项目\gadi_results
+lcd LOCAL_RESULT_PATH
 get -r /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/results/RESULT_ONE
 get -r /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/results/RESULT_TWO
 exit
@@ -195,8 +212,9 @@ exit
 cd /scratch/NCI_PROJECT/YOUR_NCI_USERNAME/PROJECT_NAME/code/REPOSITORY_NAME
 git pull --ff-only origin main
 
-# 提交任务
-qsub path/to/YOUR_SCRIPT.pbs
+# 提交任务：先确认当前位于仓库根目录
+ls hpc/gadi/YOUR_SCRIPT.pbs
+qsub hpc/gadi/YOUR_SCRIPT.pbs
 
 # 查看任务
 qstat -t -u "$USER"
