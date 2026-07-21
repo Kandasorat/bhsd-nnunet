@@ -325,6 +325,8 @@ available 194.64 KSU. The completed baseline GPUs have been released.
   `4fa9572`.
 - Full-chain post-implementation audit and strengthened verification revision:
   `6550ff3`.
+- Cost-aware profiling, Pareto selection, and assigned-GPU monitoring revision:
+  `43fb3a2`.
 
 Read `docs/ATTENTION_REPRODUCTION_POLICY.md` before attention work. Current
 CSAM/CSA-Net configs are labelled `harmonized_nnunet_adaptation` and
