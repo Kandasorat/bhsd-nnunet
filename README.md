@@ -29,6 +29,9 @@ ablations must use a separate configuration and output directory.
 
 ## Gadi layout
 
+First-time Gadi users should begin with the Chinese team guide:
+[`docs/GADI_PLATFORM_GUIDE_ZH.md`](docs/GADI_PLATFORM_GUIDE_ZH.md).
+
 ```text
 /scratch/ke17/bhsd-nnunet/
   software/bhsd-nnunet/       Git checkout
@@ -59,7 +62,7 @@ git status --short
 module purge
 module load python3/3.10.4
 source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
-python scripts/check_gadi_ready.py --server
+python3 scripts/check_gadi_ready.py --server
 ```
 
 `git status --short` should be empty. Do not train on a login node. Each PBS job
@@ -92,7 +95,7 @@ Before any CSAM/CSA-Net submission, read
 architectures to nnU-Net; they are not source-faithful official training
 protocol reproductions.
 
-Monitor jobs with `qstat -u "$USER"`. Closing the local terminal does not stop a
+Monitor jobs with `qstat -t -u "$USER"`. Closing the local terminal does not stop a
 submitted non-interactive PBS job.
 
 ## Repository map

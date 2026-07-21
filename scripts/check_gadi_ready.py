@@ -85,6 +85,7 @@ REQUIRED_FILES = (
     "docs/ATTENTION_MODULE_SCREEN.md",
     "docs/FUSION_SCREEN.md",
     "docs/SPECTRAL_SLICE_SCREEN.md",
+    "docs/GADI_PLATFORM_GUIDE_ZH.md",
     "source_faithful/bhsd_data.py",
     "source_faithful/train_attention.py",
     "hpc/gadi/smoke_source_faithful_attention.pbs",

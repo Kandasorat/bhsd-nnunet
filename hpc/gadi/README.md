@@ -3,6 +3,10 @@
 These PBS scripts are the supported Gadi launchers. Run Git, file inspection,
 and `qsub` on a login node; training runs only inside PBS GPU jobs.
 
+For a beginner-oriented Chinese guide covering login, Git, PBS, monitoring,
+downloads, verification, and real project examples, see
+[`docs/GADI_PLATFORM_GUIDE_ZH.md`](../../docs/GADI_PLATFORM_GUIDE_ZH.md).
+
 ## 1. Refresh and validate the checkout
 
 ```bash
@@ -18,7 +22,7 @@ git status --short
 module purge
 module load python3/3.10.4
 source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
-python scripts/check_gadi_ready.py --server
+python3 scripts/check_gadi_ready.py --server
 ```
 
 Do not submit from inside the Git checkout. Use the external log directory so
@@ -66,7 +70,7 @@ After preparation finishes with exit status 0:
 
 ```bash
 cd "$BHSD_ROOT/software/bhsd-nnunet"
-python scripts/check_gadi_ready.py --server --require-binary
+python3 scripts/check_gadi_ready.py --server --require-binary
 cd "$BHSD_ROOT/logs"
 
 qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_2d_binary_folds.pbs"
@@ -76,7 +80,7 @@ qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_binary_folds.pbs"
 ## 4. Monitoring and resuming
 
 ```bash
-qstat -u "$USER"
+qstat -t -u "$USER"
 qstat -x -t "JOB_ID[].gadi-pbs"
 ```
 
