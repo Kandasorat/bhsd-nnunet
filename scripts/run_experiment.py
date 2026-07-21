@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import random
 import shutil
+import socket
 import subprocess
 import sys
 import threading
@@ -114,6 +115,48 @@ def append_row_to_csv(csv_path: Path, row: Dict[str, Any]) -> None:
         frame.to_csv(csv_path, mode="a", header=False, index=False)
     else:
         frame.to_csv(csv_path, index=False)
+
+
+def scheduler_metadata() -> Dict[str, Any]:
+    """Return portable scheduler identifiers without requiring PBS locally."""
+    return {
+        "hostname": socket.gethostname(),
+        "pbs_job_id": os.environ.get("PBS_JOBID"),
+        "pbs_array_index": os.environ.get("PBS_ARRAY_INDEX"),
+        "pbs_job_name": os.environ.get("PBS_JOBNAME"),
+        "pbs_queue": os.environ.get("PBS_QUEUE"),
+    }
+
+
+def write_fold_timing_record(config: Dict[str, Any], stage: str, row: Dict[str, Any]) -> Path | None:
+    """Place training timing beside checkpoints so normal result downloads include it."""
+    prefix = "train_fold_"
+    if not stage.startswith(prefix):
+        return None
+    try:
+        fold = int(stage[len(prefix) :])
+    except ValueError:
+        return None
+
+    resolved_paths = ensure_required_env()
+    trainer = str(config.get("trainer", "nnUNetTrainer"))
+    plans = str(config.get("plans", "nnUNetPlans"))
+    configuration = str(config["configuration"])
+    fold_dir = (
+        resolved_paths["nnUNet_results"]
+        / str(config["dataset_name"])
+        / f"{trainer}__{plans}__{configuration}"
+        / f"fold_{fold}"
+    )
+    if not fold_dir.is_dir():
+        return None
+
+    timing = dict(row)
+    timing["duration_hours"] = round(float(row["duration_seconds"]) / 3600.0, 6)
+    timing["timing_scope"] = "runner wall time for training plus post-training full validation"
+    timing_path = fold_dir / "run_timing.json"
+    timing_path.write_text(json.dumps(timing, indent=2), encoding="utf-8")
+    return timing_path
 
 
 def gpu_index_for_config(config: Dict[str, Any]) -> int:
@@ -296,8 +339,10 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
             "nnunet_n_proc_da": env["nnUNet_n_proc_DA"],
             "resume": bool(config.get("resume", False)),
         }
+        stage_metrics_row.update(scheduler_metadata())
         stage_metrics_row.update(monitor.summary())
         append_row_to_csv(exp_dir / "stage_metrics.csv", stage_metrics_row)
+        write_fold_timing_record(config, stage, stage_metrics_row)
 
 
 def maybe_install_custom_trainers(config: Dict[str, Any]) -> None:
@@ -438,6 +483,7 @@ def _run_inprocess_stage(config: Dict[str, Any], stage: str, command_description
             "nnunet_n_proc_da": os.environ.get("nnUNet_n_proc_DA", str(config.get("nnunet_n_proc_da", 4))),
             "resume": bool(config.get("resume", False)),
         }
+        stage_metrics_row.update(scheduler_metadata())
         stage_metrics_row.update(monitor.summary())
         append_row_to_csv(exp_dir / "stage_metrics.csv", stage_metrics_row)
 

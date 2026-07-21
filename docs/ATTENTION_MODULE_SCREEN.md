@@ -84,3 +84,21 @@ qsub hpc/gadi/train_25d_attention_screen_fold0.pbs
 The single `qsub` creates array indices 0-7 for A1-A8. Do not submit the older
 `train_lightweight_slice_attention_25d_fold0.pbs` in addition to A2; it is a
 superseded pilot with a different adapter capacity.
+
+## Timing and resource records
+
+`scripts/run_experiment.py` records runner start/end UTC timestamps, total
+duration, exit code, sampled GPU utilization/memory, and PBS identifiers. The
+central records are written to:
+
+```text
+$BHSD_RESULTS_DIR/<experiment_name>/stage_metrics.csv
+$BHSD_RESULTS_DIR/<experiment_name>/train_fold_0_resource_samples.csv
+```
+
+For runs launched after the timing-record enhancement, the same training
+summary is also copied to `fold_0/run_timing.json`, so a normal result-tree
+download includes it. `duration_seconds` covers the nnU-Net training command
+and its post-training full validation. PBS `resources_used.walltime` remains the
+authoritative scheduler walltime and may be slightly longer because it also
+includes environment setup and extension installation.

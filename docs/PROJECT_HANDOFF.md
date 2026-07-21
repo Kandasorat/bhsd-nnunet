@@ -194,6 +194,15 @@ evaluation. The module code is class-count agnostic, but binary A1-A8 jobs have
 not been submitted. Do not submit the superseded
 `train_lightweight_slice_attention_25d_fold0.pbs`.
 
+Timing is not lost for this array. The runner writes total duration and sampled
+GPU utilization/memory to
+`$BHSD_RESULTS_DIR/<experiment_name>/stage_metrics.csv` and
+`train_fold_0_resource_samples.csv`; PBS history separately provides
+`resources_used.walltime`. Because this array was launched before the later
+fold-local timing enhancement, download its `experiment_metadata` directories
+as well as the nnU-Net result trees. Future runs additionally write
+`fold_*/run_timing.json` beside their checkpoints.
+
 ## Verified local backups
 
 Each current backup contains 609 files, including five each of
