@@ -311,6 +311,8 @@ available 194.64 KSU. The completed baseline GPUs have been released.
 - Gadi A1-A8 array `174338292[]` was launched from revision `1167efe`.
 - Revised and locally verified D0-D6 slice-spectrum implementation revision:
   `4fa9572`.
+- Full-chain post-implementation audit and strengthened verification revision:
+  `6550ff3`.
 
 Read `docs/ATTENTION_REPRODUCTION_POLICY.md` before attention work. Current
 CSAM/CSA-Net configs are labelled `harmonized_nnunet_adaptation` and
