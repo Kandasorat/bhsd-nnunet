@@ -209,7 +209,22 @@ the augmentation workers used `seeds=None`; therefore small A1-A8 differences
 are not strict same-seed paired evidence. The results remain valid for
 screening A8 and A5 into the controlled fusion experiment.
 
-## Revised slice-spectrum D0-D6 screen (code ready, not yet run)
+## Controlled fusion C0-C3/F1-F2 screen (submitted)
+
+The six-job multiclass fold-0 controlled fusion array was submitted as
+`174346794[].gadi-pbs`. Array indices 0-5 map to C0, C1, C2, C3, F1, and F2.
+The last user-provided `qstat` snapshot on 2026-07-22 showed all six subjobs
+running at approximately 03:57 elapsed. This is only the last observed state,
+not proof of completion. Do not submit
+`hpc/gadi/train_25d_fusion_screen_fold0.pbs` a second time.
+
+C0 is the controlled stacked three-slice baseline; C1 is the matched adapter
+capacity control; C2 and C3 are controlled CSA and axial-convolution arms; F1
+is sequential axial convolution then CSA; F2 is their learnable parallel
+mixture. Rank F1/F2 against controlled C3 using full-case best-checkpoint Dice
+and the cost/Pareto rules in `docs/FUSION_SCREEN.md`.
+
+## Revised slice-spectrum D0-D6 screen (submitted)
 
 The earlier difference-based proposal was revised after prior-art review. Slice
 differencing itself is not new and must not be claimed as such: SDC-UNet already
@@ -249,6 +264,10 @@ The multiclass fold-0 D0-D6 spectral array was submitted as
 indices map directly to D0-D6. Do not submit this array a second time. Each
 subjob validates the spectral and cost rules, writes `compute_profile.json`,
 then trains and performs best-checkpoint full-case validation.
+
+The last user-provided `qstat` snapshot on 2026-07-22 showed all seven D0-D6
+subjobs queued while the fusion array was running. This is only the last
+observed state; check PBS rather than assuming it is still queued.
 
 Compute cost is a co-primary screening constraint, not a proxy for quality.
 Every new C0-C3/F1-F2 and D0-D6 subjob profiles total/adapter parameters,
@@ -314,8 +333,10 @@ Do not delete raw/preprocessed data, environment, or cache before upcoming
 experiments. NCI storage reports can lag behind live `du` after deletion.
 
 The completed multiclass/binary A0 and A1-A8 server trees may still exist under
-`runs/nnUNet_results`. Their verified local copies are the preservation source;
-do not delete any new C0-C3/F1-F2 tree before downloading and checking it.
+`runs/nnUNet_results`. Their verified local copies are the preservation source.
+The C0-C3/F1-F2 array `174346794[]` and D0-D6 array `174360420[]` are the active
+screening work; do not delete any of their trees before downloading and
+checking them.
 
 Last compute report: grant 200.00 KSU, used 5.36 KSU, reserved 0.00 KSU,
 available 194.64 KSU. The completed baseline GPUs have been released.
@@ -332,6 +353,10 @@ available 194.64 KSU. The completed baseline GPUs have been released.
   `6550ff3`.
 - Cost-aware profiling, Pareto selection, and assigned-GPU monitoring revision:
   `43fb3a2`.
+- Controlled fusion Gadi array: `174346794[]` (indices 0-5 = C0-C3/F1-F2;
+  last observed running; do not resubmit).
+- Spectral Gadi array: `174360420[]` (indices 0-6 = D0-D6; last observed queued;
+  do not resubmit).
 
 Read `docs/ATTENTION_REPRODUCTION_POLICY.md` before attention work. Current
 CSAM/CSA-Net configs are labelled `harmonized_nnunet_adaptation` and
@@ -356,28 +381,29 @@ necessary deviations are recorded in `docs/ATTENTION_MODULE_SCREEN.md`.
 
 ## Immediate next work
 
-1. On Gadi, pull `main`, confirm the displayed revision matches the latest
-   pushed commit, activate the existing environment, and run
-   `scripts/check_gadi_ready.py --server --require-binary` plus
-   `scripts/verify_spectral_slice_fusion.py`.
-2. Submit `hpc/gadi/train_25d_fusion_screen_fold0.pbs` once if it has not yet
-   been submitted. Its six indices are C0-C3 and F1-F2. Do not mix their new
-   controlled namespaces with A0-A8 paths.
-3. Monitor the submitted D0-D6 spectral array `174360420[]`; do not resubmit
-   `hpc/gadi/train_25d_spectral_screen_fold0.pbs`. It is a seven-job multiclass
-   fold-0 ablation, not an official reproduction or a novelty claim.
-4. Require `Exit_status = 0`, inspect warnings/errors, then download each
-   completed array's result trees together. Rank only the best-checkpoint
+1. On Gadi, check both submitted arrays; do not submit either launcher again:
+
+   ```bash
+   qstat -x -t "174346794[].gadi-pbs"
+   qstat -x -t "174360420[].gadi-pbs"
+   ```
+
+   The first maps indices 0-5 to C0-C3/F1-F2; the second maps 0-6 to D0-D6.
+2. For every completed subjob require `Exit_status = 0`, record
+   `resources_used.walltime`, and inspect its stdout/stderr for warnings or
+   errors. A disappeared/finished PBS entry alone is not proof of success.
+3. Download each completed array's result trees together. Rank only the
+   best-checkpoint
    full-case `validation/summary.json`; retain timing and `compute_profile.json`.
    Run `scripts/summarize_controlled_screens.py` for the relevant screen rather
    than ranking by Dice alone. D6's two-pass runtime must be charged in full.
-5. Advance a fusion only if it materially exceeds controlled C3 (target about
+4. Advance a fusion only if it materially exceeds controlled C3 (target about
    +0.01 foreground Dice) without a major per-class regression. Advance a
    spectral arm only if it beats D0 and the appropriate ungated control with a
    coherent subtype pattern. Fold 0 remains screening evidence.
-6. Confirm any winner and necessary controls over multiple seeds and then
+5. Confirm any winner and necessary controls over multiple seeds and then
    multiclass folds 1-4. Binary confirmation comes later; do not run all
    discarded arms on binary.
-7. CUDA loss/pooling kernels in this PyTorch stack are not guaranteed bitwise
+6. CUDA loss/pooling kernels in this PyTorch stack are not guaranteed bitwise
    deterministic; report these as controlled/best-effort reproducible and use
    multi-seed confirmation for claims.
