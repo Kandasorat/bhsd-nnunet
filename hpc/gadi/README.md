@@ -3,8 +3,8 @@
 These PBS scripts are the supported Gadi launchers. Run Git, file inspection,
 and `qsub` on a login node; training runs only inside PBS GPU jobs.
 
-For a beginner-oriented Chinese guide covering login, Git, PBS, monitoring,
-downloads, verification, and real project examples, see
+For a concise beginner-oriented Chinese guide covering login, Git, PBS,
+monitoring, logs, and downloads, see
 [`docs/GADI_PLATFORM_GUIDE_ZH.md`](../../docs/GADI_PLATFORM_GUIDE_ZH.md).
 
 ## 1. Refresh and validate the checkout
