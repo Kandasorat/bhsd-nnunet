@@ -305,8 +305,8 @@ available 194.64 KSU. The completed baseline GPUs have been released.
 - Branch: `main`.
 - Last pushed fusion-screen implementation revision: `fcdda53`.
 - Gadi A1-A8 array `174338292[]` was launched from revision `1167efe`.
-- The revised D0-D6 slice-spectrum implementation is locally verified and is
-  included in the current handoff revision.
+- Revised and locally verified D0-D6 slice-spectrum implementation revision:
+  `4fa9572`.
 
 Read `docs/ATTENTION_REPRODUCTION_POLICY.md` before attention work. Current
 CSAM/CSA-Net configs are labelled `harmonized_nnunet_adaptation` and
