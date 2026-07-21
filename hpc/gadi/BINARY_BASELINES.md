@@ -54,3 +54,19 @@ qsub -r y "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_3d_binary_folds.pbs"
 
 Monitor with `qstat -u "$USER"`. Each array contains folds 0 through 4 and is
 rerunnable; existing checkpoints cause the corresponding fold to resume.
+
+## 4. Binary 2.5D and source-faithful attention fold-0 pilots
+
+These are additional fold-0 experiments, not reruns of the completed binary
+2D/3D baselines. They use the same Dataset002 fold split and separate result
+namespaces:
+
+```bash
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_binary_25d_3slice_fold0.pbs"
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csam_source_faithful_binary_fold0.pbs"
+qsub "$BHSD_ROOT/software/bhsd-nnunet/hpc/gadi/train_csa_net_source_faithful_binary_fold0.pbs"
+```
+
+Run the four-way source-faithful smoke array first and require all subjobs to
+finish with exit status 0. See `IMMEDIATE_NEXT_RUNBOOK.md` for the enforced
+submission order.

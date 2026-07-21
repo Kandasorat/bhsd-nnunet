@@ -3,7 +3,7 @@
 #PBS -P ke17
 #PBS -q gpuvolta
 #PBS -N bhsd_src_smoke
-#PBS -J 0-1
+#PBS -J 0-3
 #PBS -l walltime=02:00:00
 #PBS -l ncpus=8
 #PBS -l ngpus=1
@@ -29,10 +29,16 @@ export BHSD_EXACT_SMOKE=1
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 
-configs=(csam_source_faithful_bhsd_fold0 csa_net_source_faithful_bhsd_fold0)
+configs=(
+    csam_source_faithful_bhsd_fold0
+    csa_net_source_faithful_bhsd_fold0
+    csam_source_faithful_bhsd_binary_fold0
+    csa_net_source_faithful_bhsd_binary_fold0
+)
 config="${configs[$PBS_ARRAY_INDEX]}"
 
 test -f "$nnUNet_preprocessed/Dataset001_BHSD/splits_final.json"
+test -f "$nnUNet_preprocessed/Dataset002_BHSD_Binary/splits_final.json"
 if [[ "$config" == csa_net_* ]]; then
     test -f "$BHSD_ROOT/software/pretrained/R50+ViT-B_16.npz"
 fi

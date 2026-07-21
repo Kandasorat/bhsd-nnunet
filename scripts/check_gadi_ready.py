@@ -45,6 +45,7 @@ REQUIRED_FILES = (
     "hpc/gadi/train_2d_folds.pbs",
     "hpc/gadi/train_3d_folds.pbs",
     "hpc/gadi/train_25d_3slice_fold0.pbs",
+    "hpc/gadi/train_binary_25d_3slice_fold0.pbs",
     "hpc/gadi/train_csam_volume_fold0.pbs",
     "hpc/gadi/train_csa_net_fold0.pbs",
     "source_faithful/bhsd_data.py",
@@ -52,6 +53,8 @@ REQUIRED_FILES = (
     "hpc/gadi/smoke_source_faithful_attention.pbs",
     "hpc/gadi/train_csam_source_faithful_fold0.pbs",
     "hpc/gadi/train_csa_net_source_faithful_fold0.pbs",
+    "hpc/gadi/train_csam_source_faithful_binary_fold0.pbs",
+    "hpc/gadi/train_csa_net_source_faithful_binary_fold0.pbs",
 )
 
 EXPECTED_EARLY_STOP = {
@@ -72,6 +75,8 @@ ATTENTION_ADAPTATION_CONFIGS = {
 SOURCE_FAITHFUL_CONFIGS = {
     "csam_source_faithful_bhsd_fold0": {
         "method": "csam",
+        "dataset_name": "Dataset001_BHSD",
+        "num_classes": 6,
         "epochs": 150,
         "batch_size": 2,
         "sequence_length": 20,
@@ -80,12 +85,35 @@ SOURCE_FAITHFUL_CONFIGS = {
     },
     "csa_net_source_faithful_bhsd_fold0": {
         "method": "csa_net",
+        "dataset_name": "Dataset001_BHSD",
+        "num_classes": 6,
         "epochs": 40,
         "batch_size": 16,
         "input_size": 224,
         "learning_rate": 0.001,
         "seed": 1234,
         "deterministic": True,
+    },
+    "csam_source_faithful_bhsd_binary_fold0": {
+        "method": "csam",
+        "epochs": 150,
+        "batch_size": 2,
+        "sequence_length": 20,
+        "input_size": 128,
+        "learning_rate": 0.0001,
+        "num_classes": 2,
+        "dataset_name": "Dataset002_BHSD_Binary",
+    },
+    "csa_net_source_faithful_bhsd_binary_fold0": {
+        "method": "csa_net",
+        "epochs": 40,
+        "batch_size": 16,
+        "input_size": 224,
+        "learning_rate": 0.001,
+        "seed": 1234,
+        "deterministic": True,
+        "num_classes": 2,
+        "dataset_name": "Dataset002_BHSD_Binary",
     },
 }
 

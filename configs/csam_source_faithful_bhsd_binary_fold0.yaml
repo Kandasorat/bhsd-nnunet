@@ -1,0 +1,27 @@
+method: csam
+experiment_name: csam_source_faithful_bhsd_binary_fold0
+protocol_tier: source_faithful_bhsd_port
+source_faithful: true
+upstream_repository: https://github.com/aL3x-O-o-Hung/CSAM
+upstream_commit: a0029206ef3b4147351813b7d67eb7b5964c8f33
+dataset_name: Dataset002_BHSD_Binary
+fold: 0
+num_classes: 2
+device: cuda
+seed: 3407
+epochs: 150
+batch_size: 2
+sequence_length: 20
+input_size: 128
+base_width: 64
+learning_rate: 0.0001
+num_workers: 1
+deterministic: false
+output_dir: /scratch/ke17/bhsd-nnunet/runs/source_faithful/csam_bhsd_binary_fold0
+model_selection: validation_binary_hemorrhage_dice
+unavoidable_deviations:
+  - BHSD nnU-Net CT preprocessing and the frozen Dataset002 fold split replace the missing released data loader.
+  - Dataset002 labels 1-5 are merged into one hemorrhage target for two-class CrossEntropyLoss.
+  - nnU-Net's -1 crop-padding label is mapped to semantic background for the upstream CrossEntropyLoss.
+  - Contiguous 20-slice windows with edge clamping make the fixed-length CSAM slice MLP executable on BHSD.
+  - The released repository imports missing CAT_Net classes; its included C2BAMUNet CSAM architecture is used.

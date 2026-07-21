@@ -174,8 +174,9 @@ def train(config: dict, smoke: bool, resume: bool) -> None:
     device = torch.device(config.get("device", "cuda") if torch.cuda.is_available() else "cpu")
     preprocessed = Path(os.environ["nnUNet_preprocessed"]) / config["dataset_name"]
     train_keys, val_keys = fold_keys(preprocessed, int(config["fold"]))
-    train_store = BHSDCaseStore(preprocessed, train_keys)
-    val_store = BHSDCaseStore(preprocessed, val_keys)
+    classes = int(config["num_classes"])
+    train_store = BHSDCaseStore(preprocessed, train_keys, binary=classes == 2)
+    val_store = BHSDCaseStore(preprocessed, val_keys, binary=classes == 2)
     if smoke:
         smoke_root = Path(os.environ.get("BHSD_SOURCE_SMOKE_DIR", Path.cwd() / "results" / "source_faithful_smoke"))
         output = smoke_root / config["experiment_name"]
@@ -188,8 +189,6 @@ def train(config: dict, smoke: bool, resume: bool) -> None:
             )
     output.mkdir(parents=True, exist_ok=True)
     (output / "protocol.json").write_text(json.dumps(config, indent=2), encoding="utf-8")
-    classes = int(config["num_classes"])
-
     if config["method"] == "csam":
         length, size = int(config["sequence_length"]), int(config["input_size"])
         reduced_smoke = smoke and os.environ.get("BHSD_EXACT_SMOKE", "0") != "1"

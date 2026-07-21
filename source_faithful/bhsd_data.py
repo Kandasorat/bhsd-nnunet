@@ -22,8 +22,9 @@ def fold_keys(preprocessed_dataset: Path, fold: int) -> tuple[list[str], list[st
 class BHSDCaseStore:
     """Read nnU-Net-preprocessed cases while preserving the frozen five-fold split."""
 
-    def __init__(self, preprocessed_dataset: str | Path, keys: list[str]):
+    def __init__(self, preprocessed_dataset: str | Path, keys: list[str], binary: bool = False):
         self.root = Path(preprocessed_dataset)
+        self.binary = bool(binary)
         self.data_folder = self.root / "nnUNetPlans_2d"
         dataset_class = infer_dataset_class(str(self.data_folder))
         self.dataset = dataset_class(str(self.data_folder), keys)
@@ -36,6 +37,8 @@ class BHSDCaseStore:
         # standalone losses have no ignore-label handling, so this BHSD adapter
         # restores those voxels to semantic background.
         target = np.maximum(target, 0)
+        if self.binary:
+            target = (target > 0).astype(np.int64, copy=False)
         return np.asarray(data[0], dtype=np.float32), target
 
 

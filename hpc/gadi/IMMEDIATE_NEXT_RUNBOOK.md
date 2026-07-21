@@ -32,17 +32,19 @@ source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
 python scripts/check_gadi_ready.py --server --require-binary
 ```
 
-Confirm the new 2.5D result namespace is clean:
+Confirm both new 2.5D result namespaces are clean:
 
 ```bash
 test ! -e "$nnUNet_results/Dataset001_BHSD/nnUNetTrainer_25D_HarmonizedMin300Patience100__nnUNetPlans__2d/fold_0"
+test ! -e "$nnUNet_results/Dataset002_BHSD_Binary/nnUNetTrainer_25D_HarmonizedMin300Patience100__nnUNetPlans__2d/fold_0"
 ```
 
-## 3. Submit the isolated harmonized 2.5D fold 0
+## 3. Submit isolated harmonized multiclass and binary 2.5D fold 0
 
 ```bash
 cd "$BHSD_ROOT/logs"
 qsub "$REPO_DIR/hpc/gadi/train_25d_3slice_fold0.pbs"
+qsub "$REPO_DIR/hpc/gadi/train_binary_25d_3slice_fold0.pbs"
 ```
 
 ## 4. Smoke-test both source-faithful BHSD ports
@@ -53,14 +55,14 @@ CSA-Net requires this file first:
 /scratch/ke17/bhsd-nnunet/software/pretrained/R50+ViT-B_16.npz
 ```
 
-Then submit the two-job smoke array:
+Then submit the four-job smoke array (multiclass/binary x CSAM/CSA-Net):
 
 ```bash
 cd "$BHSD_ROOT/logs"
 qsub "$REPO_DIR/hpc/gadi/smoke_source_faithful_attention.pbs"
 ```
 
-Require both subjobs to finish with `Exit_status = 0` and inspect:
+Require all four subjobs to finish with `Exit_status = 0` and inspect:
 
 ```bash
 find "$BHSD_ROOT/runs/source_faithful_smoke" -name smoke.json -print -exec cat {} \;
@@ -75,9 +77,11 @@ after viewing outcomes.
 cd "$BHSD_ROOT/logs"
 qsub "$REPO_DIR/hpc/gadi/train_csam_source_faithful_fold0.pbs"
 qsub "$REPO_DIR/hpc/gadi/train_csa_net_source_faithful_fold0.pbs"
+qsub "$REPO_DIR/hpc/gadi/train_csam_source_faithful_binary_fold0.pbs"
+qsub "$REPO_DIR/hpc/gadi/train_csa_net_source_faithful_binary_fold0.pbs"
 ```
 
-If either source-faithful run reaches the 48-hour walltime, submit the same PBS
+If any source-faithful run reaches the 48-hour walltime, submit the same PBS
 file again. It detects `checkpoint_latest.pth` and resumes at the next epoch.
 
 Do not submit the older `train_csam_volume_fold0.pbs` or
