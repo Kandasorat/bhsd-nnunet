@@ -285,6 +285,11 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
     write_metadata(config, stage)
     env = os.environ.copy()
     env["nnUNet_n_proc_DA"] = str(config.get("nnunet_n_proc_da", 4))
+    env["BHSD_SEED"] = str(int(config.get("seed", 3407)))
+    env["PYTHONHASHSEED"] = env["BHSD_SEED"]
+    env["BHSD_DETERMINISTIC"] = "1" if bool(config.get("deterministic", False)) else "0"
+    if env["BHSD_DETERMINISTIC"] == "1":
+        env["CUBLAS_WORKSPACE_CONFIG"] = str(config.get("cublas_workspace_config", ":4096:8"))
     if "early_stop_patience" in config:
         env["BHSD_EARLY_STOP_PATIENCE"] = str(config["early_stop_patience"])
     if "early_stop_min_epochs" in config:
@@ -337,6 +342,8 @@ def run_command(command: List[str], config: Dict[str, Any], stage: str) -> None:
             "exit_code": exit_code,
             "device": config.get("device", "cuda"),
             "nnunet_n_proc_da": env["nnUNet_n_proc_DA"],
+            "seed": env["BHSD_SEED"],
+            "deterministic": env["BHSD_DETERMINISTIC"],
             "resume": bool(config.get("resume", False)),
         }
         stage_metrics_row.update(scheduler_metadata())

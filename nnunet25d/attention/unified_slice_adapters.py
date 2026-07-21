@@ -208,6 +208,32 @@ class AxialSliceConv(nn.Module):
         return (volume + self.temporal(volume)).permute(0, 2, 1, 3, 4)
 
 
+class AxialCSASequentialFusion(nn.Module):
+    """F1: local axial aggregation followed by CSA center-neighbor refinement."""
+
+    def __init__(self, channels: int) -> None:
+        super().__init__()
+        self.axial = AxialSliceConv(channels)
+        self.csa = CSACenterToNeighborAttention(channels)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.csa(self.axial(x))
+
+
+class AxialCSAParallelFusion(nn.Module):
+    """F2: learn a normalized mixture of axial and CSA refinement branches."""
+
+    def __init__(self, channels: int) -> None:
+        super().__init__()
+        self.axial = AxialSliceConv(channels)
+        self.csa = CSACenterToNeighborAttention(channels)
+        self.branch_logits = nn.Parameter(torch.zeros(2))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        weights = torch.softmax(self.branch_logits, dim=0)
+        return weights[0] * self.axial(x) + weights[1] * self.csa(x)
+
+
 METHODS = {
     "adapter_control",
     "csam_slice_gate",
@@ -217,6 +243,8 @@ METHODS = {
     "cbam",
     "coordinate_attention",
     "axial_slice_conv",
+    "axial_csa_sequential",
+    "axial_csa_parallel",
 }
 
 
@@ -271,8 +299,14 @@ class UnifiedSliceAdapter(nn.Module):
         elif method == "coordinate_attention":
             self.mechanism = CoordinateAttention(flat_channels)
             self._flat_mechanism = True
-        else:
+        elif method == "axial_slice_conv":
             self.mechanism = AxialSliceConv(descriptor_channels)
+            self._flat_mechanism = False
+        elif method == "axial_csa_sequential":
+            self.mechanism = AxialCSASequentialFusion(descriptor_channels)
+            self._flat_mechanism = False
+        else:
+            self.mechanism = AxialCSAParallelFusion(descriptor_channels)
             self._flat_mechanism = False
 
         self.project = nn.Conv2d(descriptor_channels, channels_per_slice, kernel_size=1)

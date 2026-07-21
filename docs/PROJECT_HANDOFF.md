@@ -166,15 +166,12 @@ three-slice input therefore did not automatically improve multiclass subtype
 separation. A1-A8 test whether the fusion mechanism, rather than the presence
 of neighbouring slices alone, changes that result.
 
-## Active multiclass A1-A8 screen
+## Completed multiclass A1-A8 screen
 
-PBS array `174338292[]` was submitted from Git revision `1167efe`. At this
-snapshot all eight V100 subjobs are in state `R`; the most recent observed
-elapsed walltime was about 02:23. Query with:
-
-```bash
-qstat -x -t "174338292[].gadi-pbs"
-```
+PBS array `174338292[]` was submitted from Git revision `1167efe`. All eight
+V100 subjobs completed with `Exit_status = 0`, and all result trees were
+downloaded locally and checked for best/final checkpoints, logs, debug files,
+progress plots, and full-case validation summaries.
 
 | Array index | ID | Trainer mechanism |
 |---:|---|---|
@@ -194,14 +191,23 @@ evaluation. The module code is class-count agnostic, but binary A1-A8 jobs have
 not been submitted. Do not submit the superseded
 `train_lightweight_slice_attention_25d_fold0.pbs`.
 
-Timing is not lost for this array. The runner writes total duration and sampled
-GPU utilization/memory to
-`$BHSD_RESULTS_DIR/<experiment_name>/stage_metrics.csv` and
-`train_fold_0_resource_samples.csv`; PBS history separately provides
-`resources_used.walltime`. Because this array was launched before the later
-fold-local timing enhancement, download its `experiment_metadata` directories
-as well as the nnU-Net result trees. Future runs additionally write
-`fold_*/run_timing.json` beside their checkpoints.
+| Rank | Arm | Foreground Dice | Stop epoch | Total hours |
+|---:|---|---:|---:|---:|
+| 1 | A8 axial slice convolution | 0.295321 | 730 | 4.5185 |
+| 2 | A5 CSA centre-to-neighbour | 0.272406 | 432 | 2.7589 |
+| 3 | A2 CSAM slice gate | 0.265697 | 580 | 3.3498 |
+| 4 | A1 adapter control | 0.263102 | 475 | 2.7656 |
+| 5 | A4 pixel-wise cross-slice | 0.262461 | 598 | 3.4757 |
+| 6 | A7 coordinate attention | 0.257809 | 399 | 2.4143 |
+| 7 | A6 CBAM | 0.252767 | 411 | 2.5643 |
+| 8 | A3 ECA slice gate | 0.249636 | 422 | 2.4355 |
+
+A8 exceeded A0 by 0.042212 and 2D fold 0 by 0.026245, but remained 0.061133
+below 3D fold 0. A5 was the strongest attention arm. The old YAML seed was set
+only in the parent runner while `nnUNetv2_train` ran in a child process, and
+the augmentation workers used `seeds=None`; therefore small A1-A8 differences
+are not strict same-seed paired evidence. The results remain valid for
+screening A8 and A5 into the controlled fusion experiment.
 
 ## Verified local backups
 
@@ -223,6 +229,10 @@ C:\Users\92127\OneDrive - UNSW\project_linpeng\server_backups
 | `binary_3d_min300_patience100` | 6,009,003,037 |
 | `multiclass_25d_3slice_fold0_min300_patience100` | 7,199,232,516 |
 | `binary_25d_3slice_fold0_min300_patience100` | 1,264,183,758 |
+
+The complete A1-A8 result trees are under
+`multiclass_25d_attention_screen_partial_2026-07-22`; each arm contains 126
+files and the expected best/final checkpoints and validation summary.
 
 Server `du -sb` was 86,016 bytes larger per tree because it included directory
 metadata. This is not missing content.
@@ -250,11 +260,9 @@ data: nnUNet_raw 2.8G; archives 4.2G; nnUNet_preprocessed 6.0G
 Do not delete raw/preprocessed data, environment, or cache before upcoming
 experiments. NCI storage reports can lag behind live `du` after deletion.
 
-The completed multiclass/binary 2.5D A0 result trees and all live A1-A8 result
-trees remain under `runs/nnUNet_results`. Do not delete them while the screen is
-running. After A1-A8 complete, download all completed experiment trees with one
-local PowerShell batch script, verify key artifacts plus server/local counts and
-bytes, and only then consider server cleanup.
+The completed multiclass/binary A0 and A1-A8 server trees may still exist under
+`runs/nnUNet_results`. Their verified local copies are the preservation source;
+do not delete any new C0-C3/F1-F2 tree before downloading and checking it.
 
 Last compute report: grant 200.00 KSU, used 5.36 KSU, reserved 0.00 KSU,
 available 194.64 KSU. The completed baseline GPUs have been released.
@@ -263,7 +271,8 @@ available 194.64 KSU. The completed baseline GPUs have been released.
 
 - GitHub: `https://github.com/Kandasorat/bhsd-nnunet.git`.
 - Branch: `main`.
-- Last verified and pushed code revision: `1167efe`.
+- Last verified and pushed code revision before the fusion implementation:
+  `47d7e8a`.
 - Gadi array `174338292[]` was launched from that revision.
 - Canonical and repository-copy handoff files were synchronized on 2026-07-22;
   this documentation update does not change the code used by active jobs.
@@ -291,23 +300,23 @@ necessary deviations are recorded in `docs/ATTENTION_MODULE_SCREEN.md`.
 
 ## Immediate next work
 
-1. Monitor `174338292[]`; do not resubmit A0 or any A1-A8 arm while its current
-   job/result path exists.
-2. When the array finishes, require `Exit_status = 0` for every index 0-7 and
-   scan PBS/training logs for tracebacks, OOM, killed processes, or incomplete
-   validation.
-3. Run `scripts/summarize_attention_screen.py`. Compare only full-case
-   `validation/summary.json` foreground/class Dice; A0 is 0.253109. Do not rank
-   methods by online EMA.
-4. Use one local PowerShell batch script to download all eight complete result
-   trees into distinctly named directories under `server_backups`. Verify
-   `checkpoint_best.pth`, `checkpoint_final.pth`, `summary.json`, file counts,
-   and summed file bytes against Gadi.
-5. Build the A0-A8 fold-0 table and inspect per-class effects, especially EDH,
-   IVH, SAH, and SDH. Treat fold-0 ranking as screening evidence only.
-6. Select the most defensible one or two mechanisms using a frozen rule that
-   considers Dice, class balance, stability, parameters, memory, and runtime.
-   Then decide whether to run confirmatory multiclass folds and later binary
-   confirmation. Do not run all binary A1-A8 arms by default.
-7. Preserve the distinction between source-faithful CSAM/CSA-Net experiments
-   and these harmonized module adaptations in all tables and writing.
+1. Pull the fusion-screen revision on Gadi and submit
+   `hpc/gadi/train_25d_fusion_screen_fold0.pbs` once. Its six indices are C0
+   controlled baseline, C1 adapter control, C2 controlled A5, C3 controlled A8,
+   F1 sequential A8-to-A5 fusion, and F2 parallel learnable fusion.
+2. Do not mix these new controlled namespaces with the older A0-A8 output
+   paths. All six use seed 3407 inside the actual training child process,
+   single-thread augmentation, deterministic cuDNN settings, and isolated
+   trainer names.
+3. Require `Exit_status = 0`, inspect warnings/errors, then download all six
+   result trees together. Compare only `checkpoint_best.pth` full-case
+   `validation/summary.json` values and retain runtime metadata.
+4. Advance a fusion only if it materially exceeds controlled C3 (target about
+   +0.01 foreground Dice) without a major per-class regression. Treat fold 0
+   as screening evidence, not a final claim.
+5. If F1 or F2 passes, run the winner and necessary controls across multiple
+   seeds, then multiclass folds 1-4. Binary confirmation comes later and should
+   not include every discarded arm.
+6. CUDA loss/pooling kernels in this PyTorch stack are not guaranteed bitwise
+   deterministic; report the new runs as controlled/best-effort reproducible,
+   and use multi-seed confirmation for claims.

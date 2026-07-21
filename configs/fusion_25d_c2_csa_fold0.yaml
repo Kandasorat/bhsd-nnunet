@@ -1,0 +1,28 @@
+experiment_name: fusion_25d_c2_csa_multiclass_fold0_seed3407
+protocol_tier: controlled_nnunet_fusion_screen
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_CSACenterNeighborControlled
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+deterministic: true
+nnunet_n_proc_da: 0
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: controlled_csa_center_neighbor
+num_input_slices: 3
+descriptor_channels: 8
+csa_token_grid: 16
+notes:
+  - C2 is the controlled replication of A5.

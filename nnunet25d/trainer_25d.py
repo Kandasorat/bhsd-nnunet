@@ -13,6 +13,12 @@ from nnunet25d.baseline.trainer_25d import (
     nnUNetTrainer_25D_CBAM,
     nnUNetTrainer_25D_CoordinateAttention,
     nnUNetTrainer_25D_AxialSliceConv,
+    nnUNetTrainer_25D_Controlled,
+    nnUNetTrainer_25D_AdapterControlControlled,
+    nnUNetTrainer_25D_CSACenterNeighborControlled,
+    nnUNetTrainer_25D_AxialSliceConvControlled,
+    nnUNetTrainer_25D_AxialCSASequential,
+    nnUNetTrainer_25D_AxialCSAParallel,
 )
 
 __all__ = [
@@ -30,4 +36,10 @@ __all__ = [
     "nnUNetTrainer_25D_CBAM",
     "nnUNetTrainer_25D_CoordinateAttention",
     "nnUNetTrainer_25D_AxialSliceConv",
+    "nnUNetTrainer_25D_Controlled",
+    "nnUNetTrainer_25D_AdapterControlControlled",
+    "nnUNetTrainer_25D_CSACenterNeighborControlled",
+    "nnUNetTrainer_25D_AxialSliceConvControlled",
+    "nnUNetTrainer_25D_AxialCSASequential",
+    "nnUNetTrainer_25D_AxialCSAParallel",
 ]

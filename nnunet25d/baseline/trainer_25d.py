@@ -1,5 +1,7 @@
 import multiprocessing
+import os
 from pathlib import Path
+import random
 from time import sleep
 import warnings
 
@@ -39,8 +41,33 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
 
     def __init__(self, plans: dict, configuration: str, fold: int, dataset_json: dict, device: torch.device):
         super().__init__(plans, configuration, fold, dataset_json, device)
+        self.bhsd_seed = int(os.environ.get("BHSD_SEED", "3407"))
+        self.bhsd_deterministic = os.environ.get("BHSD_DETERMINISTIC", "0") == "1"
         self.configuration_manager.configuration["patch_size"] = [256, 256]
         self.initialize_early_stopping()
+
+    def _apply_reproducibility_settings(self) -> None:
+        seed = self.bhsd_seed + int(getattr(self, "local_rank", 0))
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+        if self.bhsd_deterministic:
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+            torch.use_deterministic_algorithms(True, warn_only=True)
+
+    def on_train_start(self):
+        # nnU-Net's CLI enables cuDNN benchmarking immediately before this hook.
+        # Reapply the locked experiment policy before initialization/dataloaders.
+        self._apply_reproducibility_settings()
+        super().on_train_start()
+        self.print_to_log_file(
+            f"BHSD reproducibility: seed={self.bhsd_seed}, "
+            f"deterministic={self.bhsd_deterministic}, n_proc_DA={get_allowed_n_proc_DA()}",
+            also_print_to_console=True,
+        )
 
     def _resolve_architecture_definition(self):
         if all(
@@ -363,7 +390,7 @@ class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
             **self.dataloader_kwargs,
         )
 
-        allowed_num_processes = get_allowed_n_proc_DA()
+        allowed_num_processes = 0 if self.bhsd_deterministic else get_allowed_n_proc_DA()
         if allowed_num_processes == 0:
             mt_gen_train = SingleThreadedAugmenter(dl_tr, None)
             mt_gen_val = SingleThreadedAugmenter(dl_val, None)
@@ -463,6 +490,40 @@ class nnUNetTrainer_25D_CoordinateAttention(_nnUNetTrainer25DUnifiedAdapter):
 
 class nnUNetTrainer_25D_AxialSliceConv(_nnUNetTrainer25DUnifiedAdapter):
     adapter_method = "axial_slice_conv"
+
+
+class nnUNetTrainer_25D_Controlled(_nnUNetTrainer25DBase):
+    """C0: isolated result namespace for the deterministic three-slice baseline."""
+
+
+class nnUNetTrainer_25D_AdapterControlControlled(_nnUNetTrainer25DUnifiedAdapter):
+    """C1: deterministic shared-adapter capacity control."""
+
+    adapter_method = "adapter_control"
+
+
+class nnUNetTrainer_25D_CSACenterNeighborControlled(_nnUNetTrainer25DUnifiedAdapter):
+    """C2: deterministic replication of A5."""
+
+    adapter_method = "csa_center_neighbor"
+
+
+class nnUNetTrainer_25D_AxialSliceConvControlled(_nnUNetTrainer25DUnifiedAdapter):
+    """C3: deterministic replication of A8."""
+
+    adapter_method = "axial_slice_conv"
+
+
+class nnUNetTrainer_25D_AxialCSASequential(_nnUNetTrainer25DUnifiedAdapter):
+    """F1: axial slice convolution followed by CSA refinement."""
+
+    adapter_method = "axial_csa_sequential"
+
+
+class nnUNetTrainer_25D_AxialCSAParallel(_nnUNetTrainer25DUnifiedAdapter):
+    """F2: learnable parallel fusion of axial and CSA branches."""
+
+    adapter_method = "axial_csa_parallel"
 
 
 class nnUNetTrainer_25D_5Slice(_nnUNetTrainer25DBase):

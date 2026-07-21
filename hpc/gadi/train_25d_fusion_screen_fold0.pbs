@@ -1,0 +1,85 @@
+#!/bin/bash
+
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N bhsd_25d_fuse_f0
+#PBS -J 0-5
+#PBS -r y
+#PBS -l walltime=48:00:00
+#PBS -l ncpus=12
+#PBS -l ngpus=1
+#PBS -l mem=32GB
+#PBS -l jobfs=20GB
+#PBS -l storage=scratch/ke17
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+export BHSD_RESULTS_DIR="$BHSD_ROOT/runs/experiment_metadata"
+export BHSD_SKIP_EXTENSION_INSTALL=1
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+configs=(
+    fusion_25d_c0_baseline_fold0
+    fusion_25d_c1_adapter_control_fold0
+    fusion_25d_c2_csa_fold0
+    fusion_25d_c3_axial_fold0
+    fusion_25d_f1_sequential_fold0
+    fusion_25d_f2_parallel_fold0
+)
+trainers=(
+    nnUNetTrainer_25D_Controlled
+    nnUNetTrainer_25D_AdapterControlControlled
+    nnUNetTrainer_25D_CSACenterNeighborControlled
+    nnUNetTrainer_25D_AxialSliceConvControlled
+    nnUNetTrainer_25D_AxialCSASequential
+    nnUNetTrainer_25D_AxialCSAParallel
+)
+
+index="${PBS_ARRAY_INDEX:?PBS_ARRAY_INDEX is required; submit this file as an array job}"
+if (( index < 0 || index >= ${#configs[@]} )); then
+    echo "Invalid PBS_ARRAY_INDEX=$index" >&2
+    exit 2
+fi
+config="${configs[$index]}"
+trainer="${trainers[$index]}"
+
+test -f "$nnUNet_preprocessed/Dataset001_BHSD/splits_final.json"
+mkdir -p "$BHSD_RESULTS_DIR" "$BHSD_ROOT/logs"
+cd "$REPO_DIR"
+
+(
+    flock -x 9
+    python3 nnunet25d/install_extension.py
+) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
+
+args=(train --config "$config" --fold 0)
+checkpoint_dir="$nnUNet_results/Dataset001_BHSD/${trainer}__nnUNetPlans__2d/fold_0"
+if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_latest.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_final.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_best.pth" ]]; then
+    args+=(--resume)
+fi
+
+echo "array_index=$index config=$config trainer=$trainer controlled_seed=3407"
+python3 scripts/run_experiment.py "${args[@]}"
+
+# Literal references retained for repository readiness validation:
+# --config fusion_25d_c0_baseline_fold0
+# --config fusion_25d_c1_adapter_control_fold0
+# --config fusion_25d_c2_csa_fold0
+# --config fusion_25d_c3_axial_fold0
+# --config fusion_25d_f1_sequential_fold0
+# --config fusion_25d_f2_parallel_fold0

@@ -1,0 +1,31 @@
+experiment_name: fusion_25d_f2_axial_csa_parallel_multiclass_fold0_seed3407
+protocol_tier: controlled_nnunet_fusion_screen
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_AxialCSAParallel
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 3407
+deterministic: true
+nnunet_n_proc_da: 0
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: learned_axial_csa_parallel
+num_input_slices: 3
+descriptor_channels: 8
+axial_kernel: [3, 1, 1]
+csa_token_grid: 16
+fusion_initial_weights: [0.5, 0.5]
+notes:
+  - F2 learns a softmax-normalized mixture of independent A8 and A5 branches.
+  - The common output projection remains zero-initialized, matching every controlled adapter arm at initialization.

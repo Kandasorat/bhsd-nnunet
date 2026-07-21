@@ -41,6 +41,12 @@ ACTIVE_CONFIGS = (
     "screen_25d_a6_cbam_fold0",
     "screen_25d_a7_coordinate_attention_fold0",
     "screen_25d_a8_axial_slice_conv_fold0",
+    "fusion_25d_c0_baseline_fold0",
+    "fusion_25d_c1_adapter_control_fold0",
+    "fusion_25d_c2_csa_fold0",
+    "fusion_25d_c3_axial_fold0",
+    "fusion_25d_f1_sequential_fold0",
+    "fusion_25d_f2_parallel_fold0",
 )
 
 REQUIRED_FILES = (
@@ -62,7 +68,9 @@ REQUIRED_FILES = (
     "hpc/gadi/train_csam_volume_fold0.pbs",
     "hpc/gadi/train_csa_net_fold0.pbs",
     "hpc/gadi/train_25d_attention_screen_fold0.pbs",
+    "hpc/gadi/train_25d_fusion_screen_fold0.pbs",
     "docs/ATTENTION_MODULE_SCREEN.md",
+    "docs/FUSION_SCREEN.md",
     "source_faithful/bhsd_data.py",
     "source_faithful/train_attention.py",
     "hpc/gadi/smoke_source_faithful_attention.pbs",
@@ -94,6 +102,15 @@ ATTENTION_ADAPTATION_CONFIGS = {
     "screen_25d_a6_cbam_fold0",
     "screen_25d_a7_coordinate_attention_fold0",
     "screen_25d_a8_axial_slice_conv_fold0",
+}
+
+FUSION_CONFIGS = {
+    "fusion_25d_c0_baseline_fold0",
+    "fusion_25d_c1_adapter_control_fold0",
+    "fusion_25d_c2_csa_fold0",
+    "fusion_25d_c3_axial_fold0",
+    "fusion_25d_f1_sequential_fold0",
+    "fusion_25d_f2_parallel_fold0",
 }
 
 SOURCE_FAITHFUL_CONFIGS = {
@@ -201,6 +218,13 @@ def check_repository() -> tuple[list[str], list[str]]:
                 errors.append(f"{path.name}: must declare source_faithful: false")
             if not config.get("upstream_repository") or not config.get("upstream_commit"):
                 errors.append(f"{path.name}: missing pinned upstream provenance")
+        if name in FUSION_CONFIGS:
+            if config.get("protocol_tier") != "controlled_nnunet_fusion_screen":
+                errors.append(f"{path.name}: incorrect controlled fusion protocol tier")
+            if config.get("seed") != 3407 or config.get("deterministic") is not True:
+                errors.append(f"{path.name}: controlled seed 3407/deterministic policy is not locked")
+            if config.get("nnunet_n_proc_da") != 0:
+                errors.append(f"{path.name}: controlled fusion must use single-thread augmentation")
 
     for name, expected_fields in SOURCE_FAITHFUL_CONFIGS.items():
         path = CONFIG_DIR / f"{name}.yaml"
