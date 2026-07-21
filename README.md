@@ -29,9 +29,6 @@ ablations must use a separate configuration and output directory.
 
 ## Gadi layout
 
-First-time Gadi users should begin with the Chinese team guide:
-[`docs/GADI_PLATFORM_GUIDE_ZH.md`](docs/GADI_PLATFORM_GUIDE_ZH.md).
-
 ```text
 /scratch/ke17/bhsd-nnunet/
   software/bhsd-nnunet/       Git checkout

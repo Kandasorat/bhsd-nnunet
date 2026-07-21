@@ -63,9 +63,6 @@ YAML experiment configuration files. These are the main experiment definitions f
 
 Project documentation and simple web-facing materials.
 
-- `docs/GADI_PLATFORM_GUIDE_ZH.md`
-  Concise Chinese NCI Gadi guide covering personal project paths, GitHub repositories, dataset upload, PBS submission, monitoring, and result download.
-
 - `docs/AWS_DEPLOYMENT.md`
   Linux/AWS G5 deployment instructions for the reproducible pipeline.
 

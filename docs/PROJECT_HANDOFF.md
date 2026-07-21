@@ -26,16 +26,6 @@ Repository copy:
 C:\Users\92127\OneDrive - UNSW\project_linpeng\code\docs\PROJECT_HANDOFF.md
 ```
 
-Beginner-oriented Chinese NCI Gadi team guide:
-
-```text
-C:\Users\92127\OneDrive - UNSW\project_linpeng\code\docs\GADI_PLATFORM_GUIDE_ZH.md
-```
-
-New group members should read that guide before receiving responsibility for
-Git pulls, PBS submissions, monitoring, transfers, or server cleanup. They must
-use their own NCI accounts and must not reuse the example user's credentials.
-
 ## Project scope
 
 Run reproducible BHSD intracranial-haemorrhage segmentation experiments on NCI
