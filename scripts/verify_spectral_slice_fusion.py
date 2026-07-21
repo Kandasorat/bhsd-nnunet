@@ -41,9 +41,24 @@ def main() -> None:
     if not torch.allclose(input_energy, spectral_energy, rtol=1e-12, atol=1e-12):
         raise AssertionError(f"Path-spectrum energy mismatch: {input_energy} versus {spectral_energy}")
 
+    reversed_features = features[:, [2, 1, 0]]
+    reversed_z0, reversed_z1, reversed_z2 = path3_spectral_transform(reversed_features)
+    if not torch.allclose(z0, reversed_z0, rtol=1e-12, atol=1e-12):
+        raise AssertionError("Low-pass band must be invariant to neighbor reversal")
+    if not torch.allclose(z1, -reversed_z1, rtol=1e-12, atol=1e-12):
+        raise AssertionError("Odd band must change sign under neighbor reversal")
+    if not torch.allclose(z2, reversed_z2, rtol=1e-12, atol=1e-12):
+        raise AssertionError("Curvature band must be invariant to neighbor reversal")
+
     x = torch.randn(2, 3, 32, 32)
+    adapter_parameter_counts = {}
     for method in sorted(SPECTRAL_METHODS):
         adapter = SpectralSliceFusionInputAdapter(_Backbone(), method=method)
+        adapter_parameter_counts[method] = sum(
+            parameter.numel()
+            for name, parameter in adapter.named_parameters()
+            if not name.startswith("backbone.")
+        )
         adapted = adapter.adapted_input(x)
         if adapted.shape != x.shape:
             raise AssertionError(f"{method}: adapted shape {adapted.shape} != {x.shape}")
@@ -56,6 +71,12 @@ def main() -> None:
         if adapter.project.weight.grad is None or not torch.isfinite(adapter.project.weight.grad).all():
             raise AssertionError(f"{method}: missing/non-finite residual projection gradient")
 
+    equal_capacity_methods = ("d0_control", "d1_lowpass", "d2_odd_difference", "d4_orthogonal_all")
+    if len({adapter_parameter_counts[method] for method in equal_capacity_methods}) != 1:
+        raise AssertionError(f"Equal-capacity arms differ: {adapter_parameter_counts}")
+    if adapter_parameter_counts["d5_adaptive_oriented"] != adapter_parameter_counts["d6_adaptive_invariant"]:
+        raise AssertionError(f"D5/D6 adapter capacities differ: {adapter_parameter_counts}")
+
     invariant = SpectralSliceFusionInputAdapter(_Backbone(), method="d6_adaptive_invariant")
     swapped = x[:, [2, 1, 0]]
     original_prediction = invariant(x)
@@ -67,7 +88,10 @@ def main() -> None:
 
     print("Spectral slice fusion verification passed.")
     print(f"Validated methods: {', '.join(sorted(SPECTRAL_METHODS))}")
-    print("Validated: orthonormal energy, zero-init identity, deep supervision, backward gradients, D6 invariance")
+    print(
+        "Validated: orthonormal energy/parity, controlled capacities, zero-init identity, "
+        "deep supervision, backward gradients, D6 invariance"
+    )
 
 
 if __name__ == "__main__":

@@ -28,4 +28,4 @@ descriptor_channels: 8
 gate_normalization: softmax_across_bands
 notes:
   - Pixel-wise softmax selects low, signed odd, and even curvature bands.
-  - The gate sees band magnitudes while the fused odd band retains direction.
+  - The gate sees the low-pass response plus odd/curvature magnitudes; the fused odd band retains direction.

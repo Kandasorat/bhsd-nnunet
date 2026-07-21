@@ -77,7 +77,7 @@ if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
     args+=(--resume)
 fi
 
-echo "array_index=$index config=$config trainer=$trainer controlled_seed=3407"
+echo "array_index=$index config=$config trainer=$trainer model_seed=3407 data_seed=1003410"
 python3 scripts/run_experiment.py "${args[@]}"
 
 # Literal references retained for repository readiness validation:

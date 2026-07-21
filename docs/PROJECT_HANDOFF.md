@@ -237,9 +237,13 @@ All seven multiclass fold-0 configs use isolated trainer/output namespaces,
 model seed 3407, data seed 1003410, epoch-indexed train/validation seeds,
 single-thread augmentation, best-effort deterministic CUDA, and the locked
 nnU-Net checkpoint/evaluation policy. Verification covers orthonormal energy,
-zero-initialized residual identity, deep supervision, backward gradients, and
-exact D6 swap invariance. See `docs/SPECTRAL_SLICE_SCREEN.md`. No D0-D6 Gadi
-job has been submitted at this snapshot.
+neighbor-reversal parity, controlled adapter capacities, zero-initialized
+residual identity, deep supervision, backward gradients, and exact D6 swap
+invariance. A real Dataset001 plans initialization audit confirmed all seven
+trainers use three input channels, batch 12, six output heads, 256 x 256
+patches, and standard nnU-Net SGD with initial LR 0.01. See
+`docs/SPECTRAL_SLICE_SCREEN.md`. No D0-D6 Gadi job has been submitted at this
+snapshot.
 
 ## Verified local backups
 

@@ -85,6 +85,13 @@ multiple seeds and folds before a new-method claim.
 
 ## Verification and Gadi submission
 
+The verifier checks transform energy and neighbor-reversal parity, controlled
+adapter parameter counts, zero-initialized identity, deep-supervision output
+structure, backward gradients, and exact D6 prediction invariance. A separate
+real Dataset001 plans initialization audit confirmed three input channels,
+batch 12, six segmentation heads, 256 x 256 patches, and the standard nnU-Net
+SGD optimizer with initial learning rate 0.01 for every arm.
+
 ```bash
 python3 scripts/verify_spectral_slice_fusion.py
 qsub hpc/gadi/train_25d_spectral_screen_fold0.pbs
