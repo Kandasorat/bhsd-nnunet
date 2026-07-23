@@ -94,8 +94,9 @@ substituted for the nnU-Net `foreground_mean.Dice` primary screen result.
 
 ## Pre-specified multi-seed confirmation
 
-Only E0 and E2 advance. Two additional model seeds, 1234 and 5678, are paired
-within fold 0. The data seed remains 1003410 for all six runs (including the
+Only E0 and E2 advance as a mechanism/control pair. Two additional model seeds,
+1234 and 5678, are paired within fold 0. The data seed remains 1003410 for all
+six runs (including the
 completed seed 3407 pair), so the confirmation varies model initialization
 without changing the epoch-indexed augmentation policy. Every new config uses
 an isolated trainer class and nnU-Net output namespace; it cannot resume from
@@ -125,3 +126,10 @@ records Dice as NaN when both truth and prediction are empty, so model-specific
 finite supports can differ. With only three model seeds on one fold, report the
 individual paired deltas, their mean, sample SD, range, and sign consistency;
 do not treat this as a substitute for folds 1-4.
+
+In parallel, the controlled A8/C3 axial model is evaluated as a performance
+comparator, not as another E-series mechanism arm. The completed C3 seed 3407
+result is retained; only isolated seeds 1234 and 5678 are added through
+`hpc/gadi/train_25d_axial_multiseed_fold0.pbs`. This does not resubmit the
+completed A1-A8 or C/F screens. See `docs/FUSION_SCREEN.md` for the comparison
+boundary and post-run summary command.

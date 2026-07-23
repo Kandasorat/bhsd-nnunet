@@ -1,0 +1,38 @@
+experiment_name: axial_25d_a8_controlled_multiclass_fold0_seed1234
+protocol_tier: controlled_nnunet_axial_multiseed_comparator
+source_faithful: false
+module_provenance: P3D-inspired temporal-only convolution control
+upstream_repository: https://github.com/ZhaofanQiu/pseudo-3d-residual-networks
+upstream_commit: e91f95de5ae7e69183ea014e06ac105debb0cfe9
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_AxialSliceConvControlledSeed1234
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 1234
+data_seed: 1003410
+deterministic: true
+nnunet_n_proc_da: 0
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: controlled_axial_slice_conv
+num_input_slices: 3
+descriptor_channels: 8
+axial_kernel: [3, 1, 1]
+backbone_passes_per_prediction: 1
+confirmation_role: a8_controlled_comparator
+notes:
+  - Controlled A8 comparator paired by model seed with the E0/E2 seed 1234 runs.
+  - Data seed remains 1003410 so only model initialization changes across seeds.
+  - The completed C3 seed 3407 run is the controlled A8 reference and is not rerun.
+  - Uses an isolated trainer/output namespace and cannot overwrite A8 or C3.

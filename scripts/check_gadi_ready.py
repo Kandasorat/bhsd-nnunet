@@ -61,6 +61,8 @@ ACTIVE_CONFIGS = (
     "symmetric_25d_e2_reliability_gate_fold0_seed1234",
     "symmetric_25d_e0_control_fold0_seed5678",
     "symmetric_25d_e2_reliability_gate_fold0_seed5678",
+    "axial_25d_a8_controlled_fold0_seed1234",
+    "axial_25d_a8_controlled_fold0_seed5678",
 )
 
 REQUIRED_FILES = (
@@ -83,6 +85,8 @@ REQUIRED_FILES = (
     "scripts/verify_symmetric_reliability_fusion.py",
     "scripts/verify_symmetric_multiseed_design.py",
     "scripts/summarize_symmetric_multiseed.py",
+    "scripts/verify_axial_multiseed_design.py",
+    "scripts/summarize_axial_multiseed_comparison.py",
     "scripts/run_spectral_direction_probe.py",
     "scripts/analyze_case_level_effects.py",
     "hpc/gadi/train_2d_folds.pbs",
@@ -97,6 +101,7 @@ REQUIRED_FILES = (
     "hpc/gadi/train_25d_spectral_screen_fold0.pbs",
     "hpc/gadi/train_25d_symmetric_reliability_fold0.pbs",
     "hpc/gadi/train_25d_symmetric_multiseed_fold0.pbs",
+    "hpc/gadi/train_25d_axial_multiseed_fold0.pbs",
     "hpc/gadi/evaluate_spectral_direction_probe_fold0.pbs",
     "docs/ATTENTION_MODULE_SCREEN.md",
     "docs/FUSION_SCREEN.md",
@@ -165,6 +170,11 @@ SYMMETRIC_MULTISEED_CONFIGS = {
     "symmetric_25d_e2_reliability_gate_fold0_seed1234": (1234, "paired_e2_candidate"),
     "symmetric_25d_e0_control_fold0_seed5678": (5678, "paired_e0_control"),
     "symmetric_25d_e2_reliability_gate_fold0_seed5678": (5678, "paired_e2_candidate"),
+}
+
+AXIAL_MULTISEED_CONFIGS = {
+    "axial_25d_a8_controlled_fold0_seed1234": 1234,
+    "axial_25d_a8_controlled_fold0_seed5678": 5678,
 }
 
 SOURCE_FAITHFUL_CONFIGS = {
@@ -317,6 +327,20 @@ def check_repository() -> tuple[list[str], list[str]]:
                 errors.append(f"{path.name}: controlled deterministic data policy is not locked")
             if config.get("backbone_passes_per_prediction") != 1:
                 errors.append(f"{path.name}: E0/E2 confirmation must use one backbone pass")
+        if name in AXIAL_MULTISEED_CONFIGS:
+            expected_seed = AXIAL_MULTISEED_CONFIGS[name]
+            if config.get("protocol_tier") != "controlled_nnunet_axial_multiseed_comparator":
+                errors.append(f"{path.name}: incorrect controlled A8 comparator protocol tier")
+            if config.get("source_faithful") is not False:
+                errors.append(f"{path.name}: must not be labelled source-faithful")
+            if config.get("seed") != expected_seed or config.get("data_seed") != 1003410:
+                errors.append(f"{path.name}: model/data seed pair is not pre-specified")
+            if config.get("confirmation_role") != "a8_controlled_comparator":
+                errors.append(f"{path.name}: incorrect controlled A8 comparator role")
+            if config.get("deterministic") is not True or config.get("nnunet_n_proc_da") != 0:
+                errors.append(f"{path.name}: controlled deterministic data policy is not locked")
+            if config.get("backbone_passes_per_prediction") != 1:
+                errors.append(f"{path.name}: controlled A8 comparator must use one backbone pass")
 
     for name, expected_fields in SOURCE_FAITHFUL_CONFIGS.items():
         path = CONFIG_DIR / f"{name}.yaml"

@@ -78,3 +78,34 @@ qsub /scratch/ke17/bhsd-nnunet/software/bhsd-nnunet/hpc/gadi/train_25d_fusion_sc
 ```
 
 The array indices are C0, C1, C2, C3, F1, and F2 respectively.
+
+## Controlled A8 multi-seed comparator
+
+The original A8 score (`0.295321`) came from the earlier screening seed policy
+and is not used as a controlled seed-3407 observation. C3 is the deterministic
+replication of the same `axial_slice_conv` implementation and supplies the
+completed controlled seed-3407 reference (`0.244792`). To compare this axial
+model fairly with E2 across initialization seeds without rerunning A8 or C3,
+two isolated C3-derived trainers add model seeds 1234 and 5678. Their data seed
+remains 1003410 and all other training and validation fields match C3.
+
+Submit only the two additional controlled A8 comparator jobs:
+
+```bash
+qsub hpc/gadi/train_25d_axial_multiseed_fold0.pbs
+```
+
+After the controlled A8 jobs and the E0/E2 jobs complete, compare the three
+models across seeds 3407, 1234, and 5678:
+
+```bash
+python3 scripts/summarize_axial_multiseed_comparison.py \
+  --results-root "$nnUNet_results" \
+  --output-dir "$BHSD_RESULTS_DIR/controlled_a8_e0_e2_multiseed_summary"
+```
+
+This is a direct model-performance comparison, not a matched mechanism-effect
+estimate: E0 is the direct control for E2, while C1 is the matched capacity
+control for C3. The primary A8-versus-E2 comparison remains the best-checkpoint
+nnU-Net `validation/summary.json` foreground Dice. Secondary case-macro views
+remain separately labelled, and online EMA is not aggregated.

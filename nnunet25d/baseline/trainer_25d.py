@@ -531,6 +531,18 @@ class nnUNetTrainer_25D_AxialSliceConvControlled(_nnUNetTrainer25DUnifiedAdapter
     adapter_method = "axial_slice_conv"
 
 
+class nnUNetTrainer_25D_AxialSliceConvControlledSeed1234(
+    nnUNetTrainer_25D_AxialSliceConvControlled
+):
+    """Controlled A8 comparator seed 1234 in an isolated nnU-Net namespace."""
+
+
+class nnUNetTrainer_25D_AxialSliceConvControlledSeed5678(
+    nnUNetTrainer_25D_AxialSliceConvControlled
+):
+    """Controlled A8 comparator seed 5678 in an isolated nnU-Net namespace."""
+
+
 class nnUNetTrainer_25D_AxialCSASequential(_nnUNetTrainer25DUnifiedAdapter):
     """F1: axial slice convolution followed by CSA refinement."""
 
