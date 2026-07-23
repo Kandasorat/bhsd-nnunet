@@ -104,7 +104,9 @@ def main() -> None:
 
     peak_memory_mb = torch.cuda.max_memory_allocated(device) / 1024**2 if device.type == "cuda" else None
     method_name = getattr(network, "method_name", "plain_backbone")
-    backbone_passes = 2 if method_name == "d6_adaptive_invariant" else 1
+    backbone_passes = int(
+        getattr(network, "backbone_passes_per_prediction", 2 if method_name == "d6_adaptive_invariant" else 1)
+    )
     sorted_latencies = sorted(latencies_ms)
     p95_index = min(len(sorted_latencies) - 1, max(0, int(0.95 * len(sorted_latencies)) - 1))
     profile = {

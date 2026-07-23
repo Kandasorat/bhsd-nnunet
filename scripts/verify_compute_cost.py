@@ -51,6 +51,7 @@ def main() -> None:
     for screen, expected_ids in {
         "fusion": ["C0", "C1", "C2", "C3", "F1", "F2"],
         "spectral": ["D0", "D1", "D2", "D3", "D4", "D5", "D6"],
+        "symmetric": ["E0", "E1", "E2"],
     }.items():
         ids = [experiment_id(path) for path in sorted(CONFIG_DIR.glob(SCREEN_PATTERNS[screen]))]
         if ids != expected_ids:

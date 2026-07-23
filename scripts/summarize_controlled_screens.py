@@ -14,14 +14,15 @@ CONFIG_DIR = PROJECT_ROOT / "configs"
 SCREEN_PATTERNS = {
     "fusion": "fusion_25d_*_fold0.yaml",
     "spectral": "spectral_25d_*_fold0.yaml",
+    "symmetric": "symmetric_25d_e*_fold0.yaml",
 }
-CONTROL_IDS = {"fusion": "C0", "spectral": "D0"}
-ADVANCEMENT_REFERENCES = {"fusion": {"F1": "C3", "F2": "C3"}, "spectral": {}}
+CONTROL_IDS = {"fusion": "C0", "spectral": "D0", "symmetric": "E0"}
+ADVANCEMENT_REFERENCES = {"fusion": {"F1": "C3", "F2": "C3"}, "spectral": {}, "symmetric": {}}
 
 
 def experiment_id(path: Path) -> str:
     parts = path.stem.split("_")
-    return next(part.upper() for part in parts if len(part) == 2 and part[0] in "cdf" and part[1].isdigit())
+    return next(part.upper() for part in parts if len(part) == 2 and part[0] in "cdef" and part[1].isdigit())
 
 
 def load_rows(screen: str, results_root: Path, metadata_root: Path) -> list[dict]:
@@ -179,7 +180,7 @@ def add_cost_assessment(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Summarize Dice and compute cost for controlled 2.5D screens")
-    parser.add_argument("--screen", choices=("fusion", "spectral"), required=True)
+    parser.add_argument("--screen", choices=("fusion", "spectral", "symmetric"), required=True)
     parser.add_argument(
         "--results-root",
         type=Path,

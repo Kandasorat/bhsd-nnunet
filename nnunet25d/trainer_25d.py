@@ -26,6 +26,9 @@ from nnunet25d.baseline.trainer_25d import (
     nnUNetTrainer_25D_SpectralD4Orthogonal,
     nnUNetTrainer_25D_SpectralD5AdaptiveOriented,
     nnUNetTrainer_25D_SpectralD6AdaptiveInvariant,
+    nnUNetTrainer_25D_SymmetricE0Control,
+    nnUNetTrainer_25D_SymmetricE1LowPass,
+    nnUNetTrainer_25D_SymmetricE2ReliabilityGate,
 )
 
 __all__ = [
@@ -56,4 +59,7 @@ __all__ = [
     "nnUNetTrainer_25D_SpectralD4Orthogonal",
     "nnUNetTrainer_25D_SpectralD5AdaptiveOriented",
     "nnUNetTrainer_25D_SpectralD6AdaptiveInvariant",
+    "nnUNetTrainer_25D_SymmetricE0Control",
+    "nnUNetTrainer_25D_SymmetricE1LowPass",
+    "nnUNetTrainer_25D_SymmetricE2ReliabilityGate",
 ]

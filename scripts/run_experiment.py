@@ -558,6 +558,15 @@ def _custom_25d_infer(config: Dict[str, Any], fold: int) -> None:
     trainer.load_checkpoint(str(checkpoint_path))
     trainer.set_deep_supervision_enabled(False)
     trainer.network.eval()
+    spectral_prediction_mode = config.get("spectral_prediction_mode")
+    if spectral_prediction_mode is not None:
+        network = trainer.network.module if hasattr(trainer.network, "module") else trainer.network
+        if not hasattr(network, "set_prediction_mode"):
+            raise TypeError(
+                f"spectral_prediction_mode was requested for {type(network).__name__}, "
+                "but that network does not support direction probes"
+            )
+        network.set_prediction_mode(str(spectral_prediction_mode))
     checkpoint = torch.load(str(checkpoint_path), map_location=torch.device("cpu"), weights_only=False)
 
     predictor.manual_initialization(
@@ -604,6 +613,11 @@ def infer(config: Dict[str, Any]) -> None:
                     f"-d {config['dataset_name']} -c {config['configuration']} -f {fold} "
                     f"-tr {config.get('trainer', 'nnUNetTrainer')} -p {config.get('plans', 'nnUNetPlans')} "
                     f"-chk {inference_checkpoint_name(config)}"
+                    + (
+                        f" -spectral-mode {config['spectral_prediction_mode']}"
+                        if config.get("spectral_prediction_mode") is not None
+                        else ""
+                    )
                 ),
                 lambda current_fold=fold: _custom_25d_infer(config, current_fold),
             )

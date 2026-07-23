@@ -86,11 +86,24 @@ def main() -> None:
             error = (original - reversed_order).abs().max().item()
             raise AssertionError(f"D6 neighbor-swap invariance failed; max error={error}")
 
+    probe = SpectralSliceFusionInputAdapter(_Backbone(), method="d1_lowpass", prediction_mode="swap_average")
+    for original, reversed_order in zip(probe(x), probe(swapped)):
+        if not torch.equal(original, reversed_order):
+            error = (original - reversed_order).abs().max().item()
+            raise AssertionError(f"Inference-only swap averaging failed; max error={error}")
+    probe.set_prediction_mode("swapped")
+    swapped_mode = probe(x)
+    probe.set_prediction_mode("original")
+    reversed_original_mode = probe(swapped)
+    for first, second in zip(swapped_mode, reversed_original_mode):
+        if not torch.equal(first, second):
+            raise AssertionError("Swapped prediction mode does not equal original mode on reversed input")
+
     print("Spectral slice fusion verification passed.")
     print(f"Validated methods: {', '.join(sorted(SPECTRAL_METHODS))}")
     print(
         "Validated: orthonormal energy/parity, controlled capacities, zero-init identity, "
-        "deep supervision, backward gradients, D6 invariance"
+        "deep supervision, backward gradients, D6 invariance, inference direction modes"
     )
 
 

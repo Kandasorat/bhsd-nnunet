@@ -54,6 +54,9 @@ ACTIVE_CONFIGS = (
     "spectral_25d_d4_orthogonal_fold0",
     "spectral_25d_d5_adaptive_oriented_fold0",
     "spectral_25d_d6_adaptive_invariant_fold0",
+    "symmetric_25d_e0_control_fold0",
+    "symmetric_25d_e1_lowpass_fold0",
+    "symmetric_25d_e2_reliability_gate_fold0",
 )
 
 REQUIRED_FILES = (
@@ -65,6 +68,7 @@ REQUIRED_FILES = (
     "nnunet25d/trainer_csa_net_official.py",
     "nnunet25d/attention/unified_slice_adapters.py",
     "nnunet25d/attention/spectral_slice_fusion.py",
+    "nnunet25d/attention/symmetric_reliability_fusion.py",
     "scripts/verify_attention_screen.py",
     "scripts/summarize_attention_screen.py",
     "scripts/profile_25d_compute.py",
@@ -72,6 +76,9 @@ REQUIRED_FILES = (
     "scripts/verify_compute_cost.py",
     "scripts/run_experiment.py",
     "scripts/verify_spectral_slice_fusion.py",
+    "scripts/verify_symmetric_reliability_fusion.py",
+    "scripts/run_spectral_direction_probe.py",
+    "scripts/analyze_case_level_effects.py",
     "hpc/gadi/train_2d_folds.pbs",
     "hpc/gadi/train_3d_folds.pbs",
     "hpc/gadi/train_25d_3slice_fold0.pbs",
@@ -82,9 +89,12 @@ REQUIRED_FILES = (
     "hpc/gadi/train_25d_attention_screen_fold0.pbs",
     "hpc/gadi/train_25d_fusion_screen_fold0.pbs",
     "hpc/gadi/train_25d_spectral_screen_fold0.pbs",
+    "hpc/gadi/train_25d_symmetric_reliability_fold0.pbs",
+    "hpc/gadi/evaluate_spectral_direction_probe_fold0.pbs",
     "docs/ATTENTION_MODULE_SCREEN.md",
     "docs/FUSION_SCREEN.md",
     "docs/SPECTRAL_SLICE_SCREEN.md",
+    "docs/SYMMETRIC_RELIABILITY_SCREEN.md",
     "source_faithful/bhsd_data.py",
     "source_faithful/train_attention.py",
     "hpc/gadi/smoke_source_faithful_attention.pbs",
@@ -135,6 +145,12 @@ SPECTRAL_CONFIGS = {
     "spectral_25d_d4_orthogonal_fold0",
     "spectral_25d_d5_adaptive_oriented_fold0",
     "spectral_25d_d6_adaptive_invariant_fold0",
+}
+
+SYMMETRIC_RELIABILITY_CONFIGS = {
+    "symmetric_25d_e0_control_fold0",
+    "symmetric_25d_e1_lowpass_fold0",
+    "symmetric_25d_e2_reliability_gate_fold0",
 }
 
 SOURCE_FAITHFUL_CONFIGS = {
@@ -262,6 +278,17 @@ def check_repository() -> tuple[list[str], list[str]]:
                 errors.append(f"{path.name}: controlled deterministic policy is not locked")
             if config.get("nnunet_n_proc_da") != 0:
                 errors.append(f"{path.name}: spectral screen must use single-thread augmentation")
+        if name in SYMMETRIC_RELIABILITY_CONFIGS:
+            if config.get("protocol_tier") != "controlled_nnunet_symmetric_reliability_ablation":
+                errors.append(f"{path.name}: incorrect symmetric reliability protocol tier")
+            if config.get("source_faithful") is not False:
+                errors.append(f"{path.name}: must not be labelled source-faithful")
+            if config.get("seed") != 3407 or config.get("data_seed") != 1003410:
+                errors.append(f"{path.name}: model/data seed pair is not locked")
+            if config.get("deterministic") is not True or config.get("nnunet_n_proc_da") != 0:
+                errors.append(f"{path.name}: controlled deterministic data policy is not locked")
+            if config.get("backbone_passes_per_prediction") != 1:
+                errors.append(f"{path.name}: E screen must use one backbone pass")
 
     for name, expected_fields in SOURCE_FAITHFUL_CONFIGS.items():
         path = CONFIG_DIR / f"{name}.yaml"

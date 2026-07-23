@@ -33,6 +33,7 @@ from nnunet25d.common.dataloader_spacing_aware import nnUNetDataLoaderSpacingAwa
 from nnunet25d.attention.lightweight_slice_attention import LightweightSliceAttentionInputAdapter
 from nnunet25d.attention.unified_slice_adapters import UnifiedSliceAdapter
 from nnunet25d.attention.spectral_slice_fusion import SpectralSliceFusionInputAdapter
+from nnunet25d.attention.symmetric_reliability_fusion import SymmetricReliabilityInputAdapter
 
 
 class _nnUNetTrainer25DBase(BHSDEarlyStoppingMixin, nnUNetTrainer):
@@ -584,6 +585,34 @@ class nnUNetTrainer_25D_SpectralD5AdaptiveOriented(_nnUNetTrainer25DSpectralAdap
 
 class nnUNetTrainer_25D_SpectralD6AdaptiveInvariant(_nnUNetTrainer25DSpectralAdapter):
     spectral_method = "d6_adaptive_invariant"
+
+
+class _nnUNetTrainer25DSymmetricReliability(_nnUNetTrainer25DBase):
+    """Shared controlled policy for the E0-E2 single-pass invariant screen."""
+
+    num_input_slices = 3
+    symmetric_method: str
+
+    def _adapt_network(self, network: torch.nn.Module, channels_per_slice: int) -> torch.nn.Module:
+        return SymmetricReliabilityInputAdapter(
+            backbone=network,
+            method=self.symmetric_method,
+            num_slices=self.num_input_slices,
+            channels_per_slice=channels_per_slice,
+            descriptor_channels=8,
+        )
+
+
+class nnUNetTrainer_25D_SymmetricE0Control(_nnUNetTrainer25DSymmetricReliability):
+    symmetric_method = "e0_symmetric_control"
+
+
+class nnUNetTrainer_25D_SymmetricE1LowPass(_nnUNetTrainer25DSymmetricReliability):
+    symmetric_method = "e1_symmetric_lowpass"
+
+
+class nnUNetTrainer_25D_SymmetricE2ReliabilityGate(_nnUNetTrainer25DSymmetricReliability):
+    symmetric_method = "e2_reliability_gate"
 
 
 class nnUNetTrainer_25D_5Slice(_nnUNetTrainer25DBase):

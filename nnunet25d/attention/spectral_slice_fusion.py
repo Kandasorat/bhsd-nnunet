@@ -17,6 +17,8 @@ SPECTRAL_METHODS = {
     "d6_adaptive_invariant",
 }
 
+PREDICTION_MODES = {"native", "original", "swapped", "swap_average"}
+
 
 def path3_spectral_transform(x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Orthonormal graph-Fourier transform on the three-node slice path."""
@@ -60,6 +62,7 @@ class SpectralSliceFusionInputAdapter(nn.Module):
         num_slices: int = 3,
         channels_per_slice: int = 1,
         descriptor_channels: int = 8,
+        prediction_mode: str = "native",
     ) -> None:
         super().__init__()
         if method not in SPECTRAL_METHODS:
@@ -74,6 +77,7 @@ class SpectralSliceFusionInputAdapter(nn.Module):
         self.num_slices = num_slices
         self.channels_per_slice = channels_per_slice
         self.descriptor_channels = descriptor_channels
+        self.set_prediction_mode(prediction_mode)
 
         self.descriptor = nn.Sequential(
             nn.Conv2d(channels_per_slice, descriptor_channels, kernel_size=3, padding=1, bias=False),
@@ -149,19 +153,28 @@ class SpectralSliceFusionInputAdapter(nn.Module):
         adapted[:, 1] = adapted[:, 1] + delta
         return adapted.reshape_as(x)
 
-    def _swap_neighbors(self, x: torch.Tensor) -> torch.Tensor:
+    def swap_neighbors(self, x: torch.Tensor) -> torch.Tensor:
         batch, height, width = self._validate(x)
         grouped = x.reshape(batch, self.num_slices, self.channels_per_slice, height, width)
         return grouped[:, [2, 1, 0]].reshape_as(x)
 
+    def set_prediction_mode(self, mode: str) -> None:
+        if mode not in PREDICTION_MODES:
+            raise ValueError(f"Unknown prediction mode {mode!r}; expected one of {sorted(PREDICTION_MODES)}")
+        self.prediction_mode = mode
+
     def forward(self, x: torch.Tensor):
         prediction = self.backbone(self.adapted_input(x))
-        if self.method_name != "d6_adaptive_invariant":
+        mode = self.prediction_mode
+        if mode == "original" or (mode == "native" and self.method_name != "d6_adaptive_invariant"):
             return prediction
 
-        # Reynolds/group averaging over the two-element neighbor-swap group
-        # makes the complete prediction invariant, including the raw input path.
-        swapped_prediction = self.backbone(self.adapted_input(self._swap_neighbors(x)))
+        swapped_prediction = self.backbone(self.adapted_input(self.swap_neighbors(x)))
+        if mode == "swapped":
+            return swapped_prediction
+
+        # Reynolds/group averaging over the two-element neighbor-swap group.
+        # This is D6's native mode and an inference-only probe for any D arm.
         return _average_predictions(prediction, swapped_prediction)
 
     def compute_conv_feature_map_size(self, input_size: Sequence[int]):
