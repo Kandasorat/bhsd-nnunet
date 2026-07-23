@@ -46,7 +46,7 @@ shared symmetric input representation.
 - E2 versus D6: accuracy-cost trade-off, not a pure module ablation, because the
   input representation and number of backbone passes differ.
 - Do not call the slice-index contrasts physical derivatives. Analyse effects by
-  actual z-spacing and lesion volume with `scripts/analyze_case_level_effects.py`.
+  lesion volume and hemorrhage class with `scripts/analyze_case_level_effects.py`.
 
 ## Gadi commands
 
@@ -73,7 +73,7 @@ python3 scripts/summarize_controlled_screens.py \
   --output "$BHSD_RESULTS_DIR/symmetric_e0_e2_summary.csv"
 ```
 
-Generate the no-retraining case-level spacing, lesion-volume, and class tables
+Generate the no-retraining case-level lesion-volume and class tables
 from the three best-checkpoint validation summaries:
 
 ```bash

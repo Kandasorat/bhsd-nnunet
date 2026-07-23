@@ -101,18 +101,15 @@ def find_ground_truth(case_id: str, reference_file: str | None, ground_truth_dir
 def image_metadata(case_id: str, reference_file: str | None, ground_truth_dir: Path | None) -> dict:
     path = find_ground_truth(case_id, reference_file, ground_truth_dir)
     if path is None:
-        return {"case_id": case_id, "spacing_z_mm": np.nan, "voxel_volume_mm3": np.nan}
+        return {"case_id": case_id, "voxel_volume_mm3": np.nan}
     import SimpleITK as sitk
 
     image = sitk.ReadImage(str(path))
     labels = sitk.GetArrayViewFromImage(image)
-    spacing = tuple(float(value) for value in image.GetSpacing())
+    voxel_dimensions = tuple(float(value) for value in image.GetSpacing())
     row = {
         "case_id": case_id,
-        "spacing_x_mm": spacing[0],
-        "spacing_y_mm": spacing[1],
-        "spacing_z_mm": spacing[2],
-        "voxel_volume_mm3": float(np.prod(spacing)),
+        "voxel_volume_mm3": float(np.prod(voxel_dimensions)),
     }
     row.update({f"class_{class_id}_voxels": int(np.count_nonzero(labels == class_id)) for class_id in CLASS_NAMES})
     row["image_lesion_voxels"] = int(np.count_nonzero(labels > 0))
@@ -141,19 +138,17 @@ def add_case_context(long_metrics: pd.DataFrame, ground_truth_dir: Path | None) 
     if "image_lesion_voxels" in cases:
         cases["lesion_voxels"] = cases["lesion_voxels"].fillna(cases["image_lesion_voxels"])
     cases["lesion_volume_ml"] = cases["lesion_voxels"] * cases["voxel_volume_mm3"] / 1000.0
-    cases["spacing_group"] = pd.cut(
-        cases["spacing_z_mm"],
-        bins=[-np.inf, 3.0, 5.0, np.inf],
-        labels=["thin_lt3mm", "intermediate_3to5mm", "thick_ge5mm"],
-        right=False,
-    ).astype("object")
     cases["lesion_size_group"] = pd.cut(
         cases["lesion_volume_ml"],
         bins=[-np.inf, 1.0, 10.0, np.inf],
         labels=["small_lt1ml", "medium_1to10ml", "large_ge10ml"],
         right=False,
     ).astype("object")
-    return long_metrics.merge(cases, on="case_id", how="left"), cases
+    long_metrics = long_metrics.merge(cases, on="case_id", how="left")
+    long_metrics["class_lesion_volume_ml"] = (
+        long_metrics["n_ref"] * long_metrics["voxel_volume_mm3"] / 1000.0
+    )
+    return long_metrics, cases
 
 
 def case_scores(long_metrics: pd.DataFrame, reference_model: str) -> pd.DataFrame:
@@ -208,7 +203,7 @@ def subgroup_summary(
             continue
         candidate_column = f"{column_prefix}{model}"
         delta_column = f"delta_{delta_prefix}{model}_vs_{reference_model}"
-        for field in ("spacing_group", "lesion_size_group"):
+        for field in ("lesion_size_group",):
             for group_name, group in case_frame.groupby(field, dropna=False):
                 delta = group[delta_column].dropna()
                 rows.append(
@@ -314,7 +309,7 @@ def absent_class_false_positive_summary(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Relate case-level Dice effects to spacing, lesion size, and class.")
+    parser = argparse.ArgumentParser(description="Relate case-level Dice effects to lesion volume and class.")
     parser.add_argument("--metrics", action="append", type=parse_named_path, required=True, help="MODEL=summary.json or MODEL=case_metrics.csv; repeat for each model")
     parser.add_argument("--reference-model", required=True)
     parser.add_argument("--ground-truth-dir", type=Path)
@@ -341,7 +336,7 @@ def main() -> None:
     if n_ref_disagreement.any():
         raise ValueError("Models disagree on ground-truth voxel counts for one or more case/class pairs")
     if args.ground_truth_dir is not None:
-        missing_metadata = cases["spacing_z_mm"].isna()
+        missing_metadata = cases["voxel_volume_mm3"].isna()
         if missing_metadata.any():
             missing_cases = cases.loc[missing_metadata, "case_id"].astype(str).tolist()
             raise FileNotFoundError(
@@ -381,7 +376,7 @@ def main() -> None:
         "n_cases": int(case_frame["case_id"].nunique()),
         "n_classes": int(long_metrics["class_id"].nunique()),
         "n_class_case_metric_rows": int(len(long_metrics)),
-        "missing_spacing_cases": int(case_frame["spacing_z_mm"].isna().sum()),
+        "missing_ground_truth_metadata_cases": int(case_frame["voxel_volume_mm3"].isna().sum()),
         "missing_lesion_volume_cases": int(case_frame["lesion_volume_ml"].isna().sum()),
         "metric_definitions": {
             "case_effects": "model-specific mean Dice across finite class values within each case; supports can differ when both truth and prediction are empty",
