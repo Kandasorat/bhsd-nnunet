@@ -29,6 +29,10 @@ from nnunet25d.baseline.trainer_25d import (
     nnUNetTrainer_25D_SymmetricE0Control,
     nnUNetTrainer_25D_SymmetricE1LowPass,
     nnUNetTrainer_25D_SymmetricE2ReliabilityGate,
+    nnUNetTrainer_25D_SymmetricE0ControlSeed1234,
+    nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed1234,
+    nnUNetTrainer_25D_SymmetricE0ControlSeed5678,
+    nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed5678,
 )
 
 __all__ = [
@@ -62,4 +66,8 @@ __all__ = [
     "nnUNetTrainer_25D_SymmetricE0Control",
     "nnUNetTrainer_25D_SymmetricE1LowPass",
     "nnUNetTrainer_25D_SymmetricE2ReliabilityGate",
+    "nnUNetTrainer_25D_SymmetricE0ControlSeed1234",
+    "nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed1234",
+    "nnUNetTrainer_25D_SymmetricE0ControlSeed5678",
+    "nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed5678",
 ]

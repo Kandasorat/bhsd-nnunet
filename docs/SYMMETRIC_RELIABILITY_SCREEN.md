@@ -72,3 +72,56 @@ python3 scripts/summarize_controlled_screens.py \
   --metadata-root "$BHSD_RESULTS_DIR" \
   --output "$BHSD_RESULTS_DIR/symmetric_e0_e2_summary.csv"
 ```
+
+Generate the no-retraining case-level spacing, lesion-volume, and class tables
+from the three best-checkpoint validation summaries:
+
+```bash
+python3 scripts/analyze_case_level_effects.py \
+  --metrics E0="$nnUNet_results/Dataset001_BHSD/nnUNetTrainer_25D_SymmetricE0Control__nnUNetPlans__2d/fold_0/validation/summary.json" \
+  --metrics E1="$nnUNet_results/Dataset001_BHSD/nnUNetTrainer_25D_SymmetricE1LowPass__nnUNetPlans__2d/fold_0/validation/summary.json" \
+  --metrics E2="$nnUNet_results/Dataset001_BHSD/nnUNetTrainer_25D_SymmetricE2ReliabilityGate__nnUNetPlans__2d/fold_0/validation/summary.json" \
+  --reference-model E0 \
+  --ground-truth-dir "$nnUNet_preprocessed/Dataset001_BHSD/gt_segmentations" \
+  --output-dir "$BHSD_RESULTS_DIR/symmetric_e0_e2_case_analysis"
+```
+
+The analysis keeps three views separate: model-specific finite-class case
+macro Dice, paired Dice restricted to classes present in ground truth, and
+false-positive case fractions for ground-truth-absent classes. It also writes
+`SHA256SUMS.txt` for transfer verification. These case-level views must not be
+substituted for the nnU-Net `foreground_mean.Dice` primary screen result.
+
+## Pre-specified multi-seed confirmation
+
+Only E0 and E2 advance. Two additional model seeds, 1234 and 5678, are paired
+within fold 0. The data seed remains 1003410 for all six runs (including the
+completed seed 3407 pair), so the confirmation varies model initialization
+without changing the epoch-indexed augmentation policy. Every new config uses
+an isolated trainer class and nnU-Net output namespace; it cannot resume from
+or overwrite the completed seed 3407 result. E1 is not included.
+
+Submit the four new runs:
+
+```bash
+qsub hpc/gadi/train_25d_symmetric_multiseed_fold0.pbs
+```
+
+After all four jobs complete, estimate the paired E2-minus-E0 effect across the
+three model seeds:
+
+```bash
+python3 scripts/summarize_symmetric_multiseed.py \
+  --results-root "$nnUNet_results" \
+  --output-dir "$BHSD_RESULTS_DIR/symmetric_e0_e2_multiseed_summary"
+```
+
+The primary endpoint is the best-checkpoint nnU-Net
+`validation/summary.json` `foreground_mean.Dice`. The script labels both the
+model-specific finite-class case macro and the common-support,
+ground-truth-present class macro as separate secondary endpoints; it does not
+read or aggregate online EMA Dice. This distinction matters because nnU-Net
+records Dice as NaN when both truth and prediction are empty, so model-specific
+finite supports can differ. With only three model seeds on one fold, report the
+individual paired deltas, their mean, sample SD, range, and sign consistency;
+do not treat this as a substitute for folds 1-4.

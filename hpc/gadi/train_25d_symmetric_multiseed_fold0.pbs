@@ -1,0 +1,84 @@
+#!/bin/bash
+
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N bhsd_e0e2_ms_f0
+#PBS -J 0-3
+#PBS -r y
+#PBS -l walltime=48:00:00
+#PBS -l ncpus=12
+#PBS -l ngpus=1
+#PBS -l mem=32GB
+#PBS -l jobfs=20GB
+#PBS -l storage=scratch/ke17
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+export BHSD_RESULTS_DIR="$BHSD_ROOT/runs/experiment_metadata"
+export BHSD_SKIP_EXTENSION_INSTALL=1
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+configs=(
+    symmetric_25d_e0_control_fold0_seed1234
+    symmetric_25d_e2_reliability_gate_fold0_seed1234
+    symmetric_25d_e0_control_fold0_seed5678
+    symmetric_25d_e2_reliability_gate_fold0_seed5678
+)
+trainers=(
+    nnUNetTrainer_25D_SymmetricE0ControlSeed1234
+    nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed1234
+    nnUNetTrainer_25D_SymmetricE0ControlSeed5678
+    nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed5678
+)
+model_seeds=(1234 1234 5678 5678)
+
+index="${PBS_ARRAY_INDEX:?PBS_ARRAY_INDEX is required; submit this file as an array job}"
+if (( index < 0 || index >= ${#configs[@]} )); then
+    echo "Invalid PBS_ARRAY_INDEX=$index" >&2
+    exit 2
+fi
+config="${configs[$index]}"
+trainer="${trainers[$index]}"
+model_seed="${model_seeds[$index]}"
+
+test -f "$nnUNet_preprocessed/Dataset001_BHSD/splits_final.json"
+mkdir -p "$BHSD_RESULTS_DIR" "$BHSD_ROOT/logs"
+cd "$REPO_DIR"
+
+(
+    flock -x 9
+    python3 nnunet25d/install_extension.py
+) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
+
+python3 scripts/verify_symmetric_reliability_fusion.py
+python3 scripts/verify_symmetric_multiseed_design.py
+python3 scripts/profile_25d_compute.py --config "$config" --device cuda --warmup 3 --iterations 10
+
+args=(train --config "$config" --fold 0)
+checkpoint_dir="$nnUNet_results/Dataset001_BHSD/${trainer}__nnUNetPlans__2d/fold_0"
+if [[ "${BHSD_RESUME:-0}" == "1" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_latest.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_final.pth" ]] || \
+   [[ -f "$checkpoint_dir/checkpoint_best.pth" ]]; then
+    args+=(--resume)
+fi
+
+echo "array_index=$index config=$config trainer=$trainer model_seed=$model_seed data_seed=1003410"
+python3 scripts/run_experiment.py "${args[@]}"
+
+# --config symmetric_25d_e0_control_fold0_seed1234
+# --config symmetric_25d_e2_reliability_gate_fold0_seed1234
+# --config symmetric_25d_e0_control_fold0_seed5678
+# --config symmetric_25d_e2_reliability_gate_fold0_seed5678

@@ -1,0 +1,33 @@
+experiment_name: symmetric_25d_e0_control_multiclass_fold0_seed1234
+protocol_tier: controlled_nnunet_symmetric_reliability_multiseed_confirmation
+source_faithful: false
+dataset_name: Dataset001_BHSD
+dataset_id: 1
+configuration: 2d
+trainer: nnUNetTrainer_25D_SymmetricE0ControlSeed1234
+folds: [0]
+device: cuda
+save_npz: true
+validation_checkpoint: best
+inference_checkpoint: checkpoint_best.pth
+resume: false
+disable_checkpointing: false
+seed: 1234
+data_seed: 1003410
+deterministic: true
+nnunet_n_proc_da: 0
+max_num_epochs: 1000
+early_stop_min_epochs: 300
+early_stop_patience: 100
+early_stop_min_delta: 0.0001
+early_stop_metric: ema_fg_dice
+plans: nnUNetPlans
+slice_mode: symmetric_center_neighbor_mean_absolute_difference_control
+num_input_slices: 3
+descriptor_channels: 8
+backbone_passes_per_prediction: 1
+confirmation_role: paired_e0_control
+notes:
+  - Pre-specified additional model seed paired with E2 seed 1234.
+  - Data seed remains 1003410 so only model initialization changes across seed pairs.
+  - Uses an isolated trainer/output namespace and cannot overwrite seed 3407.

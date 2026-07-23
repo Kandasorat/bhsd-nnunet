@@ -57,6 +57,10 @@ ACTIVE_CONFIGS = (
     "symmetric_25d_e0_control_fold0",
     "symmetric_25d_e1_lowpass_fold0",
     "symmetric_25d_e2_reliability_gate_fold0",
+    "symmetric_25d_e0_control_fold0_seed1234",
+    "symmetric_25d_e2_reliability_gate_fold0_seed1234",
+    "symmetric_25d_e0_control_fold0_seed5678",
+    "symmetric_25d_e2_reliability_gate_fold0_seed5678",
 )
 
 REQUIRED_FILES = (
@@ -77,6 +81,8 @@ REQUIRED_FILES = (
     "scripts/run_experiment.py",
     "scripts/verify_spectral_slice_fusion.py",
     "scripts/verify_symmetric_reliability_fusion.py",
+    "scripts/verify_symmetric_multiseed_design.py",
+    "scripts/summarize_symmetric_multiseed.py",
     "scripts/run_spectral_direction_probe.py",
     "scripts/analyze_case_level_effects.py",
     "hpc/gadi/train_2d_folds.pbs",
@@ -90,6 +96,7 @@ REQUIRED_FILES = (
     "hpc/gadi/train_25d_fusion_screen_fold0.pbs",
     "hpc/gadi/train_25d_spectral_screen_fold0.pbs",
     "hpc/gadi/train_25d_symmetric_reliability_fold0.pbs",
+    "hpc/gadi/train_25d_symmetric_multiseed_fold0.pbs",
     "hpc/gadi/evaluate_spectral_direction_probe_fold0.pbs",
     "docs/ATTENTION_MODULE_SCREEN.md",
     "docs/FUSION_SCREEN.md",
@@ -151,6 +158,13 @@ SYMMETRIC_RELIABILITY_CONFIGS = {
     "symmetric_25d_e0_control_fold0",
     "symmetric_25d_e1_lowpass_fold0",
     "symmetric_25d_e2_reliability_gate_fold0",
+}
+
+SYMMETRIC_MULTISEED_CONFIGS = {
+    "symmetric_25d_e0_control_fold0_seed1234": (1234, "paired_e0_control"),
+    "symmetric_25d_e2_reliability_gate_fold0_seed1234": (1234, "paired_e2_candidate"),
+    "symmetric_25d_e0_control_fold0_seed5678": (5678, "paired_e0_control"),
+    "symmetric_25d_e2_reliability_gate_fold0_seed5678": (5678, "paired_e2_candidate"),
 }
 
 SOURCE_FAITHFUL_CONFIGS = {
@@ -289,6 +303,20 @@ def check_repository() -> tuple[list[str], list[str]]:
                 errors.append(f"{path.name}: controlled deterministic data policy is not locked")
             if config.get("backbone_passes_per_prediction") != 1:
                 errors.append(f"{path.name}: E screen must use one backbone pass")
+        if name in SYMMETRIC_MULTISEED_CONFIGS:
+            expected_seed, expected_role = SYMMETRIC_MULTISEED_CONFIGS[name]
+            if config.get("protocol_tier") != "controlled_nnunet_symmetric_reliability_multiseed_confirmation":
+                errors.append(f"{path.name}: incorrect symmetric multi-seed protocol tier")
+            if config.get("source_faithful") is not False:
+                errors.append(f"{path.name}: must not be labelled source-faithful")
+            if config.get("seed") != expected_seed or config.get("data_seed") != 1003410:
+                errors.append(f"{path.name}: model/data seed pair is not pre-specified")
+            if config.get("confirmation_role") != expected_role:
+                errors.append(f"{path.name}: incorrect E0/E2 confirmation role")
+            if config.get("deterministic") is not True or config.get("nnunet_n_proc_da") != 0:
+                errors.append(f"{path.name}: controlled deterministic data policy is not locked")
+            if config.get("backbone_passes_per_prediction") != 1:
+                errors.append(f"{path.name}: E0/E2 confirmation must use one backbone pass")
 
     for name, expected_fields in SOURCE_FAITHFUL_CONFIGS.items():
         path = CONFIG_DIR / f"{name}.yaml"

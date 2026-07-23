@@ -615,6 +615,26 @@ class nnUNetTrainer_25D_SymmetricE2ReliabilityGate(_nnUNetTrainer25DSymmetricRel
     symmetric_method = "e2_reliability_gate"
 
 
+class nnUNetTrainer_25D_SymmetricE0ControlSeed1234(nnUNetTrainer_25D_SymmetricE0Control):
+    """E0 confirmation seed 1234 in an isolated nnU-Net result namespace."""
+
+
+class nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed1234(
+    nnUNetTrainer_25D_SymmetricE2ReliabilityGate
+):
+    """E2 confirmation seed 1234 in an isolated nnU-Net result namespace."""
+
+
+class nnUNetTrainer_25D_SymmetricE0ControlSeed5678(nnUNetTrainer_25D_SymmetricE0Control):
+    """E0 confirmation seed 5678 in an isolated nnU-Net result namespace."""
+
+
+class nnUNetTrainer_25D_SymmetricE2ReliabilityGateSeed5678(
+    nnUNetTrainer_25D_SymmetricE2ReliabilityGate
+):
+    """E2 confirmation seed 5678 in an isolated nnU-Net result namespace."""
+
+
 class nnUNetTrainer_25D_5Slice(_nnUNetTrainer25DBase):
     num_input_slices = 5
 
