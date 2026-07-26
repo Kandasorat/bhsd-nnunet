@@ -1,5 +1,5 @@
 {
-  "base_git_head": "0c660e0786386a7dbe07c8366068e2c9455aeb7e",
+  "base_git_head": "a28375424dd314473fb8a68ff5a5defea64c2949",
   "checkpoint_folds_frozen": [
     1,
     2,
@@ -17,28 +17,9 @@
     "memory_ratio": 0.7058628547088749,
     "target_v100_remeasurement_required": true
   },
-  "created_at_utc": "2026-07-26T04:28:12.484228+00:00",
-  "git_status_at_freeze": [
-    " M nnunet25d/install_extension.py",
-    " M scripts/run_experiment.py",
-    "?? configs/stage3_r0_fold1_seed1234.yaml",
-    "?? configs/stage3_r0_fold1_seed3407.yaml",
-    "?? configs/stage3_r0_fold1_seed5678.yaml",
-    "?? configs/stage3_r1_fold1_seed1234.yaml",
-    "?? configs/stage3_r1_fold1_seed3407.yaml",
-    "?? configs/stage3_r1_fold1_seed5678.yaml",
-    "?? hpc/gadi/stage3_v100_preflight.pbs",
-    "?? hpc/gadi/train_stage3_fold1_r0_r1.pbs",
-    "?? nnunet25d/stage3/",
-    "?? nnunet25d/trainer_stage3.py",
-    "?? reports/",
-    "?? scripts/profile_stage3_v100_gate.py",
-    "?? scripts/upload_stage3_checkpoints_to_gadi.ps1",
-    "?? scripts/verify_stage3_training_configs.py",
-    "?? scripts/verify_stage3_v100_gate.py",
-    "?? tests/"
-  ],
-  "implementation_commit": null,
+  "created_at_utc": "2026-07-26T04:29:30.386888+00:00",
+  "git_status_at_freeze": [],
+  "implementation_commit": "a28375424dd314473fb8a68ff5a5defea64c2949",
   "protocol_date": "2026-07-26",
   "required_tests": {
     "overall": "PASS",
@@ -60,9 +41,8 @@
     "torch": "2.7.1+cu118"
   },
   "split_sha256": "A7F3088C3195273FEFFAA06A99E9A8F2C62F6AEB0AC5DC97A8498D1D5C55BEEA",
-  "status": "AWAITING_COMMIT_AND_V100_GATE",
+  "status": "AWAITING_V100_GATE",
   "training_blockers": [
-    "The complete implementation/config/PBS set has not been committed and pushed.",
     "The four frozen B checkpoints have not yet been remotely verified on Gadi.",
     "Target V100 must pass stage3_v100_preflight.pbs before the six-job fold1 array is submitted."
   ]

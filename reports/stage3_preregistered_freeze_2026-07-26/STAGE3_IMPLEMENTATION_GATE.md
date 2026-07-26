@@ -43,19 +43,18 @@ Training is not approved by this package.
   - R1: median 13.517 ms.
   - R1/B latency ratio: 1.3744; R1/B peak-memory ratio: 0.7059.
 - The local server-gate dry-run exited with the predeclared refusal code because
-  the device is not V100, the working tree is not yet committed/clean, and the
+  the device was not V100, the pre-commit working tree was dirty, and the
   latency ratio exceeds 1.25. This confirms fail-closed behavior.
 
 The local memory constraint passes, but the local latency ratio exceeds the preregistered 1.25 limit. This is an architecture-only random-weight measurement, not historical-model inference. Because planned experiments run on V100 hardware, the exact frozen measurement script must be executed there before training approval. The threshold must not be changed.
 
 ## Remaining blockers before any training
 
-1. Commit and push the complete implementation/config/PBS set together; no
-   implementation commit is currently recorded.
-2. Upload and remotely verify the locked fold1-4 B checkpoints.
-3. Run `stage3_v100_preflight.pbs` on the exact clean commit. The latency ratio
+1. Upload and remotely verify the locked fold1-4 B checkpoints.
+2. Run `stage3_v100_preflight.pbs` on the exact clean implementation commit.
+   The latency ratio
    must be at most 1.25 and memory ratio at most 1.30.
-4. Only after that gate passes may the user separately submit the locked
+3. Only after that gate passes may the user separately submit the locked
    six-element fold1 array.
 
 ## Decision boundary
