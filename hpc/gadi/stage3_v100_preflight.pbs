@@ -5,7 +5,7 @@
 #PBS -N bhsd_s3_gate
 #PBS -r n
 #PBS -l walltime=00:30:00
-#PBS -l ncpus=4
+#PBS -l ncpus=12
 #PBS -l ngpus=1
 #PBS -l mem=16GB
 #PBS -l jobfs=10GB
