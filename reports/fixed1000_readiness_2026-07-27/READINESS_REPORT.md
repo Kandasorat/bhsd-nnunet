@@ -1,6 +1,6 @@
 # Fixed1000 readiness report
 
-Decision: **PENDING_CORRECTED_V100_GATE**
+Decision: **READINESS_FAIL**
 
 Formal training jobs submitted: **0 / 27**
 
@@ -28,12 +28,17 @@ Gadi job `174755560.gadi-pbs` finished with `Exit_status=1`. It passed the split
 
 The first-step timing also included one-time CUDA compilation and is not a valid 1000-epoch projection. The corrected preflight retains the same resource limit and measures the median of three post-warm-up real batches.
 
-## Mandatory unresolved gate
+## Gate 2 result
 
-The corrected Gadi Tesla V100 preflight has not yet run for the corrected revision. The following remain unresolved and therefore prevent `PASS`:
+Corrected Gadi job `174756749.gadi-pbs` also returned `FAIL`. Split and checkpoint-final/checkpoint-best round-trip passed. The completed 2D and A0 profiles had finite losses and low peak allocated memory, but projected 1000-epoch walltimes were approximately 92.92 h and 62.90 h respectively, above the locked 48-hour request.
 
-- one real-data batch training step, backward and validation step for each unique architecture;
-- checkpoint-final and checkpoint-best round-trip on the Gadi environment;
+The gate then stopped during 3D TorchInductor/Triton compilation with `TypeError('unexpected type fp32')`. It consequently did not profile C1/C2/D0/D1 or complete total GPU-hour/quota evaluation.
+
+## Unresolved evidence
+
+The following remain unresolved and prevent `PASS`:
+
+- successful real-data batch training, backward and validation evidence for 3D and C1/C2/D0/D1;
 - peak V100 memory and per-iteration timing;
 - projected per-task walltime and 27-task GPU-hours;
 - current scratch quota versus a provisional 243 GB projection / 270 GB reserve;
@@ -44,4 +49,4 @@ The previous 2D/A0/3D audit estimated the core 15 at approximately 122–125 V10
 
 ## Decision boundary
 
-Current status is not `PASS`; consequently neither formal PBS array may be submitted. If the V100 or quota gate fails, the final decision is `READINESS_FAIL` without relaxing thresholds. If it passes, the report and JSON must be updated from the returned immutable artifacts, committed, pushed, checked out identically on Gadi, and only then may the two arrays be submitted.
+Current status is `READINESS_FAIL`; consequently neither formal PBS array may be submitted. No threshold is relaxed and no third gate is authorized by this decision. Any proposal to disable `torch.compile`, introduce explicitly seeded multi-worker augmentation, chain jobs across checkpoints, change the software environment, or alter requested walltime must be separately chosen and preregistered before implementation.
