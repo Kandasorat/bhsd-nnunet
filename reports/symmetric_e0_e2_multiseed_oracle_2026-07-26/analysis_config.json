@@ -1,0 +1,28 @@
+{
+  "analysis_date": "2026-07-26",
+  "bootstrap_replicates": 10000,
+  "case_join": "explicit case_id",
+  "class_map": {
+    "1": "EDH",
+    "2": "IPH",
+    "3": "IVH",
+    "4": "SAH",
+    "5": "SDH"
+  },
+  "empty_mask_policy": "both empty excluded as NaN; GT present/pred empty Dice=0",
+  "fold": 0,
+  "forbidden_actions_observed": false,
+  "npz_mapping": "nnU-Net exported probabilities in C,Z,Y,X; properties require full bbox and unchanged restored shape; transpose Z,Y,X to X,Y,Z; argmax must exactly reproduce hard NIfTI",
+  "practical_sign_threshold": 0.01,
+  "primary_estimand": "patient-clustered 3-seed average of per-seed 5-class-balanced GT-present E2-minus-E0 Dice",
+  "raw_sign_epsilon": 1e-08,
+  "rng_seed": 20260726,
+  "seeds": [
+    3407,
+    1234,
+    5678
+  ],
+  "sign_flip_replicates": 10000,
+  "tie_tolerance": 1e-08,
+  "voxel_volume_ml": "abs(det(affine[:3,:3]))/1000"
+}

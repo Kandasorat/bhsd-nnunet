@@ -1,0 +1,62 @@
+#!/bin/bash
+
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N bhsd_s3_gate
+#PBS -r n
+#PBS -l walltime=00:30:00
+#PBS -l ncpus=4
+#PBS -l ngpus=1
+#PBS -l mem=16GB
+#PBS -l jobfs=10GB
+#PBS -l storage=scratch/ke17
+#PBS -j oe
+#PBS -o /scratch/ke17/bhsd-nnunet/logs
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+CHECKPOINT_ROOT="$BHSD_ROOT/frozen_baselines/multiclass_2d_min300_patience100"
+GATE_DIR="$BHSD_ROOT/runs/experiment_metadata/stage3_fold1_gate"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+export BHSD_RESULTS_DIR="$BHSD_ROOT/runs/experiment_metadata"
+export BHSD_STAGE3_B_CHECKPOINT_ROOT="$CHECKPOINT_ROOT"
+export nnUNet_n_proc_DA=0
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+
+test -d "$REPO_DIR/.git"
+test -f "$nnUNet_preprocessed/Dataset001_BHSD/splits_final.json"
+mkdir -p "$GATE_DIR" "$BHSD_ROOT/logs"
+cd "$REPO_DIR"
+
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Refusing Stage3 gate on a dirty Git checkout" >&2
+    git status --short >&2
+    exit 2
+fi
+
+(
+    flock -x 9
+    python3 nnunet25d/install_extension.py
+) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
+
+python3 scripts/verify_stage3_training_configs.py \
+    --checkpoint-root "$CHECKPOINT_ROOT" \
+    --output "$GATE_DIR/config_and_checkpoint_audit.json"
+
+python3 scripts/profile_stage3_v100_gate.py \
+    --output "$GATE_DIR/stage3_v100_gate.json"
+
+echo "Stage3 V100 gate passed. Training remains a separate qsub action."
+echo "Gate: $GATE_DIR/stage3_v100_gate.json"

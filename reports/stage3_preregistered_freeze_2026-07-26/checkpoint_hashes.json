@@ -1,0 +1,29 @@
+{
+  "algorithm": "SHA-256",
+  "checkpoints": [
+    {
+      "bytes": 371084703,
+      "fold": 1,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_1\\checkpoint_best.pth",
+      "sha256": "AA88CEF38BF82C2B9880C02696C83A89099CCF653E4E763284D90953BD787AD1"
+    },
+    {
+      "bytes": 371100831,
+      "fold": 2,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_2\\checkpoint_best.pth",
+      "sha256": "2BB596645A3DCAD78AA4156E66F1E0AAC133E563B19A9D91718C5D6A65044458"
+    },
+    {
+      "bytes": 371068575,
+      "fold": 3,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_3\\checkpoint_best.pth",
+      "sha256": "78B3775392B633F09E9E892C2658A42819E040285D1055034DC113C59B326CF8"
+    },
+    {
+      "bytes": 370958751,
+      "fold": 4,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_4\\checkpoint_best.pth",
+      "sha256": "E59B3FD75BA8A1D397564A8CBE61988A36646E29D848635774A943B135620628"
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "bytes": 196,
+      "path": "nnunet25d/stage3/__init__.py",
+      "sha256": "3D3FAA89955F1BB368472D37495BEA8748B803D068BF3DABD4901F0DEEDB5004"
+    },
+    {
+      "bytes": 1365,
+      "path": "nnunet25d/stage3/analysis.py",
+      "sha256": "6838CD0750E097B908E2996A2537C602B49162EE3502C9B2BD9A90A8813F84E9"
+    },
+    {
+      "bytes": 3754,
+      "path": "nnunet25d/stage3/compute.py",
+      "sha256": "9242BBF5B0E551D6F07C772B2E3C092CE827484529438EE17EA3B4F850F70F81"
+    },
+    {
+      "bytes": 548,
+      "path": "nnunet25d/stage3/dataloader.py",
+      "sha256": "F04EC4A24FED4963940DB629126BCCE8968AFEC9D48116D4CBBE24138D54EFA6"
+    },
+    {
+      "bytes": 3223,
+      "path": "nnunet25d/stage3/evaluator.py",
+      "sha256": "8C0EE9750BB9A79BFB69AECE88AF9FBD841F56AA28F0D92BE8DF2391A94F6711"
+    },
+    {
+      "bytes": 9868,
+      "path": "nnunet25d/stage3/metrics.py",
+      "sha256": "F888DCAFF7624FDD83E81024205EC4653B1E481C5D45735473A945F7BBB59BFB"
+    },
+    {
+      "bytes": 7256,
+      "path": "nnunet25d/stage3/model.py",
+      "sha256": "79537D2A42BCF8CE93265A772D6A47866A6B859F71E9848911890107785BF5AD"
+    },
+    {
+      "bytes": 6242,
+      "path": "nnunet25d/stage3/provenance.py",
+      "sha256": "6C95EC841925E8BE026D631210FE677ADA60C4DEE001D8D0BF723F3ABADBBE7D"
+    },
+    {
+      "bytes": 5729,
+      "path": "nnunet25d/stage3/statistics.py",
+      "sha256": "F4EAED19EE68ED5D2410947D85C281248304442803AF9B1DF5493F77D93CF91D"
+    },
+    {
+      "bytes": 8132,
+      "path": "nnunet25d/stage3/trainer.py",
+      "sha256": "8FBD494D9BD8C5B77E4CB40DF7AC78EC4BC5D70D70D927BF3BA459AA8A1DA636"
+    },
+    {
+      "bytes": 3371,
+      "path": "nnunet25d/stage3/transforms.py",
+      "sha256": "3188D7FC45845592204B2B6233B97AFA42FAFC020CF1256ABEA06411ABDB404B"
+    },
+    {
+      "bytes": 412,
+      "path": "nnunet25d/trainer_stage3.py",
+      "sha256": "1205D3A9C97097D4BF7BA7F04592300906DCD8B684600569453A14ED2FD5DE15"
+    },
+    {
+      "bytes": 2026,
+      "path": "nnunet25d/install_extension.py",
+      "sha256": "47B839E4A36C259E62E230D150B5904772A9A154AF4DCE95BC80B8D6A55D065F"
+    },
+    {
+      "bytes": 23364,
+      "path": "tests/stage3_preflight/run_stage3_preflight.py",
+      "sha256": "7862E455B5AF8E3E40C0042735736CA70448CD03752D6299DCB710C556B65347"
+    },
+    {
+      "bytes": 3672,
+      "path": "tests/stage3_preflight/measure_stage3_architecture.py",
+      "sha256": "59D15A51032EA7A801F569305F9C713BAFB5ACA51A333186D4A310CE42FCC2D2"
+    },
+    {
+      "bytes": 3463,
+      "path": "tests/stage3_preflight/validate_trainer_initialization.py",
+      "sha256": "A6E7EF62590A49004011109F447669CABFB065126FF8487B4376EC47C690EB38"
+    },
+    {
+      "bytes": 29566,
+      "path": "scripts/run_experiment.py",
+      "sha256": "A9A44391C715067ADDA878EBBD87CFB1AB26055F7580DD7518948053537061A1"
+    },
+    {
+      "bytes": 5445,
+      "path": "scripts/verify_stage3_training_configs.py",
+      "sha256": "73A41F6A17F7CFB2791E081603FA4D3994782D4E11CD454420CB9740DE0EAE36"
+    },
+    {
+      "bytes": 6342,
+      "path": "scripts/profile_stage3_v100_gate.py",
+      "sha256": "AFEFA91423F3C5C7F7C1BA472D1CA5A8F0CC29029DAB12E52AC8A06A437B1D2D"
+    },
+    {
+      "bytes": 2208,
+      "path": "scripts/verify_stage3_v100_gate.py",
+      "sha256": "A43CBD9AB58FB5262183388B53111D386E33A31EDD02A63F7EF19DC00A400694"
+    },
+    {
+      "bytes": 2075,
+      "path": "scripts/upload_stage3_checkpoints_to_gadi.ps1",
+      "sha256": "E66921EBDDACEA32EE9249E4097D7B3EC112D3F519B7DFA13B0B801D37828615"
+    },
+    {
+      "bytes": 1756,
+      "path": "hpc/gadi/stage3_v100_preflight.pbs",
+      "sha256": "5E165D6DACAEBA2F387DEC937866FE47A74E8185D05756C0517FA2A7DDD4863A"
+    },
+    {
+      "bytes": 3200,
+      "path": "hpc/gadi/train_stage3_fold1_r0_r1.pbs",
+      "sha256": "2C513C9E8CF5EA3E37F4C88FDAD14B2C1E7F6B045592EC17FA05B013B95917A1"
+    },
+    {
+      "bytes": 881,
+      "path": "configs/stage3_r0_fold1_seed1234.yaml",
+      "sha256": "3544E63EFA671C97251AA686DF68E4D18CDDC8890DD34BB64E47EF0E3BE5C8CE"
+    },
+    {
+      "bytes": 873,
+      "path": "configs/stage3_r0_fold1_seed3407.yaml",
+      "sha256": "57BD43140FD11CA082391E03FFB1736C68EC624A50130BC97911C05B8172C87E"
+    },
+    {
+      "bytes": 881,
+      "path": "configs/stage3_r0_fold1_seed5678.yaml",
+      "sha256": "32C029B6B619694F871C023508AB0E2399D6E1936231285E1FF94762DEB5EE7F"
+    },
+    {
+      "bytes": 873,
+      "path": "configs/stage3_r1_fold1_seed1234.yaml",
+      "sha256": "92EACA540A5187FBB5ADC3E83F5E859BBB711E66177E663615513332CBF86608"
+    },
+    {
+      "bytes": 865,
+      "path": "configs/stage3_r1_fold1_seed3407.yaml",
+      "sha256": "C94A93FB3298F7E3B3FFCCD6E2BF5728F0B08496DFE2174DD3C2D6977D2E5EFB"
+    },
+    {
+      "bytes": 873,
+      "path": "configs/stage3_r1_fold1_seed5678.yaml",
+      "sha256": "0B25B0684929756D100B35FEA1879026DB7FC92E0DF441D11C8085FA5507E561"
+    }
+  ]
+}

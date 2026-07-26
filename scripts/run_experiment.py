@@ -380,7 +380,12 @@ def maybe_install_custom_trainers(config: Dict[str, Any]) -> None:
 
 def is_custom_25d_config(config: Dict[str, Any]) -> bool:
     trainer = str(config.get("trainer", ""))
-    return "25D" in trainer or "SpacingAware25D" in trainer or "CSAMVolume" in trainer
+    return (
+        "25D" in trainer
+        or "SpacingAware25D" in trainer
+        or "CSAMVolume" in trainer
+        or "Stage3" in trainer
+    )
 
 
 def is_binary_config(config: Dict[str, Any]) -> bool:

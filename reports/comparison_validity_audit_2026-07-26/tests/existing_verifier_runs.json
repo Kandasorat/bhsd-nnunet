@@ -1,0 +1,36 @@
+{
+  "overall_status": "PASS",
+  "scope": "synthetic/static verifiers only; no training and no saved-model inference",
+  "verifiers": [
+    {
+      "exit_code": 0,
+      "script": "verify_attention_screen.py",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "script": "verify_spectral_slice_fusion.py",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "script": "verify_symmetric_reliability_fusion.py",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "script": "verify_compute_cost.py",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "script": "verify_symmetric_multiseed_design.py",
+      "status": "PASS"
+    },
+    {
+      "exit_code": 0,
+      "script": "verify_axial_multiseed_design.py",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "audit_date": "2026-07-26",
+  "audit_type": "BHSD implementation_correctness_comparison_validity_and_stage3_preregistration",
+  "canonical_repository": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code",
+  "repository_commit": "0c660e0786386a7dbe07c8366068e2c9455aeb7e",
+  "locked_oracle_decision": "E0_E2_COMPLEMENTARITY_STOP",
+  "final_status": "STAGE3_BLOCKED",
+  "training_performed": false,
+  "saved_model_inference_performed": false,
+  "pbs_submitted": false,
+  "trainer_or_model_modified": false,
+  "canonical_handoff_modified": false,
+  "commit_or_push_performed": false,
+  "case_count": 192,
+  "fold_count": 5,
+  "real_image_gt_cases_audited": 20,
+  "prediction_gt_cases_audited": 20,
+  "historical_validation_summaries_audited": 52,
+  "existing_synthetic_or_static_verifiers_run": 6,
+  "split_sha256": "A7F3088C3195273FEFFAA06A99E9A8F2C62F6AEB0AC5DC97A8498D1D5C55BEEA",
+  "required_deliverables": [
+    "comparison_claim_matrix.csv",
+    "pipeline_correctness_checklist.csv",
+    "metric_definition_audit.csv",
+    "seed_and_split_audit.csv",
+    "stage3_preregistered_protocol.md",
+    "stage3_required_tests.md",
+    "COMPARISON_VALIDITY_AUDIT.md"
+  ],
+  "stage3_blockers": [
+    "B/R0/R1 implementation absent by task design",
+    "Stage3 tests not executable until implementation exists",
+    "historical per-channel intensity augmentation would violate exact R0 duplication",
+    "B checkpoint hashes not frozen",
+    "physical HD95/NSD and lesion evaluator not implemented",
+    "patient-cluster confirmatory script not frozen",
+    "future wrapper compute profile absent"
+  ]
+}

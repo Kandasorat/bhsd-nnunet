@@ -1,0 +1,62 @@
+{
+  "B": {
+    "conv2d_flops_batch": 28580024320,
+    "device": "cuda:0",
+    "flop_convention": "multiply and add count as two operations; Conv2d only",
+    "input_shape": [
+      1,
+      1,
+      256,
+      256
+    ],
+    "median_latency_ms": 10.505450001801364,
+    "parameters": 46332650,
+    "peak_allocated_bytes": 251315200,
+    "repetitions": 100,
+    "trainable_parameters": 46332650,
+    "warmup": 20
+  },
+  "R0": {
+    "complete_backbone_passes": 1,
+    "conv2d_flops_batch": 31603462144,
+    "device": "cuda:0",
+    "flop_convention": "multiply and add count as two operations; Conv2d only",
+    "input_shape": [
+      1,
+      3,
+      256,
+      256
+    ],
+    "median_latency_ms": 14.435050001338823,
+    "parameters": 46350992,
+    "peak_allocated_bytes": 251395584,
+    "repetitions": 100,
+    "trainable_parameters": 18342,
+    "warmup": 20
+  },
+  "R1": {
+    "complete_backbone_passes": 1,
+    "conv2d_flops_batch": 31603462144,
+    "device": "cuda:0",
+    "flop_convention": "multiply and add count as two operations; Conv2d only",
+    "input_shape": [
+      1,
+      3,
+      256,
+      256
+    ],
+    "median_latency_ms": 14.745999997103354,
+    "parameters": 46350992,
+    "peak_allocated_bytes": 252182016,
+    "repetitions": 100,
+    "trainable_parameters": 18342,
+    "warmup": 20
+  },
+  "device_name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+  "ratios": {
+    "R1_over_B_median_latency": 1.4036523894335668,
+    "R1_over_B_peak_allocated": 1.0034491188754202
+  },
+  "scope": "randomly initialized locked architecture; no historical checkpoint loaded and no dataset inference",
+  "torch": "2.7.1+cu118"
+}

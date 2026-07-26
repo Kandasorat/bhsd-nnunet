@@ -1,0 +1,42 @@
+{
+  "decision": "E0_E2_COMPLEMENTARITY_STOP",
+  "go_checks": {
+    "all_3_seed_headroom_gt_0p01": true,
+    "at_least_3_classes_mean_headroom_ge_0p01": true,
+    "loso_positive_gain_at_least_2_seeds": false,
+    "mean_headroom_ge_0p02": true,
+    "mean_loso_gain_ge_0p005": false,
+    "median_spearman_ge_0p30": false,
+    "not_slice_only": true,
+    "primary_headroom_gt_present": true,
+    "strong_effect_unanimous_ge_0p50": false
+  },
+  "loso_mean_gain": -0.03173807371036402,
+  "max_exploratory_slice_apparent_gain": 0.12751667814591738,
+  "mean_oracle_headroom": 0.03767445670613719,
+  "median_pairwise_spearman": -0.20200249490941552,
+  "per_class_mean_oracle_headroom": {
+    "EDH": 0.013029069338533908,
+    "IPH": 0.026970355990489803,
+    "IVH": 0.04059155689040069,
+    "SAH": 0.02625807593378175,
+    "SDH": 0.028932116444102225
+  },
+  "per_seed_oracle_headroom": {
+    "1234": 0.041600731674041214,
+    "3407": 0.03818205062861091,
+    "5678": 0.03324058781575945
+  },
+  "scope": "Stops or advances only E0/E2 complementarity as model-design evidence; not all 2.5D research.",
+  "stop_checks": {
+    "at_least_2_seed_headroom_le_0p01": false,
+    "improvement_almost_entirely_absent_fp": false,
+    "loso_never_beats_max_single": true,
+    "low_spearman_and_low_strong_unanimity": true,
+    "mean_headroom_le_0p01": false,
+    "mean_loso_gain_le_0": true,
+    "no_repeatable_gt_present_complementarity": true,
+    "volume_headroom_small_but_slice_gain_large": false
+  },
+  "strong_effect_unanimous_practical_proportion": 0.11842105263157894
+}

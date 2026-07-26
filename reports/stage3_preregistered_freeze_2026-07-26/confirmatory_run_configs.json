@@ -1,0 +1,209 @@
+{
+  "conditional_on_fold1_gate": true,
+  "jobs": [
+    {
+      "arm": "R0",
+      "augmentation_workers": 0,
+      "b_checkpoint": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_2\\checkpoint_best.pth",
+      "b_checkpoint_sha256": "2BB596645A3DCAD78AA4156E66F1E0AAC133E563B19A9D91718C5D6A65044458",
+      "batch_size": 12,
+      "configuration": "2d",
+      "data_seed": 1003410,
+      "dataset": "Dataset001_BHSD",
+      "deterministic": true,
+      "early_stopping": {
+        "metric": "ema_fg_dice",
+        "minimum_epochs": 300,
+        "minimum_improvement": 0.0001,
+        "patience": 100
+      },
+      "fold": 2,
+      "maximum_epochs": 1000,
+      "model_seed": 3407,
+      "optimizer": {
+        "lr": 0.01,
+        "momentum": 0.99,
+        "name": "SGD",
+        "nesterov": true,
+        "weight_decay": 3e-05
+      },
+      "patch_size": [
+        256,
+        256
+      ],
+      "plans": "nnUNetPlans",
+      "trainer": "nnUNetTrainer_Stage3_R0",
+      "training_approved": false
+    },
+    {
+      "arm": "R1",
+      "augmentation_workers": 0,
+      "b_checkpoint": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_2\\checkpoint_best.pth",
+      "b_checkpoint_sha256": "2BB596645A3DCAD78AA4156E66F1E0AAC133E563B19A9D91718C5D6A65044458",
+      "batch_size": 12,
+      "configuration": "2d",
+      "data_seed": 1003410,
+      "dataset": "Dataset001_BHSD",
+      "deterministic": true,
+      "early_stopping": {
+        "metric": "ema_fg_dice",
+        "minimum_epochs": 300,
+        "minimum_improvement": 0.0001,
+        "patience": 100
+      },
+      "fold": 2,
+      "maximum_epochs": 1000,
+      "model_seed": 3407,
+      "optimizer": {
+        "lr": 0.01,
+        "momentum": 0.99,
+        "name": "SGD",
+        "nesterov": true,
+        "weight_decay": 3e-05
+      },
+      "patch_size": [
+        256,
+        256
+      ],
+      "plans": "nnUNetPlans",
+      "trainer": "nnUNetTrainer_Stage3_R1",
+      "training_approved": false
+    },
+    {
+      "arm": "R0",
+      "augmentation_workers": 0,
+      "b_checkpoint": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_3\\checkpoint_best.pth",
+      "b_checkpoint_sha256": "78B3775392B633F09E9E892C2658A42819E040285D1055034DC113C59B326CF8",
+      "batch_size": 12,
+      "configuration": "2d",
+      "data_seed": 1003410,
+      "dataset": "Dataset001_BHSD",
+      "deterministic": true,
+      "early_stopping": {
+        "metric": "ema_fg_dice",
+        "minimum_epochs": 300,
+        "minimum_improvement": 0.0001,
+        "patience": 100
+      },
+      "fold": 3,
+      "maximum_epochs": 1000,
+      "model_seed": 3407,
+      "optimizer": {
+        "lr": 0.01,
+        "momentum": 0.99,
+        "name": "SGD",
+        "nesterov": true,
+        "weight_decay": 3e-05
+      },
+      "patch_size": [
+        256,
+        256
+      ],
+      "plans": "nnUNetPlans",
+      "trainer": "nnUNetTrainer_Stage3_R0",
+      "training_approved": false
+    },
+    {
+      "arm": "R1",
+      "augmentation_workers": 0,
+      "b_checkpoint": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_3\\checkpoint_best.pth",
+      "b_checkpoint_sha256": "78B3775392B633F09E9E892C2658A42819E040285D1055034DC113C59B326CF8",
+      "batch_size": 12,
+      "configuration": "2d",
+      "data_seed": 1003410,
+      "dataset": "Dataset001_BHSD",
+      "deterministic": true,
+      "early_stopping": {
+        "metric": "ema_fg_dice",
+        "minimum_epochs": 300,
+        "minimum_improvement": 0.0001,
+        "patience": 100
+      },
+      "fold": 3,
+      "maximum_epochs": 1000,
+      "model_seed": 3407,
+      "optimizer": {
+        "lr": 0.01,
+        "momentum": 0.99,
+        "name": "SGD",
+        "nesterov": true,
+        "weight_decay": 3e-05
+      },
+      "patch_size": [
+        256,
+        256
+      ],
+      "plans": "nnUNetPlans",
+      "trainer": "nnUNetTrainer_Stage3_R1",
+      "training_approved": false
+    },
+    {
+      "arm": "R0",
+      "augmentation_workers": 0,
+      "b_checkpoint": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_4\\checkpoint_best.pth",
+      "b_checkpoint_sha256": "E59B3FD75BA8A1D397564A8CBE61988A36646E29D848635774A943B135620628",
+      "batch_size": 12,
+      "configuration": "2d",
+      "data_seed": 1003410,
+      "dataset": "Dataset001_BHSD",
+      "deterministic": true,
+      "early_stopping": {
+        "metric": "ema_fg_dice",
+        "minimum_epochs": 300,
+        "minimum_improvement": 0.0001,
+        "patience": 100
+      },
+      "fold": 4,
+      "maximum_epochs": 1000,
+      "model_seed": 3407,
+      "optimizer": {
+        "lr": 0.01,
+        "momentum": 0.99,
+        "name": "SGD",
+        "nesterov": true,
+        "weight_decay": 3e-05
+      },
+      "patch_size": [
+        256,
+        256
+      ],
+      "plans": "nnUNetPlans",
+      "trainer": "nnUNetTrainer_Stage3_R0",
+      "training_approved": false
+    },
+    {
+      "arm": "R1",
+      "augmentation_workers": 0,
+      "b_checkpoint": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_4\\checkpoint_best.pth",
+      "b_checkpoint_sha256": "E59B3FD75BA8A1D397564A8CBE61988A36646E29D848635774A943B135620628",
+      "batch_size": 12,
+      "configuration": "2d",
+      "data_seed": 1003410,
+      "dataset": "Dataset001_BHSD",
+      "deterministic": true,
+      "early_stopping": {
+        "metric": "ema_fg_dice",
+        "minimum_epochs": 300,
+        "minimum_improvement": 0.0001,
+        "patience": 100
+      },
+      "fold": 4,
+      "maximum_epochs": 1000,
+      "model_seed": 3407,
+      "optimizer": {
+        "lr": 0.01,
+        "momentum": 0.99,
+        "name": "SGD",
+        "nesterov": true,
+        "weight_decay": 3e-05
+      },
+      "patch_size": [
+        256,
+        256
+      ],
+      "plans": "nnUNetPlans",
+      "trainer": "nnUNetTrainer_Stage3_R1",
+      "training_approved": false
+    }
+  ]
+}

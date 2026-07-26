@@ -1,0 +1,29 @@
+{
+  "R0": {
+    "arm": "R0",
+    "center_parameters": 46332650,
+    "center_training": false,
+    "checkpoint_path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_1\\checkpoint_best.pth",
+    "checkpoint_sha256": "AA88CEF38BF82C2B9880C02696C83A89099CCF653E4E763284D90953BD787AD1",
+    "forward_calls": 0,
+    "optimizer_parameter_tensors": 18,
+    "residual_parameters": 18342,
+    "residual_state_sha256": "ACD8AE9EE818FD9D12F75B28758DA0F10D11D4F92F9E09141597134662AE8893",
+    "trainable_parameters": 18342,
+    "trainer": "nnUNetTrainer_Stage3_R0"
+  },
+  "R1": {
+    "arm": "R1",
+    "center_parameters": 46332650,
+    "center_training": false,
+    "checkpoint_path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_1\\checkpoint_best.pth",
+    "checkpoint_sha256": "AA88CEF38BF82C2B9880C02696C83A89099CCF653E4E763284D90953BD787AD1",
+    "forward_calls": 0,
+    "optimizer_parameter_tensors": 18,
+    "residual_parameters": 18342,
+    "residual_state_sha256": "ACD8AE9EE818FD9D12F75B28758DA0F10D11D4F92F9E09141597134662AE8893",
+    "trainable_parameters": 18342,
+    "trainer": "nnUNetTrainer_Stage3_R1"
+  },
+  "status": "PASS"
+}

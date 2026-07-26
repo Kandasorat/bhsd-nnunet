@@ -1,0 +1,92 @@
+{
+  "independent_cluster": "patient",
+  "limitations": [
+    "39 fold-0 validation patients only",
+    "model seeds are not independent patient cohorts",
+    "bootstrap does not include fold uncertainty",
+    "validation cases participated in checkpoint selection"
+  ],
+  "n_resamples": 10000,
+  "oracle_headroom": {
+    "bootstrap_mean": 0.03687012301008518,
+    "bootstrap_sample_sd": 0.005091346677077308,
+    "invalid_replicates": 13,
+    "observed": 0.03767445670613719,
+    "percentile_95_ci": [
+      0.02726579934446627,
+      0.047026649329890376
+    ],
+    "valid_replicates": 9987
+  },
+  "paired_patient_sign_flip": {
+    "extreme_count": 4033,
+    "observed_statistic": 0.012638550808645245,
+    "one_random_sign_per_patient_joint_across_classes_and_seeds": true,
+    "two_sided_p_value": 0.40335966403359663
+  },
+  "per_class_delta": {
+    "EDH": {
+      "bootstrap_mean": 0.0793301680735516,
+      "bootstrap_sample_sd": 0.05323827120432766,
+      "invalid_replicates": 13,
+      "percentile_95_ci": [
+        -0.002258217138703285,
+        0.19528068196401885
+      ],
+      "valid_replicates": 9987
+    },
+    "IPH": {
+      "bootstrap_mean": 0.0007264462847659408,
+      "bootstrap_sample_sd": 0.01080174994197772,
+      "invalid_replicates": 13,
+      "percentile_95_ci": [
+        -0.020462135875348106,
+        0.022014489235949626
+      ],
+      "valid_replicates": 9987
+    },
+    "IVH": {
+      "bootstrap_mean": -0.022759726834831386,
+      "bootstrap_sample_sd": 0.021830218228744314,
+      "invalid_replicates": 13,
+      "percentile_95_ci": [
+        -0.06732024421401495,
+        0.01804833400886864
+      ],
+      "valid_replicates": 9987
+    },
+    "SAH": {
+      "bootstrap_mean": 0.010402937794498598,
+      "bootstrap_sample_sd": 0.01143079314585782,
+      "invalid_replicates": 13,
+      "percentile_95_ci": [
+        -0.01081728107031429,
+        0.03429445752243065
+      ],
+      "valid_replicates": 9987
+    },
+    "SDH": {
+      "bootstrap_mean": -0.004876123372356851,
+      "bootstrap_sample_sd": 0.010918401962494257,
+      "invalid_replicates": 13,
+      "percentile_95_ci": [
+        -0.02783008855352825,
+        0.015790653694354107
+      ],
+      "valid_replicates": 9987
+    }
+  },
+  "primary_delta": {
+    "bootstrap_mean": 0.012564740389125582,
+    "bootstrap_sample_sd": 0.011933768362118678,
+    "invalid_replicates": 13,
+    "observed": 0.012638550808645245,
+    "percentile_95_ci": [
+      -0.008683577516116545,
+      0.037420858715642095
+    ],
+    "valid_replicates": 9987
+  },
+  "primary_estimand": "3-seed average of 5-class-balanced GT-present E2-minus-E0 Dice",
+  "rng_seed": 20260726
+}

@@ -1,0 +1,421 @@
+{
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3060 Laptop GPU",
+    "numpy": "2.2.6",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.10.20 | packaged by Anaconda, Inc. | (main, Mar 11 2026, 17:42:35) [MSC v.1942 64 bit (AMD64)]",
+    "simpleitk": "2.5.3",
+    "torch": "2.7.1+cu118"
+  },
+  "overall_status": "PASS",
+  "tests": {
+    "S3-01": {
+      "evidence": {
+        "bitwise": true,
+        "scales": [
+          [
+            2,
+            6,
+            32,
+            32
+          ],
+          [
+            2,
+            6,
+            16,
+            16
+          ],
+          [
+            2,
+            6,
+            8,
+            8
+          ]
+        ]
+      },
+      "status": "PASS"
+    },
+    "S3-02": {
+      "evidence": {
+        "bitwise": true,
+        "shapes": [
+          [
+            1,
+            3,
+            16,
+            20
+          ],
+          [
+            1,
+            3,
+            18,
+            22
+          ],
+          [
+            1,
+            3,
+            20,
+            24
+          ],
+          [
+            1,
+            3,
+            22,
+            26
+          ],
+          [
+            1,
+            3,
+            24,
+            28
+          ],
+          [
+            1,
+            3,
+            26,
+            30
+          ],
+          [
+            1,
+            3,
+            28,
+            32
+          ],
+          [
+            1,
+            3,
+            30,
+            34
+          ],
+          [
+            1,
+            3,
+            32,
+            36
+          ],
+          [
+            1,
+            3,
+            34,
+            38
+          ]
+        ]
+      },
+      "status": "PASS"
+    },
+    "S3-03": {
+      "evidence": {
+        "residual_parameters_with_finite_grad": 18
+      },
+      "status": "PASS"
+    },
+    "S3-04": {
+      "evidence": {
+        "center_state_sha256": "0D17ABF4082C402451ECBBA142B9598238D08D47CF2DBD1F004AA677EC058B1A"
+      },
+      "status": "PASS"
+    },
+    "S3-05": {
+      "evidence": {
+        "optimizer_parameter_tensors": 18
+      },
+      "status": "PASS"
+    },
+    "S3-06": {
+      "evidence": {
+        "residual_parameters": 18342,
+        "total_equal": true
+      },
+      "status": "PASS"
+    },
+    "S3-07": {
+      "evidence": {
+        "R0": {
+          "center": 1,
+          "stem": 3
+        },
+        "R1": {
+          "center": 1,
+          "stem": 3
+        }
+      },
+      "status": "PASS"
+    },
+    "S3-08": {
+      "evidence": {
+        "exact_duplicate": true
+      },
+      "status": "PASS"
+    },
+    "S3-09": {
+      "evidence": {
+        "target": 2,
+        "triplet": [
+          1,
+          2,
+          3
+        ]
+      },
+      "status": "PASS"
+    },
+    "S3-10": {
+      "evidence": {
+        "first": [
+          0,
+          0,
+          1
+        ],
+        "last": [
+          3,
+          4,
+          4
+        ],
+        "r0": [
+          4,
+          4,
+          4
+        ]
+      },
+      "status": "PASS"
+    },
+    "S3-11": {
+      "evidence": {
+        "max_abs_error": 0.0
+      },
+      "status": "PASS"
+    },
+    "S3-12": {
+      "evidence": {
+        "minimum_landmark_dice": 1.0,
+        "trials": 32
+      },
+      "status": "PASS"
+    },
+    "S3-13": {
+      "evidence": {
+        "settings": {
+          "ContrastTransform": true,
+          "GammaTransform": true,
+          "GaussianBlurTransform": true,
+          "GaussianNoiseTransform": true,
+          "MultiplicativeBrightnessTransform": true,
+          "SimulateLowResolutionTransform": true
+        },
+        "trials": 100
+      },
+      "status": "PASS"
+    },
+    "S3-14": {
+      "evidence": {
+        "inference_shape": [
+          2,
+          6,
+          32,
+          32
+        ],
+        "training_shapes": [
+          [
+            2,
+            6,
+            32,
+            32
+          ],
+          [
+            2,
+            6,
+            16,
+            16
+          ],
+          [
+            2,
+            6,
+            8,
+            8
+          ]
+        ]
+      },
+      "status": "PASS"
+    },
+    "S3-15": {
+      "evidence": {
+        "final_name_rejected": true,
+        "same_hash_accepted": true,
+        "wrong_hash_rejected": true
+      },
+      "status": "PASS"
+    },
+    "S3-16": {
+      "evidence": {
+        "cuda_available": true,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "declared_seed": 1234,
+        "deterministic_algorithms": true,
+        "nnunet_n_proc_da": "0",
+        "python_hash_seed": "1234",
+        "torch_initial_seed": 1234
+      },
+      "status": "PASS"
+    },
+    "S3-17": {
+      "evidence": {
+        "only_materialized_neighbours_differ": true,
+        "paired_records": 100
+      },
+      "status": "PASS"
+    },
+    "S3-18": {
+      "evidence": {
+        "cases": 192,
+        "folds": 5,
+        "sha256": "A7F3088C3195273FEFFAA06A99E9A8F2C62F6AEB0AC5DC97A8498D1D5C55BEEA"
+      },
+      "status": "PASS"
+    },
+    "S3-19": {
+      "evidence": {
+        "both_empty": "NaN",
+        "class_balanced": 0.2,
+        "pooled": 0.3333333333333333,
+        "present_empty": 0.0
+      },
+      "status": "PASS"
+    },
+    "S3-20": {
+      "evidence": {
+        "empty_penalty_mm": 15.588457268119896,
+        "perfect_mm": 0.0,
+        "z_shift_mm": 5.0
+      },
+      "status": "PASS"
+    },
+    "S3-21": {
+      "evidence": {
+        "2.9mm": 1.0,
+        "3.1mm": 0.0,
+        "empty_prediction": 0.0,
+        "perfect": 1.0
+      },
+      "status": "PASS"
+    },
+    "S3-22": {
+      "evidence": {
+        "merged_prediction": {
+          "f1": 0.6666666666666666,
+          "false_negative": 1,
+          "false_positive": 0,
+          "matched_pairs": [
+            [
+              1,
+              1,
+              1
+            ]
+          ],
+          "recall": 0.5,
+          "small_gt_lesions": 2,
+          "small_lesion_recall": 0.5,
+          "small_true_positive": 1,
+          "true_positive": 1
+        },
+        "separate_prediction_tp": 2
+      },
+      "status": "PASS"
+    },
+    "S3-23": {
+      "evidence": {
+        "read_only_cases": [
+          "case_001",
+          "case_002",
+          "case_003",
+          "case_004",
+          "case_005",
+          "case_006",
+          "case_007",
+          "case_008",
+          "case_009",
+          "case_010",
+          "case_011",
+          "case_012",
+          "case_013",
+          "case_014",
+          "case_015",
+          "case_016",
+          "case_017",
+          "case_018",
+          "case_019",
+          "case_020"
+        ],
+        "stage3_summaries_found": 0
+      },
+      "status": "PASS"
+    },
+    "S3-24": {
+      "evidence": {
+        "B": {
+          "autocast": false,
+          "conv2d_flops_batch": 466944,
+          "device": "cpu",
+          "flop_convention": "multiply and add count as two operations; Conv2d only",
+          "input_shape": [
+            1,
+            1,
+            64,
+            64
+          ],
+          "median_latency_ms": 0.03170000127283856,
+          "parameters": 60,
+          "peak_allocated_bytes": null,
+          "repetitions": 5,
+          "trainable_parameters": 60,
+          "warmup": 2
+        },
+        "R0": {
+          "autocast": false,
+          "conv2d_flops_batch": 189431808,
+          "device": "cpu",
+          "flop_convention": "multiply and add count as two operations; Conv2d only",
+          "input_shape": [
+            1,
+            3,
+            64,
+            64
+          ],
+          "median_latency_ms": 2.9892999955336563,
+          "parameters": 18402,
+          "peak_allocated_bytes": null,
+          "repetitions": 5,
+          "trainable_parameters": 18342,
+          "warmup": 2
+        },
+        "R1": {
+          "autocast": false,
+          "conv2d_flops_batch": 189431808,
+          "device": "cpu",
+          "flop_convention": "multiply and add count as two operations; Conv2d only",
+          "input_shape": [
+            1,
+            3,
+            64,
+            64
+          ],
+          "median_latency_ms": 2.469899998686742,
+          "parameters": 18402,
+          "peak_allocated_bytes": null,
+          "repetitions": 5,
+          "trainable_parameters": 18342,
+          "warmup": 2
+        },
+        "scope": "synthetic implementation measurement; full nnU-Net hardware profile is a separate freeze artifact"
+      },
+      "status": "PASS"
+    },
+    "S3-25": {
+      "evidence": {
+        "evaluator_guard": true,
+        "trainer_guard": true
+      },
+      "status": "PASS"
+    }
+  }
+}

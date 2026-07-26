@@ -1,0 +1,153 @@
+{
+  "checkpoints": [
+    {
+      "fold": 1,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_1\\checkpoint_best.pth",
+      "sha256": "AA88CEF38BF82C2B9880C02696C83A89099CCF653E4E763284D90953BD787AD1"
+    },
+    {
+      "fold": 2,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_2\\checkpoint_best.pth",
+      "sha256": "2BB596645A3DCAD78AA4156E66F1E0AAC133E563B19A9D91718C5D6A65044458"
+    },
+    {
+      "fold": 3,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_3\\checkpoint_best.pth",
+      "sha256": "78B3775392B633F09E9E892C2658A42819E040285D1055034DC113C59B326CF8"
+    },
+    {
+      "fold": 4,
+      "path": "D:\\BHSD_server_backups\\multiclass_2d_min300_patience100\\fold_4\\checkpoint_best.pth",
+      "sha256": "E59B3FD75BA8A1D397564A8CBE61988A36646E29D848635774A943B135620628"
+    }
+  ],
+  "configs": [
+    {
+      "arm": "R0",
+      "command": [
+        "nnUNetv2_train",
+        "Dataset001_BHSD",
+        "2d",
+        "1",
+        "-tr",
+        "nnUNetTrainer_Stage3_R0",
+        "--npz",
+        "--val_best",
+        "-device",
+        "cuda"
+      ],
+      "name": "stage3_r0_fold1_seed3407",
+      "path": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code\\configs\\stage3_r0_fold1_seed3407.yaml",
+      "seed": 3407,
+      "sha256": "57BD43140FD11CA082391E03FFB1736C68EC624A50130BC97911C05B8172C87E",
+      "trainer": "nnUNetTrainer_Stage3_R0"
+    },
+    {
+      "arm": "R1",
+      "command": [
+        "nnUNetv2_train",
+        "Dataset001_BHSD",
+        "2d",
+        "1",
+        "-tr",
+        "nnUNetTrainer_Stage3_R1",
+        "--npz",
+        "--val_best",
+        "-device",
+        "cuda"
+      ],
+      "name": "stage3_r1_fold1_seed3407",
+      "path": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code\\configs\\stage3_r1_fold1_seed3407.yaml",
+      "seed": 3407,
+      "sha256": "C94A93FB3298F7E3B3FFCCD6E2BF5728F0B08496DFE2174DD3C2D6977D2E5EFB",
+      "trainer": "nnUNetTrainer_Stage3_R1"
+    },
+    {
+      "arm": "R0",
+      "command": [
+        "nnUNetv2_train",
+        "Dataset001_BHSD",
+        "2d",
+        "1",
+        "-tr",
+        "nnUNetTrainer_Stage3_R0Seed1234",
+        "--npz",
+        "--val_best",
+        "-device",
+        "cuda"
+      ],
+      "name": "stage3_r0_fold1_seed1234",
+      "path": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code\\configs\\stage3_r0_fold1_seed1234.yaml",
+      "seed": 1234,
+      "sha256": "3544E63EFA671C97251AA686DF68E4D18CDDC8890DD34BB64E47EF0E3BE5C8CE",
+      "trainer": "nnUNetTrainer_Stage3_R0Seed1234"
+    },
+    {
+      "arm": "R1",
+      "command": [
+        "nnUNetv2_train",
+        "Dataset001_BHSD",
+        "2d",
+        "1",
+        "-tr",
+        "nnUNetTrainer_Stage3_R1Seed1234",
+        "--npz",
+        "--val_best",
+        "-device",
+        "cuda"
+      ],
+      "name": "stage3_r1_fold1_seed1234",
+      "path": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code\\configs\\stage3_r1_fold1_seed1234.yaml",
+      "seed": 1234,
+      "sha256": "92EACA540A5187FBB5ADC3E83F5E859BBB711E66177E663615513332CBF86608",
+      "trainer": "nnUNetTrainer_Stage3_R1Seed1234"
+    },
+    {
+      "arm": "R0",
+      "command": [
+        "nnUNetv2_train",
+        "Dataset001_BHSD",
+        "2d",
+        "1",
+        "-tr",
+        "nnUNetTrainer_Stage3_R0Seed5678",
+        "--npz",
+        "--val_best",
+        "-device",
+        "cuda"
+      ],
+      "name": "stage3_r0_fold1_seed5678",
+      "path": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code\\configs\\stage3_r0_fold1_seed5678.yaml",
+      "seed": 5678,
+      "sha256": "32C029B6B619694F871C023508AB0E2399D6E1936231285E1FF94762DEB5EE7F",
+      "trainer": "nnUNetTrainer_Stage3_R0Seed5678"
+    },
+    {
+      "arm": "R1",
+      "command": [
+        "nnUNetv2_train",
+        "Dataset001_BHSD",
+        "2d",
+        "1",
+        "-tr",
+        "nnUNetTrainer_Stage3_R1Seed5678",
+        "--npz",
+        "--val_best",
+        "-device",
+        "cuda"
+      ],
+      "name": "stage3_r1_fold1_seed5678",
+      "path": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code\\configs\\stage3_r1_fold1_seed5678.yaml",
+      "seed": 5678,
+      "sha256": "0B25B0684929756D100B35FEA1879026DB7FC92E0DF441D11C8085FA5507E561",
+      "trainer": "nnUNetTrainer_Stage3_R1Seed5678"
+    }
+  ],
+  "explicit_validation_flags": [
+    "--val_best",
+    "--npz"
+  ],
+  "split_cases": 192,
+  "split_sha256": "A7F3088C3195273FEFFAA06A99E9A8F2C62F6AEB0AC5DC97A8498D1D5C55BEEA",
+  "status": "PASS"
+}

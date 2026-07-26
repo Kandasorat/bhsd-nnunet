@@ -1,0 +1,102 @@
+{
+  "cluster": "patient; all model seeds retained jointly for three-seed statistic",
+  "estimand": "paired case-level binary Dice E2-minus-E0",
+  "limitations": [
+    "39 fold-0 validation patients",
+    "no fold uncertainty",
+    "model seeds are not independent cohorts",
+    "post-hoc collapse of multiclass models"
+  ],
+  "n_replicates": 10000,
+  "results": {
+    "hard_union": {
+      "per_seed": {
+        "1234": {
+          "bootstrap_mean": -0.013792592912605307,
+          "bootstrap_sample_sd": 0.015060629721654506,
+          "observed_mean_paired_dice_delta_e2_minus_e0": -0.013744991138511983,
+          "percentile_95_ci": [
+            -0.04213398505611736,
+            0.017339981074164894
+          ],
+          "valid_replicates": 10000
+        },
+        "3407": {
+          "bootstrap_mean": -0.01912183552341589,
+          "bootstrap_sample_sd": 0.014174606785889332,
+          "observed_mean_paired_dice_delta_e2_minus_e0": -0.019215467531795614,
+          "percentile_95_ci": [
+            -0.0460123333135164,
+            0.00905983818860691
+          ],
+          "valid_replicates": 10000
+        },
+        "5678": {
+          "bootstrap_mean": 0.0026142959284269247,
+          "bootstrap_sample_sd": 0.007639300114603491,
+          "observed_mean_paired_dice_delta_e2_minus_e0": 0.0026521644219700963,
+          "percentile_95_ci": [
+            -0.012524174303896471,
+            0.017811397495950065
+          ],
+          "valid_replicates": 10000
+        }
+      },
+      "three_seed_average": {
+        "bootstrap_mean": -0.010041719665746336,
+        "bootstrap_sample_sd": 0.008071680670905844,
+        "observed": -0.010102764749445834,
+        "percentile_95_ci": [
+          -0.025850800329954213,
+          0.005691449402656911
+        ],
+        "valid_replicates": 10000
+      }
+    },
+    "soft_union_p0p5": {
+      "per_seed": {
+        "1234": {
+          "bootstrap_mean": -0.013648957195474706,
+          "bootstrap_sample_sd": 0.01554166205164777,
+          "observed_mean_paired_dice_delta_e2_minus_e0": -0.013777976256105023,
+          "percentile_95_ci": [
+            -0.042902379248586794,
+            0.017851145603229583
+          ],
+          "valid_replicates": 10000
+        },
+        "3407": {
+          "bootstrap_mean": -0.018047877282166645,
+          "bootstrap_sample_sd": 0.01407990589684331,
+          "observed_mean_paired_dice_delta_e2_minus_e0": -0.018196846966285422,
+          "percentile_95_ci": [
+            -0.045958138796368855,
+            0.009807530464130139
+          ],
+          "valid_replicates": 10000
+        },
+        "5678": {
+          "bootstrap_mean": 0.0027834784900009632,
+          "bootstrap_sample_sd": 0.007765093392827723,
+          "observed_mean_paired_dice_delta_e2_minus_e0": 0.0027449832202610263,
+          "percentile_95_ci": [
+            -0.012323891125199962,
+            0.017992290399550814
+          ],
+          "valid_replicates": 10000
+        }
+      },
+      "three_seed_average": {
+        "bootstrap_mean": -0.009677978126315993,
+        "bootstrap_sample_sd": 0.008239754398433106,
+        "observed": -0.009743280000709805,
+        "percentile_95_ci": [
+          -0.02582209679147253,
+          0.006170985470833859
+        ],
+        "valid_replicates": 10000
+      }
+    }
+  },
+  "rng_seed": 20260726
+}

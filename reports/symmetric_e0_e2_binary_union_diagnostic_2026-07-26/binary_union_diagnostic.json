@@ -1,0 +1,113 @@
+{
+  "analysis_type": "post-hoc binary union diagnostic of multiclass models; not binary-trained performance",
+  "e2_minus_e0_three_seed_paired_delta": {
+    "bootstrap_mean": -0.010041719665746336,
+    "bootstrap_sample_sd": 0.008071680670905844,
+    "observed": -0.010102764749445834,
+    "percentile_95_ci": [
+      -0.025850800329954213,
+      0.005691449402656911
+    ],
+    "valid_replicates": 10000
+  },
+  "judgment": "Use these results to decide whether foreground localization is already credible. They cannot establish binary-training performance or 2.5D benefit versus center-only 2D.",
+  "mean_wrong_subtype_fraction_among_hard_binary_true_positive_voxels": {
+    "E0": 0.12025799826601336,
+    "E2": 0.13321391277333797
+  },
+  "model_summary": {
+    "E0": {
+      "mean_of_seed_means": 0.6420008897583304,
+      "per_seed_mean_dice": {
+        "1234": 0.6413097225875922,
+        "3407": 0.6436538853677304,
+        "5678": 0.6410390613196685
+      },
+      "sample_sd_of_seed_means": 0.0014379187195423572
+    },
+    "E2": {
+      "mean_of_seed_means": 0.6318981250088845,
+      "per_seed_mean_dice": {
+        "1234": 0.6275647314490802,
+        "3407": 0.6244384178359348,
+        "5678": 0.6436912257416385
+      },
+      "sample_sd_of_seed_means": 0.010332055839550854
+    }
+  },
+  "required_next_comparison_if_binary_is_pursued": "binary-trained center-only 2D versus binary-trained simple symmetric 3-slice 2.5D under identical protocol",
+  "small_lesion_mean_dice": {
+    "E0": {
+      "1234": 0.2809862071215183,
+      "3407": 0.24538863830311528,
+      "5678": 0.17571618721204477
+    },
+    "E2": {
+      "1234": 0.18488217933642295,
+      "3407": 0.13740519903043447,
+      "5678": 0.19056280040958856
+    }
+  },
+  "stability": {
+    "hard_union_E0": {
+      "mean_across_seed_means": 0.6420008897583304,
+      "median_pairwise_spearman": 0.9540485829959514,
+      "pairwise_case_dice_spearman": [
+        0.961336032388664,
+        0.9540485829959514,
+        0.9532388663967613
+      ],
+      "per_seed_mean_dice": {
+        "1234": 0.6413097225875922,
+        "3407": 0.6436538853677304,
+        "5678": 0.6410390613196685
+      },
+      "sample_sd_across_seed_means": 0.0014379187195423572
+    },
+    "hard_union_E2": {
+      "mean_across_seed_means": 0.6318981250088845,
+      "median_pairwise_spearman": 0.9475708502024291,
+      "pairwise_case_dice_spearman": [
+        0.947165991902834,
+        0.951012145748988,
+        0.9475708502024291
+      ],
+      "per_seed_mean_dice": {
+        "1234": 0.6275647314490802,
+        "3407": 0.6244384178359348,
+        "5678": 0.6436912257416385
+      },
+      "sample_sd_across_seed_means": 0.010332055839550854
+    },
+    "soft_union_p0p5_E0": {
+      "mean_across_seed_means": 0.6430778542893352,
+      "median_pairwise_spearman": 0.9520242914979758,
+      "pairwise_case_dice_spearman": [
+        0.9621457489878542,
+        0.9520242914979758,
+        0.9500000000000002
+      ],
+      "per_seed_mean_dice": {
+        "1234": 0.6430310696314023,
+        "3407": 0.644295518853119,
+        "5678": 0.6419069743834842
+      },
+      "sample_sd_across_seed_means": 0.0011949593189808298
+    },
+    "soft_union_p0p5_E2": {
+      "mean_across_seed_means": 0.6333345742886254,
+      "median_pairwise_spearman": 0.9502024291497976,
+      "pairwise_case_dice_spearman": [
+        0.9425101214574899,
+        0.951012145748988,
+        0.9502024291497976
+      ],
+      "per_seed_mean_dice": {
+        "1234": 0.6292530933752973,
+        "3407": 0.6260986718868335,
+        "5678": 0.6446519576037453
+      },
+      "sample_sd_across_seed_means": 0.009927233630661468
+    }
+  }
+}

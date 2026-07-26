@@ -1,0 +1,76 @@
+{
+  "overall_status": "PASS_WITH_INTENSITY_CAUTION",
+  "slice_stack_center_target_and_boundaries": {
+    "boundary_and_center_rows": [
+      {
+        "center": 0,
+        "observed_channels": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "observed_target": 0
+      },
+      {
+        "center": 2,
+        "observed_channels": [
+          1.0,
+          2.0,
+          3.0
+        ],
+        "observed_target": 2
+      },
+      {
+        "center": 4,
+        "observed_channels": [
+          3.0,
+          4.0,
+          4.0
+        ],
+        "observed_target": 4
+      }
+    ],
+    "status": "PASS"
+  },
+  "training_geometry_sync": {
+    "minimum_thresholded_alignment_dice": 1.0,
+    "status": "PASS",
+    "trials": 24
+  },
+  "training_intensity_behavior": {
+    "intensity_transform_channel_settings": [
+      {
+        "synchronize_channels": true,
+        "transform": "GaussianNoiseTransform"
+      },
+      {
+        "synchronize_channels": false,
+        "transform": "GaussianBlurTransform"
+      },
+      {
+        "synchronize_channels": false,
+        "transform": "MultiplicativeBrightnessTransform"
+      },
+      {
+        "synchronize_channels": false,
+        "transform": "ContrastTransform"
+      },
+      {
+        "synchronize_channels": false,
+        "transform": "SimulateLowResolutionTransform"
+      },
+      {
+        "synchronize_channels": false,
+        "transform": "GammaTransform"
+      },
+      {
+        "synchronize_channels": false,
+        "transform": "GammaTransform"
+      }
+    ],
+    "interpretation": "geometry is shared, but most intensity transforms are configured per channel",
+    "status": "PASS_WITH_RECORDED_BEHAVIOR",
+    "trials": 40,
+    "trials_with_nonidentical_output_channels_from_identical_inputs": 26
+  }
+}

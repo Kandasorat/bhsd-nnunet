@@ -1,0 +1,12 @@
+{
+  "all_historical_summaries_have_best_and_final_checkpoints": true,
+  "all_historical_summary_case_sets_match_locked_splits": true,
+  "every_case_is_validation_exactly_once": true,
+  "historical_validation_summaries_checked": 52,
+  "n_cases": 192,
+  "n_folds": 5,
+  "overall_status": "PASS",
+  "prediction_geometry_cases_checked": 20,
+  "raw_image_and_label_case_ids_identical": true,
+  "selected_real_case_count": 20
+}

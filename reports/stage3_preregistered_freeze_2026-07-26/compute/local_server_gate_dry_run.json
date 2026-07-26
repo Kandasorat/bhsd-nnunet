@@ -1,0 +1,134 @@
+{
+  "B": {
+    "autocast": true,
+    "conv2d_flops_batch": 28580024320,
+    "device": "cuda:0",
+    "flop_convention": "multiply and add count as two operations; Conv2d only",
+    "input_shape": [
+      1,
+      1,
+      256,
+      256
+    ],
+    "median_latency_ms": 9.835149998252746,
+    "parameters": 46332650,
+    "peak_allocated_bytes": 319739392,
+    "repetitions": 100,
+    "trainable_parameters": 46332650,
+    "warmup": 20
+  },
+  "R0": {
+    "autocast": true,
+    "complete_backbone_passes": 1,
+    "conv2d_flops_batch": 31603462144,
+    "device": "cuda:0",
+    "flop_convention": "multiply and add count as two operations; Conv2d only",
+    "input_shape": [
+      1,
+      3,
+      256,
+      256
+    ],
+    "median_latency_ms": 13.429200000246055,
+    "parameters": 46350992,
+    "peak_allocated_bytes": 225692160,
+    "repetitions": 100,
+    "trainable_parameters": 18342,
+    "warmup": 20
+  },
+  "R1": {
+    "autocast": true,
+    "complete_backbone_passes": 1,
+    "conv2d_flops_batch": 31603462144,
+    "device": "cuda:0",
+    "flop_convention": "multiply and add count as two operations; Conv2d only",
+    "input_shape": [
+      1,
+      3,
+      256,
+      256
+    ],
+    "median_latency_ms": 13.517200000933371,
+    "parameters": 46350992,
+    "peak_allocated_bytes": 225692160,
+    "repetitions": 100,
+    "trainable_parameters": 18342,
+    "warmup": 20
+  },
+  "checks": {
+    "capacity_match": true,
+    "git_clean": false,
+    "latency_limit": 1.25,
+    "latency_pass": false,
+    "latency_ratio": 1.3743765985607497,
+    "memory_limit": 1.3,
+    "memory_pass": true,
+    "memory_ratio": 0.7058628547088749,
+    "v100": false
+  },
+  "code_hashes": {
+    "hpc/gadi/train_stage3_fold1_r0_r1.pbs": "2C513C9E8CF5EA3E37F4C88FDAD14B2C1E7F6B045592EC17FA05B013B95917A1",
+    "nnunet25d/stage3/__init__.py": "3D3FAA89955F1BB368472D37495BEA8748B803D068BF3DABD4901F0DEEDB5004",
+    "nnunet25d/stage3/analysis.py": "6838CD0750E097B908E2996A2537C602B49162EE3502C9B2BD9A90A8813F84E9",
+    "nnunet25d/stage3/compute.py": "9242BBF5B0E551D6F07C772B2E3C092CE827484529438EE17EA3B4F850F70F81",
+    "nnunet25d/stage3/dataloader.py": "F04EC4A24FED4963940DB629126BCCE8968AFEC9D48116D4CBBE24138D54EFA6",
+    "nnunet25d/stage3/evaluator.py": "8C0EE9750BB9A79BFB69AECE88AF9FBD841F56AA28F0D92BE8DF2391A94F6711",
+    "nnunet25d/stage3/metrics.py": "F888DCAFF7624FDD83E81024205EC4653B1E481C5D45735473A945F7BBB59BFB",
+    "nnunet25d/stage3/model.py": "79537D2A42BCF8CE93265A772D6A47866A6B859F71E9848911890107785BF5AD",
+    "nnunet25d/stage3/provenance.py": "6C95EC841925E8BE026D631210FE677ADA60C4DEE001D8D0BF723F3ABADBBE7D",
+    "nnunet25d/stage3/statistics.py": "F4EAED19EE68ED5D2410947D85C281248304442803AF9B1DF5493F77D93CF91D",
+    "nnunet25d/stage3/trainer.py": "8FBD494D9BD8C5B77E4CB40DF7AC78EC4BC5D70D70D927BF3BA459AA8A1DA636",
+    "nnunet25d/stage3/transforms.py": "3188D7FC45845592204B2B6233B97AFA42FAFC020CF1256ABEA06411ABDB404B",
+    "nnunet25d/trainer_stage3.py": "1205D3A9C97097D4BF7BA7F04592300906DCD8B684600569453A14ED2FD5DE15",
+    "scripts/profile_stage3_v100_gate.py": "AFEFA91423F3C5C7F7C1BA472D1CA5A8F0CC29029DAB12E52AC8A06A437B1D2D",
+    "scripts/verify_stage3_training_configs.py": "73A41F6A17F7CFB2791E081603FA4D3994782D4E11CD454420CB9740DE0EAE36"
+  },
+  "config_hashes": {
+    "stage3_r0_fold1_seed1234": "3544E63EFA671C97251AA686DF68E4D18CDDC8890DD34BB64E47EF0E3BE5C8CE",
+    "stage3_r0_fold1_seed3407": "57BD43140FD11CA082391E03FFB1736C68EC624A50130BC97911C05B8172C87E",
+    "stage3_r0_fold1_seed5678": "32C029B6B619694F871C023508AB0E2399D6E1936231285E1FF94762DEB5EE7F",
+    "stage3_r1_fold1_seed1234": "92EACA540A5187FBB5ADC3E83F5E859BBB711E66177E663615513332CBF86608",
+    "stage3_r1_fold1_seed3407": "C94A93FB3298F7E3B3FFCCD6E2BF5728F0B08496DFE2174DD3C2D6977D2E5EFB",
+    "stage3_r1_fold1_seed5678": "0B25B0684929756D100B35FEA1879026DB7FC92E0DF441D11C8085FA5507E561"
+  },
+  "device_name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+  "gate_pass": false,
+  "git_dirty": [
+    " M nnunet25d/install_extension.py",
+    " M scripts/run_experiment.py",
+    "?? configs/stage3_r0_fold1_seed1234.yaml",
+    "?? configs/stage3_r0_fold1_seed3407.yaml",
+    "?? configs/stage3_r0_fold1_seed5678.yaml",
+    "?? configs/stage3_r1_fold1_seed1234.yaml",
+    "?? configs/stage3_r1_fold1_seed3407.yaml",
+    "?? configs/stage3_r1_fold1_seed5678.yaml",
+    "?? hpc/gadi/stage3_v100_preflight.pbs",
+    "?? hpc/gadi/train_stage3_fold1_r0_r1.pbs",
+    "?? nnunet25d/stage3/",
+    "?? nnunet25d/trainer_stage3.py",
+    "?? reports/",
+    "?? scripts/profile_stage3_v100_gate.py",
+    "?? scripts/upload_stage3_checkpoints_to_gadi.ps1",
+    "?? scripts/verify_stage3_training_configs.py",
+    "?? scripts/verify_stage3_v100_gate.py",
+    "?? tests/"
+  ],
+  "git_head": "0c660e0786386a7dbe07c8366068e2c9455aeb7e",
+  "plans_path": "C:\\Users\\92127\\OneDrive - UNSW\\project_linpeng\\code\\nnUNet_data\\nnUNet_preprocessed\\Dataset001_BHSD\\nnUNetPlans.json",
+  "plans_sha256": "BAF7E6DAFC6A587F2195526913E2C0AFE96049E6E71CD8F9B5AF8F4F5AE7CBC9",
+  "procedure": {
+    "autocast": true,
+    "batch": 1,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "patch": [
+      256,
+      256
+    ],
+    "repetitions": 100,
+    "warmup": 20
+  },
+  "requires_v100": true,
+  "scope": "randomly initialized locked architecture; no historical checkpoint loaded and no patient inference",
+  "status": "FAIL"
+}

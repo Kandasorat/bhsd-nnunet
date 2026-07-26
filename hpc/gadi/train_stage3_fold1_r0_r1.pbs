@@ -1,0 +1,102 @@
+#!/bin/bash
+
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N bhsd_s3_f1
+#PBS -J 0-5
+#PBS -r y
+#PBS -l walltime=48:00:00
+#PBS -l ncpus=12
+#PBS -l ngpus=1
+#PBS -l mem=32GB
+#PBS -l jobfs=20GB
+#PBS -l storage=scratch/ke17
+#PBS -j oe
+#PBS -o /scratch/ke17/bhsd-nnunet/logs
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+CHECKPOINT_ROOT="$BHSD_ROOT/frozen_baselines/multiclass_2d_min300_patience100"
+GATE_FILE="$BHSD_ROOT/runs/experiment_metadata/stage3_fold1_gate/stage3_v100_gate.json"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/nnUNet_results"
+export BHSD_RESULTS_DIR="$BHSD_ROOT/runs/experiment_metadata"
+export BHSD_STAGE3_B_CHECKPOINT_ROOT="$CHECKPOINT_ROOT"
+export BHSD_STAGE3_TRAINING_APPROVAL=APPROVED_AFTER_STAGE3_TEST_GATE
+export BHSD_SKIP_EXTENSION_INSTALL=1
+export nnUNet_n_proc_DA=0
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+
+configs=(
+    stage3_r0_fold1_seed3407
+    stage3_r1_fold1_seed3407
+    stage3_r0_fold1_seed1234
+    stage3_r1_fold1_seed1234
+    stage3_r0_fold1_seed5678
+    stage3_r1_fold1_seed5678
+)
+trainers=(
+    nnUNetTrainer_Stage3_R0
+    nnUNetTrainer_Stage3_R1
+    nnUNetTrainer_Stage3_R0Seed1234
+    nnUNetTrainer_Stage3_R1Seed1234
+    nnUNetTrainer_Stage3_R0Seed5678
+    nnUNetTrainer_Stage3_R1Seed5678
+)
+
+index="${PBS_ARRAY_INDEX:?PBS_ARRAY_INDEX is required; submit this file as an array job}"
+if (( index < 0 || index >= ${#configs[@]} )); then
+    echo "Invalid PBS_ARRAY_INDEX=$index" >&2
+    exit 2
+fi
+config="${configs[$index]}"
+trainer="${trainers[$index]}"
+config_path="$REPO_DIR/configs/${config}.yaml"
+checkpoint_dir="$nnUNet_results/Dataset001_BHSD/${trainer}__nnUNetPlans__2d/fold_1"
+
+test -f "$GATE_FILE"
+test -f "$config_path"
+test -f "$CHECKPOINT_ROOT/fold_1/checkpoint_best.pth"
+mkdir -p "$BHSD_RESULTS_DIR" "$BHSD_ROOT/logs"
+cd "$REPO_DIR"
+
+python3 scripts/verify_stage3_v100_gate.py --gate "$GATE_FILE" --config "$config_path"
+
+(
+    flock -x 9
+    python3 nnunet25d/install_extension.py
+) 9>"$BHSD_ROOT/envs/.nnunet25d-install.lock"
+
+args=(train --config "$config_path")
+if [[ -d "$checkpoint_dir" ]] && find "$checkpoint_dir" -maxdepth 1 -name 'checkpoint_*.pth' -print -quit | grep -q .; then
+    if [[ "${BHSD_STAGE3_RESUME:-0}" != "1" ]]; then
+        echo "Existing Stage3 checkpoint found in $checkpoint_dir; refusing implicit resume" >&2
+        exit 3
+    fi
+    args+=(--resume)
+fi
+
+echo "array_index=$index config=$config trainer=$trainer fold=1"
+python3 scripts/run_experiment.py "${args[@]}"
+
+test -f "$checkpoint_dir/checkpoint_best.pth"
+test -f "$checkpoint_dir/checkpoint_final.pth"
+test -f "$checkpoint_dir/validation/summary.json"
+test -f "$checkpoint_dir/run_timing.json"
+npz_count=$(find "$checkpoint_dir/validation" -maxdepth 1 -name '*.npz' | wc -l)
+if [[ "$npz_count" -ne 39 ]]; then
+    echo "Expected 39 fold1 validation NPZ files, found $npz_count" >&2
+    exit 4
+fi
+echo "Stage3 job complete: config=$config npz_count=$npz_count"
