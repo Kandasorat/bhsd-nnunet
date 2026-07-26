@@ -1,0 +1,46 @@
+#!/bin/bash
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N f1000_core15
+#PBS -J 0-14
+#PBS -r y
+#PBS -l walltime=48:00:00
+#PBS -l ncpus=12
+#PBS -l ngpus=1
+#PBS -l mem=32GB
+#PBS -l jobfs=20GB
+#PBS -l storage=scratch/ke17
+#PBS -o /scratch/ke17/bhsd-nnunet/logs/fixed1000/core/
+#PBS -e /scratch/ke17/bhsd-nnunet/logs/fixed1000/core/
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+index="${PBS_ARRAY_INDEX:?PBS_ARRAY_INDEX is required}"
+test -n "${FIXED1000_EXPECTED_COMMIT:-}"
+test "$(git -C "$REPO_DIR" rev-parse HEAD)" = "$FIXED1000_EXPECTED_COMMIT"
+test -z "$(git -C "$REPO_DIR" status --porcelain)"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$BHSD_ROOT/runs/fixed1000/nnUNet_results"
+export PYTHONPATH="$REPO_DIR"
+export nnUNet_n_proc_DA=0
+export BHSD_SKIP_EXTENSION_INSTALL=1
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+cd "$REPO_DIR"
+printf -v padded "%02d" "$index"
+matches=(configs/fixed1000/fixed1000_core_multiclass_15_${padded}_*.yaml)
+if (( ${#matches[@]} != 1 )) || [[ ! -f "${matches[0]}" ]]; then
+    echo "Expected one locked core config for index $index; found ${#matches[@]}" >&2
+    exit 2
+fi
+python3 scripts/run_fixed1000_task.py --config "$REPO_DIR/${matches[0]}"
+

@@ -28,6 +28,10 @@ def main() -> None:
     copy_file(package_root / "trainer_25d_5slice.py", nnunet_root / "training" / "nnUNetTrainer" / "trainer_25d_5slice.py")
     copy_file(package_root / "trainer_spacing_aware.py", nnunet_root / "training" / "nnUNetTrainer" / "trainer_spacing_aware.py")
     copy_file(package_root / "trainer_bhsd.py", nnunet_root / "training" / "nnUNetTrainer" / "trainer_bhsd.py")
+    copy_file(
+        package_root / "trainer_fixed1000.py",
+        nnunet_root / "training" / "nnUNetTrainer" / "trainer_fixed1000.py",
+    )
     copy_file(package_root / "trainer_stage3.py", nnunet_root / "training" / "nnUNetTrainer" / "trainer_stage3.py")
     copy_file(
         package_root / "trainer_csam_official_shim.py",

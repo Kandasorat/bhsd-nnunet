@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "checks": {
+    "all_state_dict_signatures_equal": true,
+    "all_parameter_counts_equal": true,
+    "all_seed3407_initialization_hashes_equal": true,
+    "same_seed_reproduces": true,
+    "different_seed_differs": true,
+    "2d_batch_size_12": true,
+    "3d_batch_size_2": true,
+    "2d_patch_256": true,
+    "3d_patch_unchanged": true
+  },
+  "comparisons": {
+    "A0": {
+      "state_dict_signature_equal": true,
+      "parameter_count_equal": true,
+      "initialization_hash_equal_at_seed3407": true,
+      "fixed_parameters": 46333226,
+      "historical_parameters": 46333226,
+      "fixed_initialization_sha256": "694c29f779c3e78e8c7ebc88cf4f9ad0f35a85df8e764098eaf9280052942aee",
+      "historical_initialization_sha256": "694c29f779c3e78e8c7ebc88cf4f9ad0f35a85df8e764098eaf9280052942aee"
+    },
+    "C1": {
+      "state_dict_signature_equal": true,
+      "parameter_count_equal": true,
+      "initialization_hash_equal_at_seed3407": true,
+      "fixed_parameters": 46333323,
+      "historical_parameters": 46333323,
+      "fixed_initialization_sha256": "5239ffbf40f4d4c59524e1e4a9d7f8540f1e6626b6ef2edbfab161ad79d16af2",
+      "historical_initialization_sha256": "5239ffbf40f4d4c59524e1e4a9d7f8540f1e6626b6ef2edbfab161ad79d16af2"
+    },
+    "C2": {
+      "state_dict_signature_equal": true,
+      "parameter_count_equal": true,
+      "initialization_hash_equal_at_seed3407": true,
+      "fixed_parameters": 46335559,
+      "historical_parameters": 46335559,
+      "fixed_initialization_sha256": "cb2ee7336e9e14d5048b44d936782373d3b8e34645f4b3ddc1dc6590f515705b",
+      "historical_initialization_sha256": "cb2ee7336e9e14d5048b44d936782373d3b8e34645f4b3ddc1dc6590f515705b"
+    },
+    "D0": {
+      "state_dict_signature_equal": true,
+      "parameter_count_equal": true,
+      "initialization_hash_equal_at_seed3407": true,
+      "fixed_parameters": 46333338,
+      "historical_parameters": 46333338,
+      "fixed_initialization_sha256": "12eec068e7f3cf343876c76141eb402a26464202bb01137a71f95867842b36e3",
+      "historical_initialization_sha256": "12eec068e7f3cf343876c76141eb402a26464202bb01137a71f95867842b36e3"
+    },
+    "D1": {
+      "state_dict_signature_equal": true,
+      "parameter_count_equal": true,
+      "initialization_hash_equal_at_seed3407": true,
+      "fixed_parameters": 46333338,
+      "historical_parameters": 46333338,
+      "fixed_initialization_sha256": "12eec068e7f3cf343876c76141eb402a26464202bb01137a71f95867842b36e3",
+      "historical_initialization_sha256": "12eec068e7f3cf343876c76141eb402a26464202bb01137a71f95867842b36e3"
+    }
+  },
+  "seed_hashes": {
+    "c1_seed3407": "5239ffbf40f4d4c59524e1e4a9d7f8540f1e6626b6ef2edbfab161ad79d16af2",
+    "c1_seed3407_repeat": "5239ffbf40f4d4c59524e1e4a9d7f8540f1e6626b6ef2edbfab161ad79d16af2",
+    "c1_seed1234": "529808e50282124f6d9c03dba82a2bcd668f70756a2a8588f5b9707ad8a0c122"
+  }
+}

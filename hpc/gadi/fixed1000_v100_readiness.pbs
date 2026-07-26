@@ -1,0 +1,53 @@
+#!/bin/bash
+#PBS -P ke17
+#PBS -q gpuvolta
+#PBS -N f1000_gate
+#PBS -l walltime=02:00:00
+#PBS -l ncpus=12
+#PBS -l ngpus=1
+#PBS -l mem=32GB
+#PBS -l jobfs=20GB
+#PBS -l storage=scratch/ke17
+#PBS -o /scratch/ke17/bhsd-nnunet/logs/fixed1000/preflight/
+#PBS -e /scratch/ke17/bhsd-nnunet/logs/fixed1000/preflight/
+
+set -euo pipefail
+umask 007
+
+BHSD_ROOT=/scratch/ke17/bhsd-nnunet
+REPO_DIR="$BHSD_ROOT/software/bhsd-nnunet"
+GATE_DIR="$BHSD_ROOT/runs/experiment_metadata/fixed1000_readiness_2026-07-27"
+PREFLIGHT_RESULTS="$BHSD_ROOT/runs/fixed1000_preflight_sandbox/${PBS_JOBID}"
+
+test -n "${FIXED1000_EXPECTED_COMMIT:-}"
+test "$(git -C "$REPO_DIR" rev-parse HEAD)" = "$FIXED1000_EXPECTED_COMMIT"
+test -z "$(git -C "$REPO_DIR" status --porcelain)"
+
+module purge
+module load python3/3.10.4
+source "$BHSD_ROOT/envs/bhsd-nnunet-py310/bin/activate"
+
+export nnUNet_raw="$BHSD_ROOT/data/nnUNet_raw"
+export nnUNet_preprocessed="$BHSD_ROOT/data/nnUNet_preprocessed"
+export nnUNet_results="$PREFLIGHT_RESULTS"
+export PYTHONPATH="$REPO_DIR"
+export nnUNet_n_proc_DA=0
+export BHSD_SEED=3407
+export BHSD_DATA_SEED=1003410
+export BHSD_DETERMINISTIC=1
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+mkdir -p "$GATE_DIR" "$PREFLIGHT_RESULTS"
+cd "$REPO_DIR"
+python3 nnunet25d/install_extension.py
+python3 -m unittest tests.fixed1000.test_fixed1000_protocol -v \
+    >"$GATE_DIR/static_tests_${PBS_JOBID}.log" 2>&1
+lquota >"$GATE_DIR/scratch_quota_${PBS_JOBID}.txt" 2>&1 || true
+nvidia-smi -q >"$GATE_DIR/nvidia_smi_${PBS_JOBID}.txt"
+python3 scripts/preflight_fixed1000_v100.py \
+    --output "$GATE_DIR/v100_readiness_${PBS_JOBID}.json" \
+    --quota-file "$GATE_DIR/scratch_quota_${PBS_JOBID}.txt"
+
+echo "FIXED1000_V100_READINESS_COMPLETE=$GATE_DIR/v100_readiness_${PBS_JOBID}.json"

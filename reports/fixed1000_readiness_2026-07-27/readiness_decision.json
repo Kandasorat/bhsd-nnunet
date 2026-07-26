@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "PENDING_V100",
+  "formal_jobs_submitted": 0,
+  "formal_jobs_authorized_if_pass": 27,
+  "local_static_tests": "PASS_18_OF_18",
+  "local_architecture_audit": "PASS",
+  "gadi_v100_preflight": "PENDING",
+  "scratch_quota_check": "PENDING",
+  "performance_gate_used": false,
+  "submission_allowed": false,
+  "blocking_reason": "Mandatory Gadi Tesla V100 resource and runtime preflight has not completed."
+}
+
