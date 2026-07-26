@@ -25,17 +25,53 @@ foreach ($fold in 1..4) {
     }
 }
 
-& ssh $Remote "mkdir -p '$RemoteRoot'/fold_{1,2,3,4}"
-if ($LASTEXITCODE -ne 0) { throw "Remote mkdir failed" }
+$relativeFiles = 1..4 | ForEach-Object { "fold_$_/checkpoint_best.pth" }
+$remoteFiles = $relativeFiles -join " "
+$remoteCommand = "set -e; mkdir -p '$RemoteRoot'; tar -xf - -C '$RemoteRoot'; cd '$RemoteRoot'; sha256sum $remoteFiles"
 
-foreach ($fold in 1..4) {
-    $path = Join-Path $LocalRoot "fold_$fold\checkpoint_best.pth"
-    & scp $path "${Remote}:$RemoteRoot/fold_$fold/checkpoint_best.pth"
-    if ($LASTEXITCODE -ne 0) { throw "scp failed for fold $fold" }
+$tarInfo = [System.Diagnostics.ProcessStartInfo]::new()
+$tarInfo.FileName = (Get-Command tar.exe -ErrorAction Stop).Source
+$tarInfo.Arguments = "-cf - -C `"$LocalRoot`" $remoteFiles"
+$tarInfo.UseShellExecute = $false
+$tarInfo.CreateNoWindow = $true
+$tarInfo.RedirectStandardOutput = $true
+$tarInfo.RedirectStandardError = $true
+
+$sshInfo = [System.Diagnostics.ProcessStartInfo]::new()
+$sshInfo.FileName = (Get-Command ssh.exe -ErrorAction Stop).Source
+$sshInfo.Arguments = "-T $Remote `"$remoteCommand`""
+$sshInfo.UseShellExecute = $false
+$sshInfo.CreateNoWindow = $false
+$sshInfo.RedirectStandardInput = $true
+$sshInfo.RedirectStandardOutput = $true
+$sshInfo.RedirectStandardError = $false
+
+Write-Host "Opening one SSH connection for all four checkpoints. Enter the NCI password once."
+Write-Host "Streaming approximately 1.4 GB; this mode has no per-file progress display."
+$sshProcess = [System.Diagnostics.Process]::Start($sshInfo)
+$tarProcess = [System.Diagnostics.Process]::Start($tarInfo)
+try {
+    $tarProcess.StandardOutput.BaseStream.CopyTo($sshProcess.StandardInput.BaseStream)
+    $sshProcess.StandardInput.Close()
+    $tarProcess.WaitForExit()
+    $tarError = $tarProcess.StandardError.ReadToEnd()
+    if ($tarProcess.ExitCode -ne 0) {
+        throw "Local tar stream failed with exit code $($tarProcess.ExitCode): $tarError"
+    }
+    $remoteText = $sshProcess.StandardOutput.ReadToEnd()
+    $sshProcess.WaitForExit()
+    if ($sshProcess.ExitCode -ne 0) {
+        throw "Single-session upload or remote SHA-256 verification failed with exit code $($sshProcess.ExitCode)"
+    }
+}
+finally {
+    if (-not $tarProcess.HasExited) { $tarProcess.Kill() }
+    if (-not $sshProcess.HasExited) { $sshProcess.Kill() }
+    $tarProcess.Dispose()
+    $sshProcess.Dispose()
 }
 
-$remoteOutput = & ssh $Remote "cd '$RemoteRoot' && sha256sum fold_{1,2,3,4}/checkpoint_best.pth"
-if ($LASTEXITCODE -ne 0) { throw "Remote sha256sum failed" }
+$remoteOutput = @($remoteText -split "`r?`n" | Where-Object { $_ })
 $remoteOutput | ForEach-Object { Write-Host $_ }
 
 foreach ($fold in 1..4) {
