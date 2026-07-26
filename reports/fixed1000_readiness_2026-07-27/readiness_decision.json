@@ -1,14 +1,13 @@
 {
   "schema_version": 1,
-  "status": "PENDING_V100",
+  "status": "PENDING_CORRECTED_V100_GATE",
   "formal_jobs_submitted": 0,
   "formal_jobs_authorized_if_pass": 27,
   "local_static_tests": "PASS_18_OF_18",
   "local_architecture_audit": "PASS",
-  "gadi_v100_preflight": "PENDING",
+  "gadi_v100_preflight": "GATE_1_FAIL_PRECHECK_IMPLEMENTATION; CORRECTED_GATE_PENDING",
   "scratch_quota_check": "PENDING",
   "performance_gate_used": false,
   "submission_allowed": false,
-  "blocking_reason": "Mandatory Gadi Tesla V100 resource and runtime preflight has not completed."
+  "blocking_reason": "Gate 1 job 174755560.gadi-pbs failed in the preflight checkpoint round-trip because pathlib.Path was passed to an nnU-Net string-only loader. Corrected immutable revision requires a new V100 gate."
 }
-

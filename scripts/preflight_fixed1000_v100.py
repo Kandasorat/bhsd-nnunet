@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import statistics
 import time
 
 import torch
@@ -98,20 +99,34 @@ def main() -> None:
                 same_parameters = True
 
             dl_train, dl_val = trainer.get_dataloaders()
-            train_batch = next(dl_train)
-            val_batch = next(dl_val)
-            torch.cuda.synchronize()
-            start = time.perf_counter()
-            train_result = trainer.train_step(train_batch)
-            torch.cuda.synchronize()
-            train_seconds = time.perf_counter() - start
+            # The first standard nnU-Net step may include one-time CUDA graph/
+            # kernel compilation. Exercise it, but estimate steady-state
+            # walltime from multiple subsequent real batches.
+            warmup_train_result = trainer.train_step(next(dl_train))
             with torch.no_grad():
+                warmup_val_result = trainer.validation_step(next(dl_val))
+            torch.cuda.synchronize()
+            peak_with_warmup_gb = torch.cuda.max_memory_allocated() / 1024**3
+            train_times = []
+            train_results = []
+            for _ in range(3):
                 torch.cuda.synchronize()
                 start = time.perf_counter()
-                val_result = trainer.validation_step(val_batch)
+                train_results.append(trainer.train_step(next(dl_train)))
                 torch.cuda.synchronize()
-                val_seconds = time.perf_counter() - start
-            peak_gb = torch.cuda.max_memory_allocated() / 1024**3
+                train_times.append(time.perf_counter() - start)
+            val_times = []
+            val_results = []
+            with torch.no_grad():
+                for _ in range(3):
+                    torch.cuda.synchronize()
+                    start = time.perf_counter()
+                    val_results.append(trainer.validation_step(next(dl_val)))
+                    torch.cuda.synchronize()
+                    val_times.append(time.perf_counter() - start)
+            train_seconds = statistics.median(train_times)
+            val_seconds = statistics.median(val_times)
+            peak_gb = max(peak_with_warmup_gb, torch.cuda.max_memory_allocated() / 1024**3)
             epoch_seconds = train_seconds * 250 + val_seconds * 50
             profiles[model] = {
                 "trainer": fixed_cls.__name__,
@@ -122,20 +137,28 @@ def main() -> None:
                 "historical_state_signature_equal": same_signature,
                 "historical_parameter_count_equal": same_parameters,
                 "train_step_seconds": train_seconds,
+                "train_step_seconds_samples": train_times,
                 "validation_step_seconds": val_seconds,
+                "validation_step_seconds_samples": val_times,
                 "estimated_epoch_seconds": epoch_seconds,
                 "estimated_1000_epoch_hours": epoch_seconds * 1000 / 3600,
                 "peak_allocated_gb": peak_gb,
-                "finite_train_loss": bool(torch.isfinite(torch.as_tensor(train_result["loss"])).all()),
-                "finite_validation_loss": bool(torch.isfinite(torch.as_tensor(val_result["loss"])).all()),
+                "finite_train_loss": all(
+                    bool(torch.isfinite(torch.as_tensor(result["loss"])).all())
+                    for result in [warmup_train_result, *train_results]
+                ),
+                "finite_validation_loss": all(
+                    bool(torch.isfinite(torch.as_tensor(result["loss"])).all())
+                    for result in [warmup_val_result, *val_results]
+                ),
             }
             if model == "A0":
                 final_probe = Path(trainer.output_folder) / "checkpoint_final_probe.pth"
                 best_probe = Path(trainer.output_folder) / "checkpoint_best_probe.pth"
                 trainer.save_checkpoint(final_probe)
                 trainer.save_checkpoint(best_probe)
-                trainer.load_checkpoint(final_probe)
-                trainer.load_checkpoint(best_probe)
+                trainer.load_checkpoint(str(final_probe))
+                trainer.load_checkpoint(str(best_probe))
                 checks["checkpoint_final_and_best_roundtrip"] = True
             if trainer.batch_size != (2 if model == "3D" else 12):
                 raise RuntimeError(f"{model}: unexpected batch size {trainer.batch_size}")
@@ -143,7 +166,7 @@ def main() -> None:
                 raise RuntimeError(f"{model}: fixed trainer architecture differs from historical implementation")
             if peak_gb >= 31:
                 raise RuntimeError(f"{model}: peak allocation {peak_gb:.2f} GB is unsafe for 32 GB request")
-            del trainer, dl_train, dl_val, train_batch, val_batch
+            del trainer, dl_train, dl_val
             gc.collect()
             torch.cuda.empty_cache()
 

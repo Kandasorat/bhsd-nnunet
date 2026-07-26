@@ -1,6 +1,6 @@
 # Fixed1000 readiness report
 
-Decision: **PENDING_V100**
+Decision: **PENDING_CORRECTED_V100_GATE**
 
 Formal training jobs submitted: **0 / 27**
 
@@ -22,9 +22,15 @@ Formal training jobs submitted: **0 / 27**
 
 Evidence: `local_architecture_audit.json`, `tests/fixed1000/test_fixed1000_protocol.py`, and `preregistered_fixed1000_run_matrix.csv`.
 
+## Gate 1 incident
+
+Gadi job `174755560.gadi-pbs` finished with `Exit_status=1`. It passed the split, 2D and A0 real-batch forward/backward/validation checks before a preflight-only checkpoint round-trip call passed a `Path` object to an nnU-Net method that requires `str`. The incident is recorded in `GATE_INCIDENTS.md`; no formal job was submitted.
+
+The first-step timing also included one-time CUDA compilation and is not a valid 1000-epoch projection. The corrected preflight retains the same resource limit and measures the median of three post-warm-up real batches.
+
 ## Mandatory unresolved gate
 
-The Gadi Tesla V100 preflight has not yet run for this revision. The following remain unresolved and therefore prevent `PASS`:
+The corrected Gadi Tesla V100 preflight has not yet run for the corrected revision. The following remain unresolved and therefore prevent `PASS`:
 
 - one real-data batch training step, backward and validation step for each unique architecture;
 - checkpoint-final and checkpoint-best round-trip on the Gadi environment;
@@ -39,4 +45,3 @@ The previous 2D/A0/3D audit estimated the core 15 at approximately 122–125 V10
 ## Decision boundary
 
 Current status is not `PASS`; consequently neither formal PBS array may be submitted. If the V100 or quota gate fails, the final decision is `READINESS_FAIL` without relaxing thresholds. If it passes, the report and JSON must be updated from the returned immutable artifacts, committed, pushed, checked out identically on Gadi, and only then may the two arrays be submitted.
-
