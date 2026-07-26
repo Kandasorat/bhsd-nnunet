@@ -1,5 +1,5 @@
 param(
-    [string]$Remote = "ly6399@gadi-dm.nci.org",
+    [string]$Remote = "ly6399@gadi-dm.nci.org.au",
     [string]$LocalRoot = "D:\BHSD_server_backups\multiclass_2d_min300_patience100",
     [string]$RemoteRoot = "/scratch/ke17/bhsd-nnunet/frozen_baselines/multiclass_2d_min300_patience100"
 )
